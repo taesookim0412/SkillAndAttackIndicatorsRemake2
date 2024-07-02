@@ -23,13 +23,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1352179340110984879}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.15, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1352179341799021280}
-  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &1352179340218273835
 GameObject:
@@ -54,13 +54,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1352179340218273835}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.15, z: 2.9835}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1352179341799021280}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &1352179341799021294
 GameObject:
@@ -86,6 +86,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1352179341799021294}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -94,7 +95,6 @@ Transform:
   - {fileID: 1352179340218273834}
   - {fileID: 1352179340110984878}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1352179341799021283
 MonoBehaviour:
@@ -110,13 +110,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _head: {fileID: 1352179340218273835}
   _body: {fileID: 1352179340110984879}
-  _headMat: {fileID: 2100000, guid: 76cbd542a406ea24f9cafe32909e413b, type: 2}
-  _bodyMat: {fileID: 2100000, guid: 1d66278ba55aa5f4eb822613da178d4d, type: 2}
+  _headMat: {fileID: 2100000, guid: b1aa4a3a28be70343a4a1886aa12aef8, type: 2}
+  _bodyMat: {fileID: 2100000, guid: 605399c9e3f3b534cb1b779db0ef9a7b, type: 2}
   _fillProgress: 0.5
   _fadeAmount: 0.019
   _angle: 0
   _length: 1
   _width: 1
   _depth: 10
-  _color: {r: 0.5882353, g: 0.5882353, b: 0.5882353, a: 1}
-  _fillColor: {r: 1, g: 0.90588236, b: 0, a: 1}
+  _color: {r: 0, g: 0, b: 0, a: 1}
+  _fillColor: {r: 0.18238991, g: 0.18238991, b: 0.18238991, a: 1}
