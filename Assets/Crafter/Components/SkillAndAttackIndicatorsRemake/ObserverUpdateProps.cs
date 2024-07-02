@@ -8,16 +8,16 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public class ObserverUpdateProps
     {
-        public long UpdateTickTime;
+        public long UpdateTickTimeFixedUpdate;
 
         public ObserverUpdateProps(long updateTickTime)
         {
-            UpdateTickTime = updateTickTime;
+            UpdateTickTimeFixedUpdate = updateTickTime;
         }
 
-        public void Update_MainThread()
+        public void Update_FixedUpdate()
         {
-            UpdateTickTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            UpdateTickTimeFixedUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
     }
 }

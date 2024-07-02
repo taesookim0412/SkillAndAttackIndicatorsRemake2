@@ -196,7 +196,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     }
 
                     ProjectorSet = true;
-                    LastTickTime = Props.ObserverUpdateProps.UpdateTickTime;
+                    LastTickTime = Props.ObserverUpdateProps.UpdateTickTimeFixedUpdate;
                 }
                 else
                 {
@@ -206,8 +206,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
             else
             {
-                long elapsedTickTime = Props.ObserverUpdateProps.UpdateTickTime - LastTickTime;
-                LastTickTime = Props.ObserverUpdateProps.UpdateTickTime;
+                long elapsedTickTime = Props.ObserverUpdateProps.UpdateTickTimeFixedUpdate - LastTickTime;
+                LastTickTime = Props.ObserverUpdateProps.UpdateTickTimeFixedUpdate;
                 ElapsedTime += elapsedTickTime;
                 ElapsedTimeSecondsFloat += elapsedTickTime * 0.001f;
 
@@ -249,7 +249,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 float yRotation = GetThirdPersonControllerRotation();
                 if (AbilityFXType != AbilityFXType.None &&
                     ((PreviousRotationY - playerRotation) > 10f ||
-                    (PreviousPosition - terrainPosition).magnitude > 0.1f))
+                    (PreviousPosition - terrainPosition).magnitude > 0.03f))
                 {
                     switch (AbilityFXType)
                     {

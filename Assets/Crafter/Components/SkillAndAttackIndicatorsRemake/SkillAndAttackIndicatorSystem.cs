@@ -93,9 +93,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             AbilityFXInstancePools = abilityFXInstancePools;
         }
-        public void Update()
+        public void FixedUpdate()
         {
-            ObserverUpdateProps.Update_MainThread();
+            ObserverUpdateProps.Update_FixedUpdate();
 
             if (SkillAndAttackIndicatorObservers.Count > 0)
             {
