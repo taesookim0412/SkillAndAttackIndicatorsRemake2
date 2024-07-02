@@ -20,7 +20,8 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             {
                 SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Arc,
                     AbilityProjectorMaterialType.First,
-                    AbilityIndicatorCastType.ShowDuringCast);
+                    AbilityIndicatorCastType.ShowDuringCast,
+                    AbilityFXType.None);
             }
         }
         public void OnAbility2(CallbackContext ctx)
@@ -29,7 +30,8 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             {
                 SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Circle,
                     AbilityProjectorMaterialType.First,
-                    AbilityIndicatorCastType.ShowDuringCast);
+                    AbilityIndicatorCastType.ShowDuringCast,
+                    AbilityFXType.None);
             }
         }
         public void OnAbility3(CallbackContext ctx)
@@ -38,7 +40,8 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             {
                 SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Line,
                     AbilityProjectorMaterialType.First,
-                    AbilityIndicatorCastType.ShowDuringCast);
+                    AbilityIndicatorCastType.ShowDuringCast,
+                    AbilityFXType.DashParticles);
             }
         }
         public void OnAbility4(CallbackContext ctx)
@@ -47,7 +50,8 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             {
                 SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.ScatterLine,
                     AbilityProjectorMaterialType.First,
-                    AbilityIndicatorCastType.ShowDuringCast);
+                    AbilityIndicatorCastType.ShowDuringCast,
+                    AbilityFXType.None);
             }
         }
     }

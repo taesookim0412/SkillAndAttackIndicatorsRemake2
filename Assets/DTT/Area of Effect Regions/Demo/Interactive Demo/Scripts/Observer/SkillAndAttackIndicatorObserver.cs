@@ -7,6 +7,8 @@ using UnityEngine.EventSystems;
 using UnityEngine;
 using Assets.Crafter.Components.Models;
 using DTT.AreaOfEffectRegions;
+using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
+using UnityEditor;
 
 namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observer
 {
@@ -27,6 +29,8 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
         public static readonly int AbilityProjectorTypeNamesLength = AbilityProjectorTypeNames.Length;
         public static readonly string[] AbilityProjectorMaterialTypeNames = Enum.GetNames(typeof(AbilityProjectorMaterialType));
         public static readonly int AbilityProjectorMaterialTypeNamesLength = AbilityProjectorMaterialTypeNames.Length;
+        public static readonly string[] AbilityFXTypeNames = Enum.GetNames(typeof(AbilityFXType));
+        public static readonly int AbilityFXTypeNamesLength = AbilityFXTypeNames.Length;
 
         private static readonly float RadiusHalfDivMult = 1 / 2f;
         // The orthographic length is based on a radius so it is half the desired length.
@@ -40,9 +44,11 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
         public readonly AbilityProjectorType AbilityProjectorType;
         public readonly AbilityProjectorMaterialType AbilityProjectorMaterialType;
         public readonly AbilityIndicatorCastType AbilityIndicatorCastType;
+        public readonly AbilityFXType AbilityFXType;
 
         private bool ProjectorSet = false;
-        private PoolBagDco<MonoBehaviour> InstancePool;
+        private PoolBagDco<MonoBehaviour> ProjectorInstancePool;
+        private PoolBagDco<MonoBehaviour> AbilityFXInstancePool;
         private MonoBehaviour ProjectorMonoBehaviour;
         private GameObject ProjectorGameObject;
 
@@ -50,6 +56,10 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
         private SRPCircleRegionProjector CircleRegionProjectorRef;
         private SRPLineRegionProjector LineRegionProjectorRef;
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
+
+        private (MonoBehaviour[] monoBehaviour,
+            GameObject[] gameObject,
+            DashParticles[] dashParticles) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -62,12 +72,14 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
 
         public SkillAndAttackIndicatorObserver(AbilityProjectorType abilityProjectorType,
             AbilityProjectorMaterialType abilityProjectorMaterialType, AbilityIndicatorCastType abilityIndicatorCastType,
+            AbilityFXType abilityFXType,
             SkillAndAttackIndicatorObserverProps skillAndAttackIndicatorObserverProps
             )
         {
             AbilityProjectorType = abilityProjectorType;
             AbilityProjectorMaterialType = abilityProjectorMaterialType;
             AbilityIndicatorCastType = abilityIndicatorCastType;
+            AbilityFXType = abilityFXType;
 
             Props = skillAndAttackIndicatorObserverProps;
         }
@@ -77,11 +89,19 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             if (!ProjectorSet)
             {
                 if (Props.SkillAndAttackIndicatorSystem.ProjectorInstancePools.TryGetValue(AbilityProjectorType, out var abilityMaterialTypesDict) &&
-                    abilityMaterialTypesDict.TryGetValue(AbilityProjectorMaterialType, out InstancePool))
+                    abilityMaterialTypesDict.TryGetValue(AbilityProjectorMaterialType, out ProjectorInstancePool) && 
+                    (AbilityFXType == AbilityFXType.None ||
+                    Props.SkillAndAttackIndicatorSystem.AbilityFXInstancePools.TryGetValue(AbilityFXType, out AbilityFXInstancePool)))
                 {
                     // 3 texture option indices.
-                    ProjectorMonoBehaviour = InstancePool.InstantiatePooled(null);
+                    ProjectorMonoBehaviour = ProjectorInstancePool.InstantiatePooled(null);
                     ProjectorGameObject = ProjectorMonoBehaviour.gameObject;
+
+                    // Create the projector.
+
+                    // hard coded lengths that need to be used in fx too.
+                    int lineLengthUnits = 25;
+                    Vector3 terrainPosition = GetTerrainPosition();
 
                     switch (AbilityProjectorType)
                     {
@@ -107,8 +127,6 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                         case AbilityProjectorType.Line:
                             SRPLineRegionProjector lineRegionProjector = ProjectorGameObject.GetComponent<SRPLineRegionProjector>();
 
-                            // hard coded length units.
-                            int lineLengthUnits = 25;
                             // multiply it by the orthographicRadiusHalfDivMultiplier
                             //float orthographicLength = lineLengthUnits * OrthographicRadiusHalfDivMult;
                             lineRegionProjector.Length = lineLengthUnits * RadiusHalfDivMult;
@@ -133,6 +151,16 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                         default:
                             ObserverStatus = ObserverStatus.Remove;
                             return;
+                    }
+
+                    ProjectorGameObject.transform.position = terrainPosition;
+
+                    switch (AbilityFXType)
+                    {
+                        case AbilityFXType.DashParticles:
+                            DashParticlesItems = CreateDashParticlesItems(lineLengthUnits,
+                                terrainPosition.x, terrainPosition.z, 0f);
+                            break;
                     }
 
                     switch (AbilityProjectorMaterialType) {
@@ -196,16 +224,92 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                         break;
 
                 }
-            }
 
-            Vector3 terrainPosition = GetTerrainPosition();
-            ProjectorGameObject.transform.position = terrainPosition;
+                Vector3 terrainPosition = GetTerrainPosition();
+                ProjectorGameObject.transform.position = terrainPosition;
+            }
 
             if (ElapsedTime > ChargeDuration)
             {
-                InstancePool.ReturnPooled(ProjectorMonoBehaviour);
+                ProjectorInstancePool.ReturnPooled(ProjectorMonoBehaviour);
                 ObserverStatus = ObserverStatus.Remove;
             }
+        }
+
+        private (MonoBehaviour[] monoBehaviour,
+            GameObject[] gameObject,
+            DashParticles[] dashParticles) CreateDashParticlesItems(int lineLengthUnits, 
+            float startPositionX, float startPositionZ,
+            float yRotation)
+        {
+            MonoBehaviour[] monoBehaviours = new MonoBehaviour[lineLengthUnits];
+            GameObject[] gameObjects = new GameObject[lineLengthUnits];
+            DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
+
+            float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
+            float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
+            //float zUnitsPerPrefab = 1 / (float)lineLengthUnits;
+
+            float worldRotatedPositionX = startPositionX;
+            float worldRotatedPositionZ = startPositionZ;
+
+            for (int i = 0; i < lineLengthUnits; i++)
+            {
+                MonoBehaviour dashParticlesMonoBehaviour = AbilityFXInstancePool.InstantiatePooled(null);
+                GameObject dashParticlesGameObject = dashParticlesMonoBehaviour.gameObject;
+                DashParticles dashParticlesComponent = dashParticlesGameObject.GetComponent<DashParticles>();
+                float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+
+                AnimationCurve animationCurve = CreateTerrainYVelocityAnimationCurve(
+                    unitsPerKeyframe: 0.05f,
+                    worldStartRotatedPositionX: worldRotatedPositionX,
+                    positionY: positionY,
+                    worldStartRotatedPositionZ: worldRotatedPositionZ,
+                    cosYAngle: cosYAngle,
+                    sinYAngle: sinYAngle);
+
+                dashParticlesComponent.SetYVelocityAnimationCurve(animationCurve);
+                dashParticlesComponent.transform.position = new Vector3(worldRotatedPositionX,
+                    positionY,
+                    worldRotatedPositionZ);
+
+                monoBehaviours[i] = dashParticlesMonoBehaviour;
+                gameObjects[i] = dashParticlesGameObject;
+                dashParticles[i] = dashParticlesComponent;
+
+                worldRotatedPositionX += sinYAngle;
+                worldRotatedPositionZ += cosYAngle;
+            }
+
+            return (monoBehaviours, gameObjects, dashParticles);
+        }
+        private AnimationCurve CreateTerrainYVelocityAnimationCurve(float unitsPerKeyframe,
+            float worldStartRotatedPositionX, 
+            float positionY,
+            float worldStartRotatedPositionZ,
+            float cosYAngle, float sinYAngle)
+        {
+            int numKeyframes = (int) Math.Ceiling(1f / unitsPerKeyframe);
+            Keyframe[] keyframes = new Keyframe[numKeyframes];
+
+            for (int i = 0; i < numKeyframes; i++)
+            {
+                float zAddUnits = unitsPerKeyframe * i;
+
+                float localRotatedPositionX = zAddUnits * sinYAngle;
+                float localRotatedPositionZ = zAddUnits * cosYAngle;
+
+                float worldRotatedPositionX = worldStartRotatedPositionX + localRotatedPositionX;
+                float worldRotatedPositionZ = worldStartRotatedPositionZ + localRotatedPositionZ;
+
+                float newPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+
+                keyframes[i] = new Keyframe(i * unitsPerKeyframe, newPositionY - positionY);
+
+                positionY = newPositionY;
+            }
+
+            return new AnimationCurve(keyframes);
         }
         private float EaseInOutExpo(float percentage)
         {
@@ -247,5 +351,10 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
     {
         ShowDuringCast,
         DoubleCast
+    }
+    public enum AbilityFXType
+    {
+        None,
+        DashParticles
     }
 }

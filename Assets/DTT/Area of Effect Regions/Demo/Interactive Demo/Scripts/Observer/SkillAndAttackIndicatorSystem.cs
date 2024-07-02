@@ -15,9 +15,17 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
         [SerializeField]
         public int TerrainRenderingLayer;
         [SerializeField]
+        public Terrain Terrain;
+        [HideInInspector]
+        private bool TerrainValuesCached = false;
+        [HideInInspector]
+        private Vector3 TerrainStart = Vector3.zero;
+        [HideInInspector]
+        private Vector3 TerrainSize = Vector3.one;
+        [SerializeField]
         public MonoBehaviour[] Projectors;
         [SerializeField]
-        public LayerMask ProjectorIgnoreLayersMask;
+        public MonoBehaviour[] AbilityFXTypes;
 
         [HideInInspector]
         public Camera Camera;
@@ -31,6 +39,8 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
 
         [HideInInspector]
         public Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>> ProjectorInstancePools;
+        [HideInInspector]
+        public Dictionary<AbilityFXType, PoolBagDco<MonoBehaviour>> AbilityFXInstancePools;
 
         public void Awake()
         {
@@ -67,6 +77,18 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             }
 
             ProjectorInstancePools = projectorInstancePools;
+
+            Dictionary<AbilityFXType, PoolBagDco<MonoBehaviour>> abilityFXInstancePools = new Dictionary<AbilityFXType, PoolBagDco<MonoBehaviour>>(
+                    SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
+            foreach (MonoBehaviour prefab in AbilityFXTypes)
+            {
+                if (Enum.TryParse<AbilityFXType>(prefab.name, out AbilityFXType abilityFXType))
+                {
+                    abilityFXInstancePools[abilityFXType] = new PoolBagDco<MonoBehaviour>(prefab, 30);
+                }
+            }
+
+            AbilityFXInstancePools = abilityFXInstancePools;
         }
         public void Update()
         {
@@ -90,9 +112,33 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                 }
             }
         }
+        /// Copyright
+        /// <summary>
+        /// This assumes worldX and worldZ are clamped between local terrain axis 0 and axis.size - 1.
+        /// </summary>
+        /// <param name="worldX"></param>
+        /// <param name="worldZ"></param>
+        /// <returns></returns>
+        public float GetTerrainHeight(float worldX, float worldZ)
+        {
+            if (!TerrainValuesCached)
+            {
+                TerrainStart = Terrain.GetPosition();
+                TerrainSize = Terrain.terrainData.size;
+                TerrainValuesCached = true;
+            }
+            float terrainSizeZ = TerrainSize.z;
+
+            // add 1f to match accurate position map.
+            float correctedInterpolatedHeightLocalZ = Math.Clamp(worldZ - TerrainStart.z + 1f, 0f, terrainSizeZ);
+
+            return TerrainStart.y + Terrain.terrainData.GetInterpolatedHeight((worldX - TerrainStart.x) / TerrainSize.x,
+                correctedInterpolatedHeightLocalZ / terrainSizeZ);
+        }
         public void TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType abilityProjectorType,
             AbilityProjectorMaterialType abilityProjectorMaterialType,
-            AbilityIndicatorCastType abilityIndicatorCastType)
+            AbilityIndicatorCastType abilityIndicatorCastType,
+            AbilityFXType abilityFXType)
         {
             bool attemptTriggerUpdate;
             switch (abilityIndicatorCastType)
@@ -124,6 +170,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                 SkillAndAttackIndicatorObserver skillAndAttackIndicatorObserver = new SkillAndAttackIndicatorObserver(abilityProjectorType, 
                     abilityProjectorMaterialType,
                     abilityIndicatorCastType,
+                    abilityFXType,
                     SkillAndAttackIndicatorObserverProps);
 
                 SkillAndAttackIndicatorObservers.Add(skillAndAttackIndicatorObserver);
