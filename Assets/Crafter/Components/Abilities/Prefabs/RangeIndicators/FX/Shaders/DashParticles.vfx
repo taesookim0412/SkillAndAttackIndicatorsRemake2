@@ -106,7 +106,7 @@ MonoBehaviour:
   uiBounds:
     serializedVersion: 2
     x: 434
-    y: -493
+    y: -492
     width: 733
     height: 1923
 --- !u!114 &114350483966674976
@@ -557,7 +557,7 @@ VisualEffectResource:
   m_Infos:
     m_RendererSettings:
       motionVectorGenerationMode: 0
-      shadowCastingMode: 1
+      shadowCastingMode: 0
       rayTracingMode: 0
       receiveShadows: 0
       reflectionProbeUsage: 0
@@ -1359,7 +1359,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.Position, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"position":{"x":-2.0,"y":0.0,"z":0.0}}'
+      m_SerializableObject: '{"position":{"x":-1.0,"y":0.0,"z":0.0}}'
     m_Space: 0
   m_Property:
     name: A
@@ -1529,7 +1529,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.Position, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"position":{"x":2.0,"y":10.0,"z":1.0}}'
+      m_SerializableObject: '{"position":{"x":1.0,"y":2.0,"z":1.0}}'
     m_Space: 0
   m_Property:
     name: B
@@ -1763,7 +1763,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":1.25,"y":0.5400000214576721,"z":45.0}'
+      m_SerializableObject: '{"x":0.10000000149011612,"y":0.10000000149011612,"z":45.0}'
     m_Space: -1
   m_Property:
     name: _Scale

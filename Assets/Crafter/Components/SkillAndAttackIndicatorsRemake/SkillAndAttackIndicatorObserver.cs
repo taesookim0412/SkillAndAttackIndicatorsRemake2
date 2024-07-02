@@ -68,6 +68,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private float ChargeDurationSecondsFloat;
 
         private Vector3 PreviousPosition;
+        private float PreviousRotationY;
         private float PreviousChargeDurationFloatPercentage;
 
         private long LastTickTime;
@@ -106,6 +107,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     // hard coded lengths that need to be used in fx too.
 
                     Vector3 terrainPosition = GetTerrainPosition();
+                    float playerRotation = GetThirdPersonControllerRotation();
 
                     switch (AbilityProjectorType)
                     {
@@ -138,7 +140,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             //lineRegionProjector.SetIgnoreLayers(Props.SkillAndAttackIndicatorSystem.ProjectorIgnoreLayersMask);
                             lineRegionProjector.GenerateProjector();
                             lineRegionProjector.SetTerrainLayer(Props.SkillAndAttackIndicatorSystem.TerrainRenderingLayer);
+                            lineRegionProjector.Angle = playerRotation;
                             lineRegionProjector.Depth = 100f;
+                            lineRegionProjector.Width = 2f;
+
+                            // this should be done after, not within generateprojector...
+                            lineRegionProjector.UpdateProjectors();
 
                             LineRegionProjectorRef = lineRegionProjector;
                             break;
@@ -159,12 +166,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                     ProjectorGameObject.transform.position = terrainPosition;
                     PreviousPosition = terrainPosition;
+                    PreviousRotationY = playerRotation;
 
                     switch (AbilityFXType)
                     {
                         case AbilityFXType.DashParticles:
                             DashParticlesItems = CreateDashParticlesItems(LineLengthUnits,
-                                terrainPosition.x, terrainPosition.z, 0f);
+                                terrainPosition.x, terrainPosition.z, GetThirdPersonControllerRotation());
                             break;
                     }
 
@@ -232,18 +240,26 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 }
 
                 Vector3 terrainPosition = GetTerrainPosition();
+                float playerRotation = GetThirdPersonControllerRotation();
                 ProjectorGameObject.transform.position = terrainPosition;
 
-                if (AbilityFXType != AbilityFXType.None && (PreviousPosition - terrainPosition).magnitude > 0.1f)
+                Vector3 previousProjectorRotation = ProjectorGameObject.transform.localEulerAngles;
+                ProjectorGameObject.transform.localEulerAngles = new Vector3(previousProjectorRotation.x, playerRotation, previousProjectorRotation.z);
+
+                float yRotation = GetThirdPersonControllerRotation();
+                if (AbilityFXType != AbilityFXType.None &&
+                    ((PreviousRotationY - playerRotation) > 10f ||
+                    (PreviousPosition - terrainPosition).magnitude > 0.1f))
                 {
                     switch (AbilityFXType)
                     {
                         case AbilityFXType.DashParticles:
-                            UpdateDashParticlesItems(LineLengthUnits, terrainPosition.x, terrainPosition.z, 0f);
+                            UpdateDashParticlesItems(LineLengthUnits, terrainPosition.x, terrainPosition.z, playerRotation);
                             break;
                     }
 
                     PreviousPosition = terrainPosition;
+                    PreviousRotationY = playerRotation;
                 }
             }
 
@@ -262,6 +278,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 ObserverStatus = ObserverStatus.Remove;
             }
+        }
+
+        private float GetThirdPersonControllerRotation()
+        {
+            if (Props.SkillAndAttackIndicatorSystem.ThirdPersonController != null)
+            {
+                return Props.SkillAndAttackIndicatorSystem.ThirdPersonController.transform.localEulerAngles.y;
+            }
+            return 0f;
         }
 
         private (MonoBehaviour[] monoBehaviours,
@@ -299,6 +324,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 dashParticlesComponent.transform.position = new Vector3(worldRotatedPositionX,
                     positionY,
                     worldRotatedPositionZ);
+                dashParticlesComponent.transform.localEulerAngles = new Vector3(0f, yRotation, 0f);
 
                 monoBehaviours[i] = dashParticlesMonoBehaviour;
                 gameObjects[i] = dashParticlesGameObject;
@@ -337,6 +363,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 dashParticles.transform.position = new Vector3(worldRotatedPositionX,
                     positionY,
                     worldRotatedPositionZ);
+                dashParticles.transform.localEulerAngles = new Vector3(0f, yRotation, 0f);
 
                 worldRotatedPositionX += sinYAngle;
                 worldRotatedPositionZ += cosYAngle;
@@ -377,12 +404,20 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
         private Vector3 GetTerrainPosition()
         {
-            //if (EventSystem.current.IsPointerOverGameObject() || !_isMouseOverGameWindow || IsPointerOverUIElement(GetEventSystemRaycastResults()))
-            //    return _anchorPoint.transform.position;
-            Ray ray = Props.SkillAndAttackIndicatorSystem.Camera.ScreenPointToRay(Input.mousePosition);
-            return Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Props.SkillAndAttackIndicatorSystem.TerrainLayer) ?
-                hit.point + new Vector3(0, 50, 0)
-                : new Vector3(0, 50, 0);
+            if (Props.SkillAndAttackIndicatorSystem.ThirdPersonController != null)
+            {
+                Vector3 playerPosition = Props.SkillAndAttackIndicatorSystem.ThirdPersonController.transform.position;
+                return new Vector3(playerPosition.x, playerPosition.y + 50f, playerPosition.z);
+            }
+            else
+            {
+                //if (EventSystem.current.IsPointerOverGameObject() || !_isMouseOverGameWindow || IsPointerOverUIElement(GetEventSystemRaycastResults()))
+                //    return _anchorPoint.transform.position;
+                Ray ray = Props.SkillAndAttackIndicatorSystem.Camera.ScreenPointToRay(Input.mousePosition);
+                return Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Props.SkillAndAttackIndicatorSystem.TerrainLayer) ?
+                    hit.point + new Vector3(0, 50, 0)
+                    : new Vector3(0, 50, 0);
+            }
         }
         public void TriggerDoubleCast()
         {

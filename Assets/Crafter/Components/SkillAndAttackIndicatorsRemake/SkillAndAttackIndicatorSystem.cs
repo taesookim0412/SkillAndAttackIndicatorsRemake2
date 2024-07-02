@@ -1,4 +1,5 @@
 ﻿using Assets.Crafter.Components.Models;
+using StarterAssets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public MonoBehaviour[] Projectors;
         [SerializeField]
         public MonoBehaviour[] AbilityFXTypes;
+        [SerializeField]
+        public ThirdPersonController ThirdPersonController;
 
         [HideInInspector]
         public Camera Camera;

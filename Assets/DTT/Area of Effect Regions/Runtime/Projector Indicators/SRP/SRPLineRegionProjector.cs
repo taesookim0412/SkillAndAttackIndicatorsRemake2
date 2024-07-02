@@ -271,7 +271,7 @@ namespace DTT.AreaOfEffectRegions
                 return;
 
             Vector3 currentSize = _headProjector.size;
-            currentSize.x = _length + 1 + (_width - 1);
+            currentSize.x = _width + 1;
             currentSize.y = _length + 1;
             currentSize.z = _depth;
             _headProjector.pivot = new Vector3(0, 0,_depth / 2);
@@ -297,7 +297,7 @@ namespace DTT.AreaOfEffectRegions
                 return;
 
             Vector3 currentSize = _bodyProjector.size;
-            currentSize.x = _length + 1 + (_width - 1);
+            currentSize.x = _width + 1;
             currentSize.y = _length + 1;
             currentSize.z = _depth;
             _bodyProjector.pivot = new Vector3(0, 0,_depth / 2);
