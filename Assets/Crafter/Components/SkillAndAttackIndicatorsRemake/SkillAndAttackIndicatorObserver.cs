@@ -10,7 +10,7 @@ using DTT.AreaOfEffectRegions;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
 using UnityEditor;
 
-namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observer
+namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public class SkillAndAttackIndicatorObserverProps
     {
@@ -43,7 +43,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
         private SkillAndAttackIndicatorObserverProps Props;
 
         public ObserverStatus ObserverStatus = ObserverStatus.Active;
-        
+
         public readonly AbilityProjectorType AbilityProjectorType;
         public readonly AbilityProjectorMaterialType AbilityProjectorMaterialType;
         public readonly AbilityIndicatorCastType AbilityIndicatorCastType;
@@ -93,7 +93,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             if (!ProjectorSet)
             {
                 if (Props.SkillAndAttackIndicatorSystem.ProjectorInstancePools.TryGetValue(AbilityProjectorType, out var abilityMaterialTypesDict) &&
-                    abilityMaterialTypesDict.TryGetValue(AbilityProjectorMaterialType, out ProjectorInstancePool) && 
+                    abilityMaterialTypesDict.TryGetValue(AbilityProjectorMaterialType, out ProjectorInstancePool) &&
                     (AbilityFXType == AbilityFXType.None ||
                     Props.SkillAndAttackIndicatorSystem.AbilityFXInstancePools.TryGetValue(AbilityFXType, out AbilityFXInstancePool)))
                 {
@@ -104,13 +104,13 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                     // Create the projector.
 
                     // hard coded lengths that need to be used in fx too.
-                    
+
                     Vector3 terrainPosition = GetTerrainPosition();
 
                     switch (AbilityProjectorType)
                     {
                         case AbilityProjectorType.Arc:
-                            
+
                             SRPArcRegionProjector arcRegionProjector = ProjectorGameObject.GetComponent<SRPArcRegionProjector>();
                             arcRegionProjector.Radius = 70;
                             //arcRegionProjector.SetIgnoreLayers(Props.SkillAndAttackIndicatorSystem.ProjectorIgnoreLayersMask);
@@ -168,7 +168,8 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                             break;
                     }
 
-                    switch (AbilityProjectorMaterialType) {
+                    switch (AbilityProjectorMaterialType)
+                    {
                         case AbilityProjectorMaterialType.First:
                             ChargeDuration = 800L;
                             ChargeDurationSecondsFloat = 800 * 0.001f;
@@ -265,7 +266,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
 
         private (MonoBehaviour[] monoBehaviours,
             GameObject[] gameObjects,
-            DashParticles[] dashParticles) CreateDashParticlesItems(int lineLengthUnits, 
+            DashParticles[] dashParticles) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation)
         {
@@ -342,12 +343,12 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             }
         }
         private AnimationCurve CreateTerrainYVelocityAnimationCurve(float unitsPerKeyframe,
-            float worldStartRotatedPositionX, 
+            float worldStartRotatedPositionX,
             float positionY,
             float worldStartRotatedPositionZ,
             float cosYAngle, float sinYAngle)
         {
-            int numKeyframes = (int) Math.Ceiling(1f / unitsPerKeyframe);
+            int numKeyframes = (int)Math.Ceiling(1f / unitsPerKeyframe);
             Keyframe[] keyframes = new Keyframe[numKeyframes];
 
             for (int i = 0; i < numKeyframes; i++)
@@ -379,8 +380,8 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             //if (EventSystem.current.IsPointerOverGameObject() || !_isMouseOverGameWindow || IsPointerOverUIElement(GetEventSystemRaycastResults()))
             //    return _anchorPoint.transform.position;
             Ray ray = Props.SkillAndAttackIndicatorSystem.Camera.ScreenPointToRay(Input.mousePosition);
-            return Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Props.SkillAndAttackIndicatorSystem.TerrainLayer) ? 
-                hit.point + new Vector3(0, 50, 0) 
+            return Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Props.SkillAndAttackIndicatorSystem.TerrainLayer) ?
+                hit.point + new Vector3(0, 50, 0)
                 : new Vector3(0, 50, 0);
         }
         public void TriggerDoubleCast()

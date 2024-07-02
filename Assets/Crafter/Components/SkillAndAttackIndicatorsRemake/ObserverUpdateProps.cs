@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observer
+namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public class ObserverUpdateProps
     {
@@ -15,7 +15,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             UpdateTickTime = updateTickTime;
         }
 
-        public void Update_MainThread() 
+        public void Update_MainThread()
         {
             UpdateTickTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }

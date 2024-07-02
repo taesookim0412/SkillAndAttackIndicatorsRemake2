@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
 
-namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observer
+namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public class SkillAndAttackIndicatorInput : MonoBehaviour
     {

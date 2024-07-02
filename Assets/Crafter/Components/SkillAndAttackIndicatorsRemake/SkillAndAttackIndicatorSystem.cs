@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observer
+namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public class SkillAndAttackIndicatorSystem : MonoBehaviour
     {
@@ -64,7 +64,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             {
                 AbilityProjectorType abilityProjectorType = Enum.Parse<AbilityProjectorType>(projectorTypeNameString);
 
-                Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>> projectorTypeDict = new 
+                Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>> projectorTypeDict = new
                     Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>(SkillAndAttackIndicatorObserver.AbilityProjectorMaterialTypeNamesLength);
                 foreach (string projectTypeMaterialString in SkillAndAttackIndicatorObserver.AbilityProjectorMaterialTypeNames)
                 {
@@ -82,7 +82,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                     SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
             foreach (MonoBehaviour prefab in AbilityFXTypes)
             {
-                if (Enum.TryParse<AbilityFXType>(prefab.name, out AbilityFXType abilityFXType))
+                if (Enum.TryParse(prefab.name, out AbilityFXType abilityFXType))
                 {
                     abilityFXInstancePools[abilityFXType] = new PoolBagDco<MonoBehaviour>(prefab, 30);
                 }
@@ -165,9 +165,9 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                     }
                 }
             }
-            if (addPending) 
+            if (addPending)
             {
-                SkillAndAttackIndicatorObserver skillAndAttackIndicatorObserver = new SkillAndAttackIndicatorObserver(abilityProjectorType, 
+                SkillAndAttackIndicatorObserver skillAndAttackIndicatorObserver = new SkillAndAttackIndicatorObserver(abilityProjectorType,
                     abilityProjectorMaterialType,
                     abilityIndicatorCastType,
                     abilityFXType,
