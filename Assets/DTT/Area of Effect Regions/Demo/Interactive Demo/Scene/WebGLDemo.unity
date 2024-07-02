@@ -13396,6 +13396,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 47940657191296749, guid: 20145a71b26dd244daa15e9c20bb60af, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5254573489108602835, guid: 20145a71b26dd244daa15e9c20bb60af, type: 3}
       propertyPath: m_PropertySheet.m_AnimationCurve.m_Array.Array.size
       value: 2
