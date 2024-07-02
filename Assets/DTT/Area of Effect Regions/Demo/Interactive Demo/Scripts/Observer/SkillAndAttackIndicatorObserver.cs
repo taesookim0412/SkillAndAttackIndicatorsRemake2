@@ -57,8 +57,8 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
         private SRPLineRegionProjector LineRegionProjectorRef;
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
-        private (MonoBehaviour[] monoBehaviour,
-            GameObject[] gameObject,
+        private (MonoBehaviour[] monoBehaviours,
+            GameObject[] gameObjects,
             DashParticles[] dashParticles) DashParticlesItems;
 
         private long ChargeDuration;
@@ -232,12 +232,22 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             if (ElapsedTime > ChargeDuration)
             {
                 ProjectorInstancePool.ReturnPooled(ProjectorMonoBehaviour);
+                switch (AbilityFXType)
+                {
+                    case AbilityFXType.DashParticles:
+                        foreach (MonoBehaviour monoBehaviour in DashParticlesItems.monoBehaviours)
+                        {
+                            AbilityFXInstancePool.ReturnPooled(monoBehaviour);
+                        }
+                        break;
+                }
+
                 ObserverStatus = ObserverStatus.Remove;
             }
         }
 
-        private (MonoBehaviour[] monoBehaviour,
-            GameObject[] gameObject,
+        private (MonoBehaviour[] monoBehaviours,
+            GameObject[] gameObjects,
             DashParticles[] dashParticles) CreateDashParticlesItems(int lineLengthUnits, 
             float startPositionX, float startPositionZ,
             float yRotation)
