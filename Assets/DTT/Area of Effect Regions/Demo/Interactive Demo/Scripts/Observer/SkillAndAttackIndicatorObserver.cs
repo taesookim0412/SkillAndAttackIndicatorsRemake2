@@ -37,6 +37,9 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
         // Then, it must be multiplied by half again because it is a "half-length" in the documentation.
         private static readonly float OrthographicRadiusHalfDivMult = 1 / 4f;
 
+        // ... hardcoded
+        private static readonly int LineLengthUnits = 25;
+
         private SkillAndAttackIndicatorObserverProps Props;
 
         public ObserverStatus ObserverStatus = ObserverStatus.Active;
@@ -64,6 +67,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
 
+        private Vector3 PreviousPosition;
         private float PreviousChargeDurationFloatPercentage;
 
         private long LastTickTime;
@@ -100,7 +104,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                     // Create the projector.
 
                     // hard coded lengths that need to be used in fx too.
-                    int lineLengthUnits = 25;
+                    
                     Vector3 terrainPosition = GetTerrainPosition();
 
                     switch (AbilityProjectorType)
@@ -129,7 +133,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
 
                             // multiply it by the orthographicRadiusHalfDivMultiplier
                             //float orthographicLength = lineLengthUnits * OrthographicRadiusHalfDivMult;
-                            lineRegionProjector.Length = lineLengthUnits * RadiusHalfDivMult;
+                            lineRegionProjector.Length = LineLengthUnits * RadiusHalfDivMult;
 
                             //lineRegionProjector.SetIgnoreLayers(Props.SkillAndAttackIndicatorSystem.ProjectorIgnoreLayersMask);
                             lineRegionProjector.GenerateProjector();
@@ -154,11 +158,12 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                     }
 
                     ProjectorGameObject.transform.position = terrainPosition;
+                    PreviousPosition = terrainPosition;
 
                     switch (AbilityFXType)
                     {
                         case AbilityFXType.DashParticles:
-                            DashParticlesItems = CreateDashParticlesItems(lineLengthUnits,
+                            DashParticlesItems = CreateDashParticlesItems(LineLengthUnits,
                                 terrainPosition.x, terrainPosition.z, 0f);
                             break;
                     }
@@ -227,6 +232,18 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
 
                 Vector3 terrainPosition = GetTerrainPosition();
                 ProjectorGameObject.transform.position = terrainPosition;
+
+                if ((PreviousPosition - terrainPosition).magnitude > 0.1f)
+                {
+                    switch (AbilityFXType)
+                    {
+                        case AbilityFXType.DashParticles:
+                            UpdateDashParticlesItems(LineLengthUnits, terrainPosition.x, terrainPosition.z, 0f);
+                            break;
+                    }
+
+                    PreviousPosition = terrainPosition;
+                }
             }
 
             if (ElapsedTime > ChargeDuration)
@@ -258,7 +275,6 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
 
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
-            //float zUnitsPerPrefab = 1 / (float)lineLengthUnits;
 
             float worldRotatedPositionX = startPositionX;
             float worldRotatedPositionZ = startPositionZ;
@@ -292,6 +308,38 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
             }
 
             return (monoBehaviours, gameObjects, dashParticles);
+        }
+        private void UpdateDashParticlesItems(int lineLengthUnits,
+            float startPositionX, float startPositionZ,
+            float yRotation)
+        {
+            float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
+            float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
+
+            float worldRotatedPositionX = startPositionX;
+            float worldRotatedPositionZ = startPositionZ;
+
+            for (int i = 0; i < lineLengthUnits; i++)
+            {
+                float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+
+                AnimationCurve animationCurve = CreateTerrainYVelocityAnimationCurve(
+                    unitsPerKeyframe: 0.05f,
+                    worldStartRotatedPositionX: worldRotatedPositionX,
+                    positionY: positionY,
+                    worldStartRotatedPositionZ: worldRotatedPositionZ,
+                    cosYAngle: cosYAngle,
+                    sinYAngle: sinYAngle);
+
+                DashParticles dashParticles = DashParticlesItems.dashParticles[i];
+                dashParticles.SetYVelocityAnimationCurve(animationCurve);
+                dashParticles.transform.position = new Vector3(worldRotatedPositionX,
+                    positionY,
+                    worldRotatedPositionZ);
+
+                worldRotatedPositionX += sinYAngle;
+                worldRotatedPositionZ += cosYAngle;
+            }
         }
         private AnimationCurve CreateTerrainYVelocityAnimationCurve(float unitsPerKeyframe,
             float worldStartRotatedPositionX, 
