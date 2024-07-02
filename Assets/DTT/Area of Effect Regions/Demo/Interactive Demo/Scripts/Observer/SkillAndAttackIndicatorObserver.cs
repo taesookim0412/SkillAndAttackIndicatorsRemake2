@@ -233,7 +233,7 @@ namespace Assets.DTT.Area_of_Effect_Regions.Demo.Interactive_Demo.Scripts.Observ
                 Vector3 terrainPosition = GetTerrainPosition();
                 ProjectorGameObject.transform.position = terrainPosition;
 
-                if ((PreviousPosition - terrainPosition).magnitude > 0.1f)
+                if (AbilityFXType != AbilityFXType.None && (PreviousPosition - terrainPosition).magnitude > 0.1f)
                 {
                     switch (AbilityFXType)
                     {
