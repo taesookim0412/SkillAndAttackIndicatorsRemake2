@@ -10,13 +10,18 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 {
     public class DashParticles : MonoBehaviour
     {
-        private static readonly int YVelocityAnimationCurveId = Shader.PropertyToID("_YVelocityAnimationCurve");
+        private static readonly int YVelocityAnimCurveId = Shader.PropertyToID("_YVelocityAnimationCurve");
+        private static readonly int XAngleId = Shader.PropertyToID("_XAngle");
 
         [SerializeField]
         private VisualEffect VisualEffect;
         public void SetYVelocityAnimationCurve(AnimationCurve animationCurve)
         {
-            VisualEffect.SetAnimationCurve(YVelocityAnimationCurveId, animationCurve);
+            VisualEffect.SetAnimationCurve(YVelocityAnimCurveId, animationCurve);
+        }
+        public void SetXAngle(float xAngle)
+        {
+            VisualEffect.SetFloat(XAngleId, xAngle);
         }
     }
 }

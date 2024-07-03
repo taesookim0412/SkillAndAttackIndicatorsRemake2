@@ -305,6 +305,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float worldRotatedPositionX = startPositionX;
             float worldRotatedPositionZ = startPositionZ;
 
+            float previousPositionY = 0f;
+            float prevXAnglei0 = 0f;
+            float prevXAnglei1 = 0f;
             for (int i = 0; i < lineLengthUnits; i++)
             {
                 MonoBehaviour dashParticlesMonoBehaviour = AbilityFXInstancePool.InstantiatePooled(null);
@@ -312,7 +315,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 DashParticles dashParticlesComponent = dashParticlesGameObject.GetComponent<DashParticles>();
                 float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
 
-                AnimationCurve animationCurve = CreateTerrainYVelocityAnimationCurve(
+                AnimationCurve yVelocityAnimCurve = CreateTerrainYVelocityAnimationCurve(
                     unitsPerKeyframe: 0.05f,
                     worldStartRotatedPositionX: worldRotatedPositionX,
                     positionY: positionY,
@@ -320,7 +323,25 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     cosYAngle: cosYAngle,
                     sinYAngle: sinYAngle);
 
-                dashParticlesComponent.SetYVelocityAnimationCurve(animationCurve);
+                float xAngle;
+                if (i > 1)
+                {
+                    xAngle = (((float)Math.Atan((positionY - previousPositionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei0 + prevXAnglei1) / 3f;
+                }
+                else if (i == 1)
+                {
+                    float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
+                    xAngle = (((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei1) / 2f;
+                }
+                else
+                {
+                    float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
+                    xAngle = ((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f);
+                }
+
+                dashParticlesComponent.SetYVelocityAnimationCurve(yVelocityAnimCurve);
+                dashParticlesComponent.SetXAngle(xAngle);
+
                 dashParticlesComponent.transform.position = new Vector3(worldRotatedPositionX,
                     positionY,
                     worldRotatedPositionZ);
@@ -332,6 +353,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 worldRotatedPositionX += sinYAngle;
                 worldRotatedPositionZ += cosYAngle;
+                previousPositionY = positionY;
+                prevXAnglei0 = prevXAnglei1;
+                prevXAnglei1 = xAngle;
             }
 
             return (monoBehaviours, gameObjects, dashParticles);
@@ -346,11 +370,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float worldRotatedPositionX = startPositionX;
             float worldRotatedPositionZ = startPositionZ;
 
+            float previousPositionY = 0f;
+            float prevXAnglei0 = 0f;
+            float prevXAnglei1 = 0f;
             for (int i = 0; i < lineLengthUnits; i++)
             {
                 float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
 
-                AnimationCurve animationCurve = CreateTerrainYVelocityAnimationCurve(
+                AnimationCurve yVelocityAnimCurve = CreateTerrainYVelocityAnimationCurve(
                     unitsPerKeyframe: 0.05f,
                     worldStartRotatedPositionX: worldRotatedPositionX,
                     positionY: positionY,
@@ -358,8 +385,25 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     cosYAngle: cosYAngle,
                     sinYAngle: sinYAngle);
 
+                float xAngle;
+                if (i > 1)
+                {
+                    xAngle = (((float)Math.Atan((positionY - previousPositionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei0 + prevXAnglei1) / 3f;
+                }
+                else if (i == 1)
+                {
+                    float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
+                    xAngle = (((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei1) / 2f;
+                }
+                else
+                {
+                    float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
+                    xAngle = ((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f);
+                }
+
                 DashParticles dashParticles = DashParticlesItems.dashParticles[i];
-                dashParticles.SetYVelocityAnimationCurve(animationCurve);
+                dashParticles.SetYVelocityAnimationCurve(yVelocityAnimCurve);
+                dashParticles.SetXAngle(xAngle);
                 dashParticles.transform.position = new Vector3(worldRotatedPositionX,
                     positionY,
                     worldRotatedPositionZ);
@@ -367,6 +411,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 worldRotatedPositionX += sinYAngle;
                 worldRotatedPositionZ += cosYAngle;
+                previousPositionY = positionY;
+                prevXAnglei0 = prevXAnglei1;
+                prevXAnglei1 = xAngle;
             }
         }
         private AnimationCurve CreateTerrainYVelocityAnimationCurve(float unitsPerKeyframe,
