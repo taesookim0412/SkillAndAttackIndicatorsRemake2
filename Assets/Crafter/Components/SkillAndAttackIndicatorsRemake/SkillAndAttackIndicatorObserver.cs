@@ -221,6 +221,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 ElapsedTime += elapsedTickTime;
                 ElapsedTimeSecondsFloat += elapsedTickTime * 0.001f;
 
+                float newFillProgress = 0f;
                 switch (AbilityProjectorType)
                 {
                     case AbilityProjectorType.Arc:
@@ -235,7 +236,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                             if (chargeDurationPercentage > PreviousChargeDurationFloatPercentage)
                             {
-                                float newFillProgress = EaseInOutExpo(chargeDurationPercentage);
+                                newFillProgress = EaseInOutExpo(chargeDurationPercentage);
                                 LineRegionProjectorRef.FillProgress = newFillProgress;
                                 LineRegionProjectorRef.UpdateProjectors();
                                 PreviousChargeDurationFloatPercentage = chargeDurationPercentage;
@@ -266,12 +267,21 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         switch (AbilityFXType)
                         {
                             case AbilityFXType.DashParticles:
-                                UpdateDashParticlesItems(LineLengthUnits, terrainPosition.x, terrainPosition.z, playerRotation);
+                                UpdateDashParticlesItems(LineLengthUnits, terrainPosition.x, terrainPosition.z, playerRotation, 
+                                    fillProgress: newFillProgress);
                                 break;
                         }
 
                         PreviousPosition = terrainPosition;
                         PreviousRotationY = playerRotation;
+                    }
+
+                    // every update
+                    switch (AbilityFXType) 
+                    {
+                        case AbilityFXType.DashParticles:
+                            UpdateDashParticlesOpacities(LineLengthUnits, newFillProgress);
+                            break;
                     }
                 }
             }
@@ -336,6 +346,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 MonoBehaviour dashParticlesMonoBehaviour = AbilityFXInstancePool.InstantiatePooled(null);
                 GameObject dashParticlesGameObject = dashParticlesMonoBehaviour.gameObject;
                 DashParticles dashParticlesComponent = dashParticlesGameObject.GetComponent<DashParticles>();
+                // set inactive when created.
+                dashParticlesGameObject.SetActive(false);
                 float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
 
                 AnimationCurve yVelocityAnimCurve = CreateTerrainYVelocityAnimationCurve(
@@ -395,7 +407,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
-            float yRotation)
+            float yRotation, float fillProgress)
         {
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
@@ -459,6 +471,37 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 playerClonesArray[i].transform.position = dashParticlesArray[particlesIndex].transform.position;
             }
+        }
+
+        private void UpdateDashParticlesOpacities(int lineLengthUnits, float fillProgress)
+        {
+            DashParticles[] dashParticlesArray = DashParticlesItems.dashParticles;
+            for (int i = 0; i < lineLengthUnits; i++)
+            {
+                (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, i);
+                DashParticles dashParticles = dashParticlesArray[i];
+                if (dashParticles.gameObject.activeSelf != active)
+                {
+                    dashParticles.gameObject.SetActive(active);
+                }
+            }
+            
+            // set opacity...
+        }
+
+        private (bool active, float opacity) CalculateDashParticlesOpacity(float fillProgress, int lineLengthIndex)
+        {
+            float lineLengthPercentage = (float) lineLengthIndex / LineLengthUnits;
+
+            if (fillProgress <= lineLengthPercentage)
+            {
+                float fillProgressOpacity = fillProgress / lineLengthPercentage;
+                if (fillProgressOpacity > 0.2f)
+                {
+                    return (true, fillProgressOpacity);
+                }
+            }
+            return (false, 0f);
         }
         private AnimationCurve CreateTerrainYVelocityAnimationCurve(float unitsPerKeyframe,
             float worldStartRotatedPositionX,
