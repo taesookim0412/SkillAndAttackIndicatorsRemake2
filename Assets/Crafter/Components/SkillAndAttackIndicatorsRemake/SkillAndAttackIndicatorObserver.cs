@@ -241,25 +241,28 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 Vector3 terrainPosition = GetTerrainPosition();
                 float playerRotation = GetThirdPersonControllerRotation();
+                
                 ProjectorGameObject.transform.position = terrainPosition;
 
                 Vector3 previousProjectorRotation = ProjectorGameObject.transform.localEulerAngles;
                 ProjectorGameObject.transform.localEulerAngles = new Vector3(previousProjectorRotation.x, playerRotation, previousProjectorRotation.z);
 
-                float yRotation = GetThirdPersonControllerRotation();
-                if (AbilityFXType != AbilityFXType.None &&
-                    ((PreviousRotationY - playerRotation) > 10f ||
-                    (PreviousPosition - terrainPosition).magnitude > 0.03f))
+                if (AbilityFXType != AbilityFXType.None)
                 {
-                    switch (AbilityFXType)
+                    float rotationDifference = playerRotation - PreviousRotationY;
+                    if (rotationDifference < -10f || rotationDifference > 10f ||
+                        (PreviousPosition - terrainPosition).magnitude > 0.03f)
                     {
-                        case AbilityFXType.DashParticles:
-                            UpdateDashParticlesItems(LineLengthUnits, terrainPosition.x, terrainPosition.z, playerRotation);
-                            break;
-                    }
+                        switch (AbilityFXType)
+                        {
+                            case AbilityFXType.DashParticles:
+                                UpdateDashParticlesItems(LineLengthUnits, terrainPosition.x, terrainPosition.z, playerRotation);
+                                break;
+                        }
 
-                    PreviousPosition = terrainPosition;
-                    PreviousRotationY = playerRotation;
+                        PreviousPosition = terrainPosition;
+                        PreviousRotationY = playerRotation;
+                    }
                 }
             }
 
