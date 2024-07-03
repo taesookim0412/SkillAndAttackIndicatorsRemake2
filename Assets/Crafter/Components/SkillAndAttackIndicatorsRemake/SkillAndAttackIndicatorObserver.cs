@@ -9,6 +9,7 @@ using Assets.Crafter.Components.Models;
 using DTT.AreaOfEffectRegions;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
 using UnityEditor;
+using StarterAssets;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
@@ -38,7 +39,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private static readonly float OrthographicRadiusHalfDivMult = 1 / 4f;
 
         // ... hardcoded
-        private static readonly int LineLengthUnits = 25;
+        private static readonly int LineLengthUnits = 20;
+        private static readonly int CloneOffsetUnits = 2;
+        private static readonly int UnitsPerClone = 5;
 
         private SkillAndAttackIndicatorObserverProps Props;
 
@@ -54,6 +57,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private PoolBagDco<MonoBehaviour> AbilityFXInstancePool;
         private MonoBehaviour ProjectorMonoBehaviour;
         private GameObject ProjectorGameObject;
+        private ThirdPersonController PlayerComponent;
 
         private SRPArcRegionProjector ArcRegionProjectorRef;
         private SRPCircleRegionProjector CircleRegionProjectorRef;
@@ -62,7 +66,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private (MonoBehaviour[] monoBehaviours,
             GameObject[] gameObjects,
-            DashParticles[] dashParticles) DashParticlesItems;
+            DashParticles[] dashParticles, GameObject[] meshClones) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -101,6 +105,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     // 3 texture option indices.
                     ProjectorMonoBehaviour = ProjectorInstancePool.InstantiatePooled(null);
                     ProjectorGameObject = ProjectorMonoBehaviour.gameObject;
+                    PlayerComponent = Props.SkillAndAttackIndicatorSystem.ThirdPersonController;
 
                     // Create the projector.
 
@@ -276,6 +281,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         {
                             AbilityFXInstancePool.ReturnPooled(monoBehaviour);
                         }
+                        foreach (GameObject meshClone in DashParticlesItems.meshClones)
+                        {
+                            GameObject.Destroy(meshClone);
+                        }
                         break;
                 }
 
@@ -294,13 +303,19 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private (MonoBehaviour[] monoBehaviours,
             GameObject[] gameObjects,
-            DashParticles[] dashParticles) CreateDashParticlesItems(int lineLengthUnits,
+            DashParticles[] dashParticles,
+            GameObject[] meshClones
+            ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation)
         {
+            int numMeshClones = (int)Math.Floor((lineLengthUnits - CloneOffsetUnits) / (float)UnitsPerClone);
+
             MonoBehaviour[] monoBehaviours = new MonoBehaviour[lineLengthUnits];
             GameObject[] gameObjects = new GameObject[lineLengthUnits];
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
+            //?? potentially unsafe fixed array size so just convert it to array.
+            GameObject[] meshClones = new GameObject[numMeshClones];
 
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
@@ -361,7 +376,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 prevXAnglei1 = xAngle;
             }
 
-            return (monoBehaviours, gameObjects, dashParticles);
+            for (int i = 0; i < numMeshClones; i++)
+            {
+                // Ensure the index is clamped to avoid approx error...
+                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
+
+                GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                gameObject.transform.position = dashParticles[particlesIndex].transform.position;
+                meshClones[i] = gameObject;
+            }
+
+            return (monoBehaviours, gameObjects, dashParticles, meshClones);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -376,6 +401,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float previousPositionY = 0f;
             float prevXAnglei0 = 0f;
             float prevXAnglei1 = 0f;
+
+            DashParticles[] dashParticlesArray = DashParticlesItems.dashParticles;
             for (int i = 0; i < lineLengthUnits; i++)
             {
                 float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
@@ -404,7 +431,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     xAngle = ((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f);
                 }
 
-                DashParticles dashParticles = DashParticlesItems.dashParticles[i];
+                DashParticles dashParticles = dashParticlesArray[i];
                 dashParticles.SetYVelocityAnimationCurve(yVelocityAnimCurve);
                 dashParticles.SetXAngle(xAngle);
                 dashParticles.transform.position = new Vector3(worldRotatedPositionX,
@@ -417,6 +444,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 previousPositionY = positionY;
                 prevXAnglei0 = prevXAnglei1;
                 prevXAnglei1 = xAngle;
+            }
+
+            GameObject[] meshClonesArray = DashParticlesItems.meshClones;
+            for (int i = 0; i < meshClonesArray.Length; i++)
+            {
+                // Ensure the index is clamped to avoid approx error...
+                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
+
+                meshClonesArray[i].transform.position = dashParticlesArray[particlesIndex].transform.position;
             }
         }
         private AnimationCurve CreateTerrainYVelocityAnimationCurve(float unitsPerKeyframe,
@@ -479,6 +515,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     {
         Active,
         Remove
+    }
+    public enum PlayerComponentModel
+    {
+        Starter
     }
     public enum AbilityProjectorType
     {
