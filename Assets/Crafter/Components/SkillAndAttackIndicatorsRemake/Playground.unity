@@ -871,6 +871,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2056437842}
     - target: {fileID: 8765186184910134212, guid: daf0dbfa7cde07f438125d2be882428a, type: 3}
+      propertyPath: PlayerComponent
+      value: 
+      objectReference: {fileID: 1762682261}
+    - target: {fileID: 8765186184910134212, guid: daf0dbfa7cde07f438125d2be882428a, type: 3}
       propertyPath: ThirdPersonController
       value: 
       objectReference: {fileID: 1915484321}
@@ -976,6 +980,17 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1762682261 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2026754422925355100, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+  m_PrefabInstance: {fileID: 1762682258}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a52ab5ed932deb4facc305dae43f734, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1764214107

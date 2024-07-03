@@ -10,6 +10,7 @@ using DTT.AreaOfEffectRegions;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
 using UnityEditor;
 using StarterAssets;
+using Assets.Crafter.Components.Player.ComponentScripts;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
@@ -51,13 +52,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public readonly AbilityProjectorMaterialType AbilityProjectorMaterialType;
         public readonly AbilityIndicatorCastType AbilityIndicatorCastType;
         public readonly AbilityFXType AbilityFXType;
+        public readonly Guid PlayerGuid;
 
         private bool ProjectorSet = false;
         private PoolBagDco<MonoBehaviour> ProjectorInstancePool;
         private PoolBagDco<MonoBehaviour> AbilityFXInstancePool;
         private MonoBehaviour ProjectorMonoBehaviour;
         private GameObject ProjectorGameObject;
-        private ThirdPersonController PlayerComponent;
+        private PlayerComponent PlayerComponent;
+        private PoolBagDco<PlayerComponent> PlayerCloneInstancePool;
 
         private SRPArcRegionProjector ArcRegionProjectorRef;
         private SRPCircleRegionProjector CircleRegionProjectorRef;
@@ -66,7 +69,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private (MonoBehaviour[] monoBehaviours,
             GameObject[] gameObjects,
-            DashParticles[] dashParticles, GameObject[] meshClones) DashParticlesItems;
+            DashParticles[] dashParticles, PlayerComponent[] playerClones) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -89,6 +92,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             AbilityProjectorMaterialType = abilityProjectorMaterialType;
             AbilityIndicatorCastType = abilityIndicatorCastType;
             AbilityFXType = abilityFXType;
+            PlayerGuid = skillAndAttackIndicatorObserverProps.SkillAndAttackIndicatorSystem.PlayerGuid;
 
             Props = skillAndAttackIndicatorObserverProps;
         }
@@ -100,12 +104,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 if (Props.SkillAndAttackIndicatorSystem.ProjectorInstancePools.TryGetValue(AbilityProjectorType, out var abilityMaterialTypesDict) &&
                     abilityMaterialTypesDict.TryGetValue(AbilityProjectorMaterialType, out ProjectorInstancePool) &&
                     (AbilityFXType == AbilityFXType.None ||
-                    Props.SkillAndAttackIndicatorSystem.AbilityFXInstancePools.TryGetValue(AbilityFXType, out AbilityFXInstancePool)))
+                    (Props.SkillAndAttackIndicatorSystem.AbilityFXInstancePools.TryGetValue(AbilityFXType, out AbilityFXInstancePool) &&
+                    Props.SkillAndAttackIndicatorSystem.PlayerCloneInstancePools.TryGetValue(PlayerGuid, out PlayerCloneInstancePool))))
                 {
                     // 3 texture option indices.
                     ProjectorMonoBehaviour = ProjectorInstancePool.InstantiatePooled(null);
                     ProjectorGameObject = ProjectorMonoBehaviour.gameObject;
-                    PlayerComponent = Props.SkillAndAttackIndicatorSystem.ThirdPersonController;
+                    PlayerComponent = Props.SkillAndAttackIndicatorSystem.PlayerComponent;
 
                     // Create the projector.
 
@@ -281,9 +286,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         {
                             AbilityFXInstancePool.ReturnPooled(monoBehaviour);
                         }
-                        foreach (GameObject meshClone in DashParticlesItems.meshClones)
+                        foreach (PlayerComponent playerClone in DashParticlesItems.playerClones)
                         {
-                            GameObject.Destroy(meshClone);
+                            PlayerCloneInstancePool.ReturnPooled(playerClone);
                         }
                         break;
                 }
@@ -294,9 +299,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private float GetThirdPersonControllerRotation()
         {
-            if (Props.SkillAndAttackIndicatorSystem.ThirdPersonController != null)
+            if (Props.SkillAndAttackIndicatorSystem.PlayerComponent != null)
             {
-                return Props.SkillAndAttackIndicatorSystem.ThirdPersonController.transform.localEulerAngles.y;
+                return Props.SkillAndAttackIndicatorSystem.PlayerComponent.transform.localEulerAngles.y;
             }
             return 0f;
         }
@@ -304,18 +309,18 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private (MonoBehaviour[] monoBehaviours,
             GameObject[] gameObjects,
             DashParticles[] dashParticles,
-            GameObject[] meshClones
+            PlayerComponent[] playerClones
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation)
         {
-            int numMeshClones = (int)Math.Floor((lineLengthUnits - CloneOffsetUnits) / (float)UnitsPerClone);
+            int numPlayerClones = (int)Math.Floor((lineLengthUnits - CloneOffsetUnits) / (float)UnitsPerClone);
 
             MonoBehaviour[] monoBehaviours = new MonoBehaviour[lineLengthUnits];
             GameObject[] gameObjects = new GameObject[lineLengthUnits];
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
             //?? potentially unsafe fixed array size so just convert it to array.
-            GameObject[] meshClones = new GameObject[numMeshClones];
+            PlayerComponent[] playerClones = new PlayerComponent[numPlayerClones];
 
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
@@ -376,17 +381,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 prevXAnglei1 = xAngle;
             }
 
-            for (int i = 0; i < numMeshClones; i++)
+            for (int i = 0; i < numPlayerClones; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
 
-                GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                gameObject.transform.position = dashParticles[particlesIndex].transform.position;
-                meshClones[i] = gameObject;
+                PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
+                playerComponentClone.SetCloneFX();
+                playerClones[i] = playerComponentClone;
             }
 
-            return (monoBehaviours, gameObjects, dashParticles, meshClones);
+            return (monoBehaviours, gameObjects, dashParticles, playerClones);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -446,13 +451,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 prevXAnglei1 = xAngle;
             }
 
-            GameObject[] meshClonesArray = DashParticlesItems.meshClones;
-            for (int i = 0; i < meshClonesArray.Length; i++)
+            PlayerComponent[] playerClonesArray = DashParticlesItems.playerClones;
+            for (int i = 0; i < playerClonesArray.Length; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
 
-                meshClonesArray[i].transform.position = dashParticlesArray[particlesIndex].transform.position;
+                playerClonesArray[i].transform.position = dashParticlesArray[particlesIndex].transform.position;
             }
         }
         private AnimationCurve CreateTerrainYVelocityAnimationCurve(float unitsPerKeyframe,
@@ -490,9 +495,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
         private Vector3 GetTerrainPosition()
         {
-            if (Props.SkillAndAttackIndicatorSystem.ThirdPersonController != null)
+            if (Props.SkillAndAttackIndicatorSystem.PlayerComponent != null)
             {
-                Vector3 playerPosition = Props.SkillAndAttackIndicatorSystem.ThirdPersonController.transform.position;
+                Vector3 playerPosition = Props.SkillAndAttackIndicatorSystem.PlayerComponent.transform.position;
                 return new Vector3(playerPosition.x, playerPosition.y + 50f, playerPosition.z);
             }
             else

@@ -1,4 +1,5 @@
 ﻿using Assets.Crafter.Components.Models;
+using Assets.Crafter.Components.Player.ComponentScripts;
 using StarterAssets;
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         [SerializeField]
         public MonoBehaviour[] AbilityFXTypes;
         [SerializeField]
-        public ThirdPersonController ThirdPersonController;
+        public PlayerComponent PlayerComponent;
 
         [HideInInspector]
         public Camera Camera;
@@ -44,7 +45,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>> ProjectorInstancePools;
         [HideInInspector]
         public Dictionary<AbilityFXType, PoolBagDco<MonoBehaviour>> AbilityFXInstancePools;
+        [HideInInspector]
+        public Dictionary<Guid, PoolBagDco<PlayerComponent>> PlayerCloneInstancePools;
 
+        [HideInInspector]
+        public Guid PlayerGuid = Guid.NewGuid();
         public void Awake()
         {
             Camera = Camera.main;
@@ -92,6 +97,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
             AbilityFXInstancePools = abilityFXInstancePools;
+
+            Dictionary<Guid, PoolBagDco<PlayerComponent>> playerCloneInstancePools = new Dictionary<Guid, PoolBagDco<PlayerComponent>>(1)
+            {
+                { PlayerGuid, new PoolBagDco<PlayerComponent>(PlayerComponent, 10) }
+            };
+
+            PlayerCloneInstancePools = playerCloneInstancePools;
         }
         public void FixedUpdate()
         {
