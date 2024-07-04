@@ -400,6 +400,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
                 playerComponentClone.SetCloneFX();
+                playerComponentClone.gameObject.SetActive(false);
                 playerClones[i] = playerComponentClone;
             }
 
@@ -475,6 +476,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private void UpdateDashParticlesOpacities(int lineLengthUnits, float fillProgress)
         {
+            bool activePassed = false;
             DashParticles[] dashParticlesArray = DashParticlesItems.dashParticles;
             for (int i = 0; i < lineLengthUnits; i++)
             {
@@ -483,6 +485,47 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 if (dashParticles.gameObject.activeSelf != active)
                 {
                     dashParticles.gameObject.SetActive(active);
+                }
+                if (active)
+                {
+                    if (!activePassed)
+                    {
+                        activePassed = true;
+                    }
+                }
+                else
+                {
+                    if (activePassed)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            activePassed = false;
+            PlayerComponent[] playerClones = DashParticlesItems.playerClones;
+            for (int i = 0; i < playerClones.Length; i++)
+            {
+                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
+                (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, particlesIndex);
+                PlayerComponent playerClone = playerClones[i];
+                if (playerClone.gameObject.activeSelf != active)
+                {
+                    playerClone.gameObject.SetActive(active);
+                }
+                if (active)
+                {
+                    if (!activePassed)
+                    {
+                        activePassed = true;
+                    }
+                }
+                else
+                {
+                    if (activePassed)
+                    {
+                        break;
+                    }
                 }
             }
             
