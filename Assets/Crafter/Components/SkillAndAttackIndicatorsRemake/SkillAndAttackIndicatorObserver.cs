@@ -399,6 +399,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
 
                 PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
+                playerComponentClone.gameObject.transform.localEulerAngles = new Vector3(0f, yRotation, 0f);
                 playerComponentClone.SetCloneFX();
                 playerComponentClone.gameObject.SetActive(false);
                 playerClones[i] = playerComponentClone;
@@ -470,7 +471,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
 
-                playerClonesArray[i].transform.position = dashParticlesArray[particlesIndex].transform.position;
+                Transform playerCloneTransform = playerClonesArray[i].transform;
+
+                playerCloneTransform.position = dashParticlesArray[particlesIndex].transform.position;
+                playerCloneTransform.localEulerAngles = new Vector3(0f, yRotation, 0f);
             }
         }
 
