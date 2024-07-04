@@ -493,12 +493,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         {
             float lineLengthPercentage = (float) lineLengthIndex / LineLengthUnits;
 
-            if (fillProgress <= lineLengthPercentage)
+            if (fillProgress > 0.1f && fillProgress < 0.9f && lineLengthPercentage <= fillProgress)
             {
-                float fillProgressOpacity = fillProgress / lineLengthPercentage;
-                if (fillProgressOpacity > 0.2f)
+                float lineLengthDifference = fillProgress - lineLengthPercentage;
+
+                if (lineLengthDifference < 0.28f)
                 {
-                    return (true, fillProgressOpacity);
+                    return (true, 1f - lineLengthDifference);
                 }
             }
             return (false, 0f);
