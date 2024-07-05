@@ -508,6 +508,19 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 playerCloneTransform.position = dashParticlesArray[particlesIndex].transform.position;
                 playerCloneTransform.localEulerAngles = new Vector3(0f, yRotation, 0f);
             }
+
+            ArcPath[] arcPathsArray = DashParticlesItems.arcPaths;
+            for (int i = 0; i < arcPathsArray.Length; i++)
+            {
+                // Ensure the index is clamped to avoid approx error...
+                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
+
+                Transform arcPathsTransform = arcPathsArray[i].transform;
+
+                arcPathsTransform.position = dashParticlesArray[particlesIndex].transform.position;
+                
+                // particles orient towards camera, no need to change the rotation.
+            }
         }
 
         private void UpdateDashParticlesOpacities(int lineLengthUnits, float fillProgress)
