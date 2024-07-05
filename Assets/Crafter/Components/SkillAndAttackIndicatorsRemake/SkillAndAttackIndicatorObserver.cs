@@ -67,9 +67,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPLineRegionProjector LineRegionProjectorRef;
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
-        private (MonoBehaviour[] monoBehaviours,
-            GameObject[] gameObjects,
-            DashParticles[] dashParticles, PlayerComponent[] playerClones) DashParticlesItems;
+        private (DashParticles[] dashParticles, PlayerComponent[] playerClones) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -292,9 +290,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 switch (AbilityFXType)
                 {
                     case AbilityFXType.DashParticles:
-                        foreach (AbstractAbilityFX abstractAbilityFX in DashParticlesItems.monoBehaviours)
+                        foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                         {
-                            AbilityFXInstancePool.ReturnPooled(abstractAbilityFX);
+                            AbilityFXInstancePool.ReturnPooled(dashParticles);
                         }
                         foreach (PlayerComponent playerClone in DashParticlesItems.playerClones)
                         {
@@ -316,9 +314,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             return 0f;
         }
 
-        private (AbstractAbilityFX[] abstractAbilityFXes,
-            GameObject[] gameObjects,
-            DashParticles[] dashParticles,
+        private (DashParticles[] dashParticles,
             PlayerComponent[] playerClones
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -326,8 +322,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         {
             int numPlayerClones = (int)Math.Floor((lineLengthUnits - CloneOffsetUnits) / (float)UnitsPerClone);
 
-            AbstractAbilityFX[] abstractAbilityFXes = new AbstractAbilityFX[lineLengthUnits];
-            GameObject[] gameObjects = new GameObject[lineLengthUnits];
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
             //?? potentially unsafe fixed array size so just convert it to array.
             PlayerComponent[] playerClones = new PlayerComponent[numPlayerClones];
@@ -343,11 +337,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float prevXAnglei1 = 0f;
             for (int i = 0; i < lineLengthUnits; i++)
             {
-                AbstractAbilityFX dashParticlesAbstractAbilityFX = AbilityFXInstancePool.InstantiatePooled(null);
-                GameObject dashParticlesGameObject = dashParticlesAbstractAbilityFX.gameObject;
-                DashParticles dashParticlesComponent = dashParticlesGameObject.GetComponent<DashParticles>();
+                DashParticles dashParticlesComponent = (DashParticles) AbilityFXInstancePool.InstantiatePooled(null);
                 // set inactive when created.
-                dashParticlesGameObject.SetActive(false);
+                dashParticlesComponent.gameObject.SetActive(false);
                 float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
 
                 AnimationCurve yVelocityAnimCurve = CreateTerrainYVelocityAnimationCurve(
@@ -382,8 +374,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     worldRotatedPositionZ);
                 dashParticlesComponent.transform.localEulerAngles = new Vector3(0f, yRotation, 0f);
 
-                abstractAbilityFXes[i] = dashParticlesAbstractAbilityFX;
-                gameObjects[i] = dashParticlesGameObject;
                 dashParticles[i] = dashParticlesComponent;
 
                 worldRotatedPositionX += sinYAngle;
@@ -405,7 +395,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 playerClones[i] = playerComponentClone;
             }
 
-            return (abstractAbilityFXes, gameObjects, dashParticles, playerClones);
+            return (dashParticles, playerClones);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
