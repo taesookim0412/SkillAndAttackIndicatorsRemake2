@@ -51,14 +51,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public readonly AbilityProjectorType AbilityProjectorType;
         public readonly AbilityProjectorMaterialType AbilityProjectorMaterialType;
         public readonly AbilityIndicatorCastType AbilityIndicatorCastType;
-        public readonly AbilityFXType AbilityFXType;
+        public readonly AbilityFXType[] AbilityFXTypes;
         public readonly Guid PlayerGuid;
 
         private bool ProjectorSet = false;
         private PoolBagDco<MonoBehaviour> ProjectorInstancePool;
-        private PoolBagDco<AbstractAbilityFX> AbilityFXInstancePool;
+        private PoolBagDco<AbstractAbilityFX>[] AbilityFXInstancePools;
         private MonoBehaviour ProjectorMonoBehaviour;
-        private GameObject ProjectorGameObject;
         private PlayerComponent PlayerComponent;
         private PoolBagDco<PlayerComponent> PlayerCloneInstancePool;
 
@@ -82,14 +81,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         public SkillAndAttackIndicatorObserver(AbilityProjectorType abilityProjectorType,
             AbilityProjectorMaterialType abilityProjectorMaterialType, AbilityIndicatorCastType abilityIndicatorCastType,
-            AbilityFXType abilityFXType,
+            AbilityFXType[] abilityFXTypes,
             SkillAndAttackIndicatorObserverProps skillAndAttackIndicatorObserverProps
             )
         {
             AbilityProjectorType = abilityProjectorType;
             AbilityProjectorMaterialType = abilityProjectorMaterialType;
             AbilityIndicatorCastType = abilityIndicatorCastType;
-            AbilityFXType = abilityFXType;
+            AbilityFXTypes = abilityFXTypes;
             PlayerGuid = skillAndAttackIndicatorObserverProps.SkillAndAttackIndicatorSystem.PlayerGuid;
 
             Props = skillAndAttackIndicatorObserverProps;
@@ -101,14 +100,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             {
                 if (Props.SkillAndAttackIndicatorSystem.ProjectorInstancePools.TryGetValue(AbilityProjectorType, out var abilityMaterialTypesDict) &&
                     abilityMaterialTypesDict.TryGetValue(AbilityProjectorMaterialType, out ProjectorInstancePool) &&
-                    (AbilityFXType == AbilityFXType.None ||
-                    (Props.SkillAndAttackIndicatorSystem.AbilityFXInstancePools.TryGetValue(AbilityFXType, out AbilityFXInstancePool) &&
+                    (AbilityFXTypes == null ||
+                    (Props.SkillAndAttackIndicatorSystem.AbilityFXInstancePools.TryGetValuesAll(AbilityFXTypes, out AbilityFXInstancePools) &&
                     Props.SkillAndAttackIndicatorSystem.PlayerCloneInstancePools.TryGetValue(PlayerGuid, out PlayerCloneInstancePool))))
                 {
                     // 3 texture option indices.
                     ProjectorMonoBehaviour = ProjectorInstancePool.InstantiatePooled(null);
-                    ProjectorGameObject = ProjectorMonoBehaviour.gameObject;
-                    PlayerComponent = Props.SkillAndAttackIndicatorSystem.PlayerComponent;
 
                     // Create the projector.
 
@@ -121,7 +118,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     {
                         case AbilityProjectorType.Arc:
 
-                            SRPArcRegionProjector arcRegionProjector = ProjectorGameObject.GetComponent<SRPArcRegionProjector>();
+                            SRPArcRegionProjector arcRegionProjector = ProjectorMonoBehaviour.GetComponent<SRPArcRegionProjector>();
                             arcRegionProjector.Radius = 70;
                             //arcRegionProjector.SetIgnoreLayers(Props.SkillAndAttackIndicatorSystem.ProjectorIgnoreLayersMask);
 
@@ -130,7 +127,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             ArcRegionProjectorRef = arcRegionProjector;
                             break;
                         case AbilityProjectorType.Circle:
-                            SRPCircleRegionProjector circleRegionProjector = ProjectorGameObject.GetComponent<SRPCircleRegionProjector>();
+                            SRPCircleRegionProjector circleRegionProjector = ProjectorMonoBehaviour.GetComponent<SRPCircleRegionProjector>();
                             circleRegionProjector.Radius = 70;
 
                             //circleRegionProjector.SetIgnoreLayers(Props.SkillAndAttackIndicatorSystem.ProjectorIgnoreLayersMask);
@@ -139,7 +136,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             CircleRegionProjectorRef = circleRegionProjector;
                             break;
                         case AbilityProjectorType.Line:
-                            SRPLineRegionProjector lineRegionProjector = ProjectorGameObject.GetComponent<SRPLineRegionProjector>();
+                            SRPLineRegionProjector lineRegionProjector = ProjectorMonoBehaviour.GetComponent<SRPLineRegionProjector>();
 
                             // multiply it by the orthographicRadiusHalfDivMultiplier
                             //float orthographicLength = lineLengthUnits * OrthographicRadiusHalfDivMult;
@@ -158,7 +155,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             LineRegionProjectorRef = lineRegionProjector;
                             break;
                         case AbilityProjectorType.ScatterLine:
-                            SRPScatterLineRegionProjector scatterLineRegionProjector = ProjectorGameObject.GetComponent<SRPScatterLineRegionProjector>();
+                            SRPScatterLineRegionProjector scatterLineRegionProjector = ProjectorMonoBehaviour.GetComponent<SRPScatterLineRegionProjector>();
                             scatterLineRegionProjector.Length = 70;
                             scatterLineRegionProjector.Add(3);
 
@@ -172,18 +169,26 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             return;
                     }
 
-                    ProjectorGameObject.transform.position = terrainPosition;
+                    ProjectorMonoBehaviour.transform.position = terrainPosition;
                     PreviousPosition = terrainPosition;
                     PreviousRotationY = playerRotation;
 
-                    switch (AbilityFXType)
+                    if (AbilityFXTypes != null)
                     {
-                        case AbilityFXType.DashParticles:
-                            DashParticlesItems = CreateDashParticlesItems(LineLengthUnits,
-                                terrainPosition.x, terrainPosition.z, GetThirdPersonControllerRotation());
-                            break;
+                        for (int i = 0; i < AbilityFXTypes.Length; i++)
+                        {
+                            AbilityFXType abilityFXType = AbilityFXTypes[i];
+                            switch (abilityFXType)
+                            {
+                                case AbilityFXType.DashParticles:
+                                    DashParticlesItems = CreateDashParticlesItems(LineLengthUnits,
+                                        terrainPosition.x, terrainPosition.z, GetThirdPersonControllerRotation(),
+                                        i);
+                                    break;
+                            }
+                        }
                     }
-
+                    
                     switch (AbilityProjectorMaterialType)
                     {
                         case AbilityProjectorMaterialType.First:
@@ -251,54 +256,66 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 Vector3 terrainPosition = GetTerrainPosition();
                 float playerRotation = GetThirdPersonControllerRotation();
                 
-                ProjectorGameObject.transform.position = terrainPosition;
+                ProjectorMonoBehaviour.transform.position = terrainPosition;
 
-                Vector3 previousProjectorRotation = ProjectorGameObject.transform.localEulerAngles;
-                ProjectorGameObject.transform.localEulerAngles = new Vector3(previousProjectorRotation.x, playerRotation, previousProjectorRotation.z);
+                Vector3 previousProjectorRotation = ProjectorMonoBehaviour.transform.localEulerAngles;
+                ProjectorMonoBehaviour.transform.localEulerAngles = new Vector3(previousProjectorRotation.x, playerRotation, previousProjectorRotation.z);
 
-                if (AbilityFXType != AbilityFXType.None)
+                if (AbilityFXTypes != null)
                 {
                     float rotationDifference = playerRotation - PreviousRotationY;
                     if (rotationDifference < -10f || rotationDifference > 10f ||
                         (PreviousPosition - terrainPosition).magnitude > 0.03f)
                     {
-                        switch (AbilityFXType)
+                        foreach (AbilityFXType abilityFXType in AbilityFXTypes)
                         {
-                            case AbilityFXType.DashParticles:
-                                UpdateDashParticlesItems(LineLengthUnits, terrainPosition.x, terrainPosition.z, playerRotation, 
-                                    fillProgress: newFillProgress);
-                                break;
+                            switch (abilityFXType)
+                            {
+                                case AbilityFXType.DashParticles:
+                                    UpdateDashParticlesItems(LineLengthUnits, terrainPosition.x, terrainPosition.z, playerRotation,
+                                        fillProgress: newFillProgress);
+                                    break;
+                            }
                         }
-
+                        
                         PreviousPosition = terrainPosition;
                         PreviousRotationY = playerRotation;
                     }
 
-                    // every update
-                    switch (AbilityFXType) 
+                    foreach (AbilityFXType abilityFXType in AbilityFXTypes)
                     {
-                        case AbilityFXType.DashParticles:
-                            UpdateDashParticlesOpacities(LineLengthUnits, newFillProgress);
-                            break;
+                        switch (abilityFXType)
+                        {
+                            case AbilityFXType.DashParticles:
+                                UpdateDashParticlesOpacities(LineLengthUnits, newFillProgress);
+                                break;
+                        }
                     }
+                    // every update
                 }
             }
 
             if (ElapsedTime > ChargeDuration)
             {
                 ProjectorInstancePool.ReturnPooled(ProjectorMonoBehaviour);
-                switch (AbilityFXType)
+                if (AbilityFXTypes != null)
                 {
-                    case AbilityFXType.DashParticles:
-                        foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
+                    for (int i = 0; i < AbilityFXTypes.Length; i++)
+                    {
+                        switch (AbilityFXTypes[i])
                         {
-                            AbilityFXInstancePool.ReturnPooled(dashParticles);
+                            case AbilityFXType.DashParticles:
+                                foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
+                                {
+                                    AbilityFXInstancePools[i].ReturnPooled(dashParticles);
+                                }
+                                foreach (PlayerComponent playerClone in DashParticlesItems.playerClones)
+                                {
+                                    PlayerCloneInstancePool.ReturnPooled(playerClone);
+                                }
+                                break;
                         }
-                        foreach (PlayerComponent playerClone in DashParticlesItems.playerClones)
-                        {
-                            PlayerCloneInstancePool.ReturnPooled(playerClone);
-                        }
-                        break;
+                    }
                 }
 
                 ObserverStatus = ObserverStatus.Remove;
@@ -318,7 +335,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             PlayerComponent[] playerClones
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
-            float yRotation)
+            float yRotation, int abilityFXIndex)
         {
             int numPlayerClones = (int)Math.Floor((lineLengthUnits - CloneOffsetUnits) / (float)UnitsPerClone);
 
@@ -332,12 +349,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float worldRotatedPositionX = startPositionX;
             float worldRotatedPositionZ = startPositionZ;
 
+            PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = AbilityFXInstancePools[abilityFXIndex];
+
             float previousPositionY = 0f;
             float prevXAnglei0 = 0f;
             float prevXAnglei1 = 0f;
             for (int i = 0; i < lineLengthUnits; i++)
             {
-                DashParticles dashParticlesComponent = (DashParticles) AbilityFXInstancePool.InstantiatePooled(null);
+                DashParticles dashParticlesComponent = (DashParticles)dashParticlesInstancePool.InstantiatePooled(null);
                 // set inactive when created.
                 dashParticlesComponent.gameObject.SetActive(false);
                 float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
@@ -393,6 +412,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 playerComponentClone.SetCloneFX();
                 playerComponentClone.gameObject.SetActive(false);
                 playerClones[i] = playerComponentClone;
+            }
+
+            for (int i = 0; i < numPlayerClones; i++)
+            {
+                int particlesIndexBeforeClone = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone) - 1, 0, lineLengthUnits - 1);
+
+
             }
 
             return (dashParticles, playerClones);

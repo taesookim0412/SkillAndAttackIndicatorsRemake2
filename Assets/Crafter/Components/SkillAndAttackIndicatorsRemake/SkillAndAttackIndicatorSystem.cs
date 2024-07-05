@@ -154,7 +154,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public void TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType abilityProjectorType,
             AbilityProjectorMaterialType abilityProjectorMaterialType,
             AbilityIndicatorCastType abilityIndicatorCastType,
-            AbilityFXType abilityFXType)
+            AbilityFXType[] abilityFXTypes)
         {
             bool attemptTriggerUpdate;
             switch (abilityIndicatorCastType)
@@ -186,7 +186,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 SkillAndAttackIndicatorObserver skillAndAttackIndicatorObserver = new SkillAndAttackIndicatorObserver(abilityProjectorType,
                     abilityProjectorMaterialType,
                     abilityIndicatorCastType,
-                    abilityFXType,
+                    abilityFXTypes,
                     SkillAndAttackIndicatorObserverProps);
 
                 SkillAndAttackIndicatorObservers.Add(skillAndAttackIndicatorObserver);

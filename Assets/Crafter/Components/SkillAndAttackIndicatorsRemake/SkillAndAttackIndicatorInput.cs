@@ -20,28 +20,28 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Arc,
                 AbilityProjectorMaterialType.First,
                 AbilityIndicatorCastType.ShowDuringCast,
-                AbilityFXType.None);
+                null);
         }
         public void OnAbility2(InputValue value)
         {
             SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Circle,
                 AbilityProjectorMaterialType.First,
                 AbilityIndicatorCastType.ShowDuringCast,
-                AbilityFXType.None);
+                null);
         }
         public void OnAbility3(InputValue value)
         {
             SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Line,
                 AbilityProjectorMaterialType.First,
                 AbilityIndicatorCastType.ShowDuringCast,
-                AbilityFXType.DashParticles);
+                new AbilityFXType[1] { AbilityFXType.DashParticles });
         }
         public void OnAbility4(InputValue value)
         {
             SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.ScatterLine,
                 AbilityProjectorMaterialType.First,
                 AbilityIndicatorCastType.ShowDuringCast,
-                AbilityFXType.None);
+                null);
         }
     }
 }
