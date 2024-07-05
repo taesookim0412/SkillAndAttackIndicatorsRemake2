@@ -13,7 +13,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private static readonly int DiagXOffsetId = Shader.PropertyToID("_DiagXOffset");
         private static readonly int EndYOffsetId = Shader.PropertyToID("_EndYOffset");
 
-        public void SetOffsetFX(Random random)
+        public void SetOffsetFX_FromSky(Random random)
         {
             float xOffset = random.Next(-4, 5);
             float yOffset = random.Next(2, 7);

@@ -48,6 +48,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private static readonly int LineLengthUnits = 20;
         private static readonly int CloneOffsetUnits = 2;
         private static readonly int UnitsPerClone = 5;
+        private static readonly int ArcPathFromSkyPerClone = 4;
 
         private SkillAndAttackIndicatorObserverProps Props;
 
@@ -355,7 +356,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
             //?? potentially unsafe fixed array size so just convert it to array.
             PlayerComponent[] playerClones = new PlayerComponent[numPlayerClones];
-            ArcPath[] arcPaths = new ArcPath[numPlayerClones];
+            ArcPath[] arcPaths = new ArcPath[numPlayerClones * ArcPathFromSkyPerClone];
 
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
@@ -435,10 +436,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone) - 1, 0, lineLengthUnits - 1);
 
-                ArcPath arcPath = (ArcPath) arcPathInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
-                arcPath.gameObject.SetActive(false);
-                arcPath.SetOffsetFX(Random);
-                arcPaths[i] = arcPath;
+                for (int j = 0; j < ArcPathFromSkyPerClone; j++)
+                {
+                    ArcPath arcPath = (ArcPath)arcPathInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
+                    arcPath.gameObject.SetActive(false);
+                    arcPath.SetOffsetFX_FromSky(Random);
+                    arcPaths[(i * ArcPathFromSkyPerClone) + j] = arcPath;
+                }
             }
 
             return (dashParticles, playerClones, arcPaths);
@@ -514,14 +518,19 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
             ArcPath[] arcPathsArray = DashParticlesItems.arcPaths;
-            for (int i = 0; i < arcPathsArray.Length; i++)
+            for (int i = 0; i < playerClonesArray.Length; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
 
-                Transform arcPathsTransform = arcPathsArray[i].transform;
+                for (int j = 0; j < ArcPathFromSkyPerClone; j++) 
+                {
+                    Transform arcPathsTransform = arcPathsArray[(i * ArcPathFromSkyPerClone) + j].transform;
 
-                arcPathsTransform.position = dashParticlesArray[particlesIndex].transform.position;
+                    arcPathsTransform.position = dashParticlesArray[particlesIndex].transform.position;
+
+                }
+                
                 
                 // particles orient towards camera, no need to change the rotation.
             }
@@ -563,11 +572,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
                 (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, particlesIndex);
                 PlayerComponent playerClone = playerClones[i];
-                ArcPath arcPath = arcPaths[i];
                 if (playerClone.gameObject.activeSelf != active)
                 {
                     playerClone.gameObject.SetActive(active);
-                    arcPath.gameObject.SetActive(active);
+                    for (int j = 0; j < ArcPathFromSkyPerClone; j++)
+                    {
+                        ArcPath arcPath = arcPaths[(i * ArcPathFromSkyPerClone) + j];
+                        arcPath.gameObject.SetActive(active);
+                    }
                 }
                 if (active)
                 {
