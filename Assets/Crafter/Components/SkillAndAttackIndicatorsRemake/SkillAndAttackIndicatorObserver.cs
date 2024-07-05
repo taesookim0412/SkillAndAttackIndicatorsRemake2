@@ -33,6 +33,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public static readonly int AbilityProjectorMaterialTypeNamesLength = AbilityProjectorMaterialTypeNames.Length;
         public static readonly string[] AbilityFXTypeNames = Enum.GetNames(typeof(AbilityFXType));
         public static readonly int AbilityFXTypeNamesLength = AbilityFXTypeNames.Length;
+        public static readonly string[] AbilityFXComponentTypeNames = Enum.GetNames(typeof(AbilityFXComponentType));
+        public static readonly int AbilityFXComponentTypeNamesLength = AbilityFXComponentTypeNames.Length;
 
         private static readonly float RadiusHalfDivMult = 1 / 2f;
         // The orthographic length is based on a radius so it is half the desired length.
@@ -56,7 +58,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private bool ProjectorSet = false;
         private PoolBagDco<MonoBehaviour> ProjectorInstancePool;
-        private PoolBagDco<AbstractAbilityFX>[] AbilityFXInstancePools;
+        private PoolBagDco<AbstractAbilityFX>[][] AbilityFXInstancePools;
         private MonoBehaviour ProjectorMonoBehaviour;
         private PlayerComponent PlayerComponent;
         private PoolBagDco<PlayerComponent> PlayerCloneInstancePool;
@@ -66,7 +68,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPLineRegionProjector LineRegionProjectorRef;
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
-        private (DashParticles[] dashParticles, PlayerComponent[] playerClones) DashParticlesItems;
+        private (DashParticles[] dashParticles, PlayerComponent[] playerClones, ArcPath[] arcPaths) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -302,16 +304,23 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 {
                     for (int i = 0; i < AbilityFXTypes.Length; i++)
                     {
+                        PoolBagDco<AbstractAbilityFX>[] abilityFXInstancePool = AbilityFXInstancePools[i];
                         switch (AbilityFXTypes[i])
                         {
                             case AbilityFXType.DashParticles:
+                                PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[0];
+                                PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[1];
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                                 {
-                                    AbilityFXInstancePools[i].ReturnPooled(dashParticles);
+                                    dashParticlesPool.ReturnPooled(dashParticles);
                                 }
                                 foreach (PlayerComponent playerClone in DashParticlesItems.playerClones)
                                 {
                                     PlayerCloneInstancePool.ReturnPooled(playerClone);
+                                }
+                                foreach (ArcPath arcPath in DashParticlesItems.arcPaths)
+                                {
+                                    arcPathPool.ReturnPooled(arcPath);
                                 }
                                 break;
                         }
@@ -332,7 +341,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
 
         private (DashParticles[] dashParticles,
-            PlayerComponent[] playerClones
+            PlayerComponent[] playerClones,
+            ArcPath[] arcPaths
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation, int abilityFXIndex)
@@ -342,6 +352,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
             //?? potentially unsafe fixed array size so just convert it to array.
             PlayerComponent[] playerClones = new PlayerComponent[numPlayerClones];
+            ArcPath[] arcPaths = new ArcPath[numPlayerClones];
 
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
@@ -349,7 +360,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float worldRotatedPositionX = startPositionX;
             float worldRotatedPositionZ = startPositionZ;
 
-            PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = AbilityFXInstancePools[abilityFXIndex];
+            PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = AbilityFXInstancePools[abilityFXIndex][0];
 
             float previousPositionY = 0f;
             float prevXAnglei0 = 0f;
@@ -414,14 +425,19 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 playerClones[i] = playerComponentClone;
             }
 
+            PoolBagDco<AbstractAbilityFX> arcPathInstancePool = AbilityFXInstancePools[abilityFXIndex][1];
+
             for (int i = 0; i < numPlayerClones; i++)
             {
-                int particlesIndexBeforeClone = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone) - 1, 0, lineLengthUnits - 1);
+                // Ensure the index is clamped to avoid approx error...
+                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone) - 1, 0, lineLengthUnits - 1);
 
-
+                ArcPath arcPath = (ArcPath) arcPathInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
+                arcPath.gameObject.SetActive(false);
+                arcPaths[i] = arcPath;
             }
 
-            return (dashParticles, playerClones);
+            return (dashParticles, playerClones, arcPaths);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -524,14 +540,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             activePassed = false;
             PlayerComponent[] playerClones = DashParticlesItems.playerClones;
+            ArcPath[] arcPaths = DashParticlesItems.arcPaths;
             for (int i = 0; i < playerClones.Length; i++)
             {
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
                 (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, particlesIndex);
                 PlayerComponent playerClone = playerClones[i];
+                ArcPath arcPath = arcPaths[i];
                 if (playerClone.gameObject.activeSelf != active)
                 {
                     playerClone.gameObject.SetActive(active);
+                    arcPath.gameObject.SetActive(active);
                 }
                 if (active)
                 {
@@ -651,6 +670,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     public enum AbilityFXType
     {
         None,
+        DashParticles
+    }
+    public enum AbilityFXComponentType
+    {
         DashParticles,
         ArcPath
     }

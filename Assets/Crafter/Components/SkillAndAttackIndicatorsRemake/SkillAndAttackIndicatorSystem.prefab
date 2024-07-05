@@ -54,6 +54,8 @@ MonoBehaviour:
   - {fileID: 7409688834058636005, guid: 26b7b3213bcfddb4397d152d6a28e3f8, type: 3}
   - {fileID: 1352179341799021283, guid: c76850cbb83e1794bbea19c74c08b576, type: 3}
   - {fileID: 8830173230027933920, guid: 3fc213ccdaf0cbb47b6c63285d031bfe, type: 3}
-  AbilityFXTypes:
+  AbilityFXComponentPrefabs:
   - {fileID: 371129230459022641, guid: 20145a71b26dd244daa15e9c20bb60af, type: 3}
+  - {fileID: 3808530999735691548, guid: f86b4911f1a90d045997cddd7eed331b, type: 3}
+  PlayerComponent: {fileID: 0}
   Camera: {fileID: 0}

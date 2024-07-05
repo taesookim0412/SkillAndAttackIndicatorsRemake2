@@ -28,7 +28,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         [SerializeField]
         public MonoBehaviour[] Projectors;
         [SerializeField]
-        public AbstractAbilityFX[] AbilityFXPrefabs;
+        public AbstractAbilityFX[] AbilityFXComponentPrefabs;
         [SerializeField]
         public PlayerComponent PlayerComponent;
 
@@ -45,7 +45,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         [HideInInspector]
         public Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>> ProjectorInstancePools;
         [HideInInspector]
-        public Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>> AbilityFXInstancePools;
+        public Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>[]> AbilityFXInstancePools;
         [HideInInspector]
         public Dictionary<Guid, PoolBagDco<PlayerComponent>> PlayerCloneInstancePools;
 
@@ -87,14 +87,28 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             ProjectorInstancePools = projectorInstancePools;
 
-            Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>> abilityFXInstancePools = new Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>>(
-                    SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
-            foreach (AbstractAbilityFX prefab in AbilityFXPrefabs)
+            Dictionary<AbilityFXComponentType, AbstractAbilityFX> abilityFXComponentTypeDict = new Dictionary<AbilityFXComponentType, AbstractAbilityFX>(
+                SkillAndAttackIndicatorObserver.AbilityFXComponentTypeNamesLength);
+
+            foreach (AbstractAbilityFX prefab in AbilityFXComponentPrefabs)
             {
-                if (Enum.TryParse(prefab.name, out AbilityFXType abilityFXType))
+                if (Enum.TryParse(prefab.name, out AbilityFXComponentType abilityFXComponentType))
                 {
-                    abilityFXInstancePools[abilityFXType] = new PoolBagDco<AbstractAbilityFX>(prefab, 30);
+                    abilityFXComponentTypeDict[abilityFXComponentType] = prefab;
                 }
+            }
+
+            Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>[]> abilityFXInstancePools = new Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>[]>(
+                    SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
+
+            if (abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.DashParticles, out AbstractAbilityFX dashParticlesPrefab) &&
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ArcPath, out AbstractAbilityFX arcPathPrefab))
+            {
+                abilityFXInstancePools[AbilityFXType.DashParticles] = new PoolBagDco<AbstractAbilityFX>[2]
+                {
+                    new PoolBagDco<AbstractAbilityFX>(dashParticlesPrefab, 30),
+                    new PoolBagDco<AbstractAbilityFX>(arcPathPrefab, 30)
+                };
             }
 
             AbilityFXInstancePools = abilityFXInstancePools;
