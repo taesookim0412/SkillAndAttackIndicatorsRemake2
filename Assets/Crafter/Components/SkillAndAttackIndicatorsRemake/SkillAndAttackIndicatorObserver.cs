@@ -12,6 +12,8 @@ using UnityEditor;
 using StarterAssets;
 using Assets.Crafter.Components.Player.ComponentScripts;
 
+using Random = System.Random;
+
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public class SkillAndAttackIndicatorObserverProps
@@ -36,6 +38,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public static readonly string[] AbilityFXComponentTypeNames = Enum.GetNames(typeof(AbilityFXComponentType));
         public static readonly int AbilityFXComponentTypeNamesLength = AbilityFXComponentTypeNames.Length;
 
+        private static readonly Random Random = new Random();
         private static readonly float RadiusHalfDivMult = 1 / 2f;
         // The orthographic length is based on a radius so it is half the desired length.
         // Then, it must be multiplied by half again because it is a "half-length" in the documentation.
@@ -434,6 +437,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 ArcPath arcPath = (ArcPath) arcPathInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
                 arcPath.gameObject.SetActive(false);
+                arcPath.SetOffsetFX(Random);
                 arcPaths[i] = arcPath;
             }
 
