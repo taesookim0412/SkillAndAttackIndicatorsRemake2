@@ -56,7 +56,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private bool ProjectorSet = false;
         private PoolBagDco<MonoBehaviour> ProjectorInstancePool;
-        private PoolBagDco<MonoBehaviour> AbilityFXInstancePool;
+        private PoolBagDco<AbstractAbilityFX> AbilityFXInstancePool;
         private MonoBehaviour ProjectorMonoBehaviour;
         private GameObject ProjectorGameObject;
         private PlayerComponent PlayerComponent;
@@ -292,9 +292,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 switch (AbilityFXType)
                 {
                     case AbilityFXType.DashParticles:
-                        foreach (MonoBehaviour monoBehaviour in DashParticlesItems.monoBehaviours)
+                        foreach (AbstractAbilityFX abstractAbilityFX in DashParticlesItems.monoBehaviours)
                         {
-                            AbilityFXInstancePool.ReturnPooled(monoBehaviour);
+                            AbilityFXInstancePool.ReturnPooled(abstractAbilityFX);
                         }
                         foreach (PlayerComponent playerClone in DashParticlesItems.playerClones)
                         {
@@ -316,7 +316,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             return 0f;
         }
 
-        private (MonoBehaviour[] monoBehaviours,
+        private (AbstractAbilityFX[] abstractAbilityFXes,
             GameObject[] gameObjects,
             DashParticles[] dashParticles,
             PlayerComponent[] playerClones
@@ -326,7 +326,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         {
             int numPlayerClones = (int)Math.Floor((lineLengthUnits - CloneOffsetUnits) / (float)UnitsPerClone);
 
-            MonoBehaviour[] monoBehaviours = new MonoBehaviour[lineLengthUnits];
+            AbstractAbilityFX[] abstractAbilityFXes = new AbstractAbilityFX[lineLengthUnits];
             GameObject[] gameObjects = new GameObject[lineLengthUnits];
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
             //?? potentially unsafe fixed array size so just convert it to array.
@@ -343,8 +343,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float prevXAnglei1 = 0f;
             for (int i = 0; i < lineLengthUnits; i++)
             {
-                MonoBehaviour dashParticlesMonoBehaviour = AbilityFXInstancePool.InstantiatePooled(null);
-                GameObject dashParticlesGameObject = dashParticlesMonoBehaviour.gameObject;
+                AbstractAbilityFX dashParticlesAbstractAbilityFX = AbilityFXInstancePool.InstantiatePooled(null);
+                GameObject dashParticlesGameObject = dashParticlesAbstractAbilityFX.gameObject;
                 DashParticles dashParticlesComponent = dashParticlesGameObject.GetComponent<DashParticles>();
                 // set inactive when created.
                 dashParticlesGameObject.SetActive(false);
@@ -382,7 +382,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     worldRotatedPositionZ);
                 dashParticlesComponent.transform.localEulerAngles = new Vector3(0f, yRotation, 0f);
 
-                monoBehaviours[i] = dashParticlesMonoBehaviour;
+                abstractAbilityFXes[i] = dashParticlesAbstractAbilityFX;
                 gameObjects[i] = dashParticlesGameObject;
                 dashParticles[i] = dashParticlesComponent;
 
@@ -405,7 +405,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 playerClones[i] = playerComponentClone;
             }
 
-            return (monoBehaviours, gameObjects, dashParticles, playerClones);
+            return (abstractAbilityFXes, gameObjects, dashParticles, playerClones);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -635,6 +635,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     public enum AbilityFXType
     {
         None,
-        DashParticles
+        DashParticles,
+        ArcPath
     }
 }

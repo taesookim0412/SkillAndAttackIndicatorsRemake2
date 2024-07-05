@@ -1,4 +1,5 @@
-﻿using Assets.Crafter.Components.Models;
+﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
+using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using StarterAssets;
 using System;
@@ -27,7 +28,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         [SerializeField]
         public MonoBehaviour[] Projectors;
         [SerializeField]
-        public MonoBehaviour[] AbilityFXTypes;
+        public AbstractAbilityFX[] AbilityFXPrefabs;
         [SerializeField]
         public PlayerComponent PlayerComponent;
 
@@ -44,7 +45,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         [HideInInspector]
         public Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>> ProjectorInstancePools;
         [HideInInspector]
-        public Dictionary<AbilityFXType, PoolBagDco<MonoBehaviour>> AbilityFXInstancePools;
+        public Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>> AbilityFXInstancePools;
         [HideInInspector]
         public Dictionary<Guid, PoolBagDco<PlayerComponent>> PlayerCloneInstancePools;
 
@@ -86,13 +87,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             ProjectorInstancePools = projectorInstancePools;
 
-            Dictionary<AbilityFXType, PoolBagDco<MonoBehaviour>> abilityFXInstancePools = new Dictionary<AbilityFXType, PoolBagDco<MonoBehaviour>>(
+            Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>> abilityFXInstancePools = new Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>>(
                     SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
-            foreach (MonoBehaviour prefab in AbilityFXTypes)
+            foreach (AbstractAbilityFX prefab in AbilityFXPrefabs)
             {
                 if (Enum.TryParse(prefab.name, out AbilityFXType abilityFXType))
                 {
-                    abilityFXInstancePools[abilityFXType] = new PoolBagDco<MonoBehaviour>(prefab, 30);
+                    abilityFXInstancePools[abilityFXType] = new PoolBagDco<AbstractAbilityFX>(prefab, 30);
                 }
             }
 

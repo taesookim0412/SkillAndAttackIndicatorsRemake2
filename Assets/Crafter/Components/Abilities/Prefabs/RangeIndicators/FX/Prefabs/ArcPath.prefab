@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1862510624233789730}
   - component: {fileID: 1485218309580358569}
   - component: {fileID: 2471164491307277281}
+  - component: {fileID: 3808530999735691548}
   m_Layer: 0
   m_Name: ArcPath
   m_TagString: Untagged
@@ -114,3 +115,15 @@ VFXRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!114 &3808530999735691548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5275354320333826702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0ca8f339a5ed004eb5cec79f643707a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -8,7 +8,7 @@ using UnityEngine.VFX;
 
 namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts
 {
-    public class DashParticles : MonoBehaviour
+    public class DashParticles : AbstractAbilityFX
     {
         private static readonly int YVelocityAnimCurveId = Shader.PropertyToID("_YVelocityAnimationCurve");
         private static readonly int XAngleId = Shader.PropertyToID("_XAngle");
