@@ -19,7 +19,7 @@ MonoBehaviour:
       x: 1069
       y: 678
       width: 487
-      height: 2051
+      height: 2052
     contents:
     - model: {fileID: 8926484042661614895}
       id: 0
@@ -38,9 +38,9 @@ MonoBehaviour:
   uiBounds:
     serializedVersion: 2
     x: -305
-    y: 678
-    width: 2329
-    height: 2431
+    y: 679
+    width: 2719
+    height: 2056
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -241,7 +241,7 @@ MonoBehaviour:
   m_Children:
   - {fileID: 8926484042661615215}
   - {fileID: 8926484042661615311}
-  m_UIPosition: {x: 1107, y: 1598}
+  m_UIPosition: {x: 1107, y: 1562}
   m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots: []
@@ -285,6 +285,7 @@ MonoBehaviour:
   m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots:
+  - {fileID: 8926484042661615774}
   - {fileID: 8926484042661614919}
   m_OutputSlots: []
   m_Label: Render Strip
@@ -295,11 +296,11 @@ MonoBehaviour:
       slotIndex: 0
   m_OutputFlowSlot:
   - link: []
-  blendMode: 1
+  blendMode: 3
   cullMode: 0
   zWriteMode: 0
   zTestMode: 0
-  useAlphaClipping: 0
+  useAlphaClipping: 1
   generateMotionVector: 0
   excludeFromTUAndAA: 0
   sortingPriority: 0
@@ -1291,7 +1292,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.Position, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"position":{"x":0.41999998688697817,"y":2.8399999141693117,"z":0.0}}'
+      m_SerializableObject: '{"position":{"x":0.41999998688697817,"y":7.130000114440918,"z":0.0}}'
     m_Space: 0
   m_Property:
     name: A
@@ -1461,7 +1462,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.Position, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"position":{"x":-0.03999999910593033,"y":0.800000011920929,"z":0.0}}'
+      m_SerializableObject: '{"position":{"x":-0.03999999910593033,"y":5.090000152587891,"z":0.0}}'
     m_Space: 0
   m_Property:
     name: B
@@ -1631,7 +1632,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.Position, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"position":{"x":1.4199999570846558,"y":-0.6499999761581421,"z":0.0}}'
+      m_SerializableObject: '{"position":{"x":1.4199999570846558,"y":3.630000114440918,"z":0.0}}'
     m_Space: 0
   m_Property:
     name: C
@@ -1801,7 +1802,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.Position, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"position":{"x":-2.2100000381469728,"y":-8.550000190734864,"z":0.0}}'
+      m_SerializableObject: '{"position":{"x":-2.2100000381469728,"y":-4.260000228881836,"z":0.0}}'
     m_Space: 0
   m_Property:
     name: D
@@ -4188,7 +4189,7 @@ MonoBehaviour:
   - {fileID: 8926484042661615544}
   - {fileID: 8926484042661615547}
   - {fileID: 8926484042661615550}
-  m_UIPosition: {x: 1600, y: 2370}
+  m_UIPosition: {x: 1990, y: 1190}
   m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots:
@@ -5436,4 +5437,38 @@ MonoBehaviour:
       m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
   m_Direction: 1
+  m_LinkedSlots: []
+--- !u!114 &8926484042661615774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f780aa281814f9842a7c076d436932e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_UIIgnoredErrors: []
+  m_Parent: {fileID: 0}
+  m_Children: []
+  m_UIPosition: {x: 0, y: 0}
+  m_UICollapsed: 1
+  m_UISuperCollapsed: 0
+  m_MasterSlot: {fileID: 8926484042661615774}
+  m_MasterData:
+    m_Owner: {fileID: 8926484042661614918}
+    m_Value:
+      m_Type:
+        m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+          PublicKeyToken=b77a5c561934e089
+      m_SerializableObject: 0.5
+    m_Space: -1
+  m_Property:
+    name: alphaThreshold
+    m_serializedType:
+      m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+  m_Direction: 0
   m_LinkedSlots: []
