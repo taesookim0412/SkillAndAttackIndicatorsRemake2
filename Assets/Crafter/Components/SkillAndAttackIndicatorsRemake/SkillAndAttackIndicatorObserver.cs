@@ -644,10 +644,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             ArcPath[] arcPathsFromSky = DashParticlesItems.arcPathsFromSky;
             ArcPath[] arcPathsFromCloneOffset = DashParticlesItems.arcPathsFromCloneOffset;
 
-            for (int i = 0; i < playerClones.Length; i++)
+            for (int i = playerClones.Length - 1; i >= 0; i--)
             {
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
                 (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, particlesIndex);
+
+                active = active && !activePassed;
                 PlayerComponent playerClone = playerClones[i];
                 if (playerClone.gameObject.activeSelf != active)
                 {
