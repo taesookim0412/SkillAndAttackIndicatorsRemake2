@@ -50,6 +50,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private static readonly int CloneOffsetUnits = 2;
         private static readonly int UnitsPerClone = 5;
         private static readonly int ArcPathFromSkyPerClone = 5;
+        private static readonly int ArcPathFromSkyPerCloneQuarter = ArcPathFromSkyPerClone / 4;
+        private static readonly int ArcPathFromSkyPerCloneHalf = ArcPathFromSkyPerClone / 2;
+        private static readonly int ArcPathFromSkyPerCloneThreeQuarters = ArcPathFromSkyPerClone / 4 * 3;
+        private static readonly int ArcPathFromSkyRadiusMultTenMin = 5;
+        private static readonly int ArcPathFromSkyRadiusMultTenMax = 9;
         private static readonly float ArcPathZUnitsPerCluster = 1f;
 
         private SkillAndAttackIndicatorObserverProps Props;
@@ -452,19 +457,36 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
 
+                float randomRadius = Random.Next(ArcPathFromSkyRadiusMultTenMin, ArcPathFromSkyRadiusMultTenMax) * 0.1f;
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
                 {
-                    // alternate side with 2 vs 1
-                    float localPositionX;
-                    float localPositionZ = arcLocalZStart + (j * arcLocalZUnitsPerIndex);
-                    if ((i + j) % 2 == 0)
+                    int rangeStart;
+                    int rangeEnd;
+                    if (j < ArcPathFromSkyPerCloneQuarter)
                     {
-                        localPositionX = (Random.Next(-35, -14) + Random.Next(-3, 1)) * 0.01f;
+                        rangeStart = 25;
+                        rangeEnd = 65;
+                    }
+                    else if (j < ArcPathFromSkyPerCloneHalf)
+                    {
+                        rangeStart = 115;
+                        rangeEnd = 155;
+                    }
+                    else if (j < ArcPathFromSkyPerCloneThreeQuarters)
+                    {
+                        rangeStart = 205;
+                        rangeEnd = 245;
                     }
                     else
                     {
-                        localPositionX = (Random.Next(15, 36) + Random.Next(0, 4)) * 0.01f;
+                        rangeStart = 295;
+                        rangeEnd = 335;
                     }
+
+                    int randomRotationY = Random.Next(rangeStart, rangeEnd);
+
+                    float localPositionX = (float)Math.Sin(randomRotationY * Mathf.Deg2Rad) * randomRadius;
+                    float localPositionZ = (float)Math.Cos(randomRotationY * Mathf.Deg2Rad) * randomRadius;
 
                     float rotatedLocalPositionX = localPositionZ * sinYAngle + localPositionX * cosYAngle;
                     float rotatedLocalPositionZ = localPositionZ * cosYAngle - localPositionX * sinYAngle;
