@@ -667,10 +667,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 }
                 if (active)
                 {
-                    if (!activePassed)
-                    {
-                        activePassed = true;
-                    }
+                    activePassed = true;
                 }
                 else
                 {
