@@ -248,7 +248,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                             if (chargeDurationPercentage > PreviousChargeDurationFloatPercentage)
                             {
-                                newFillProgress = EaseInOutExpo(chargeDurationPercentage);
+                                newFillProgress = EaseInOutQuad(chargeDurationPercentage);
                                 LineRegionProjectorRef.FillProgress = newFillProgress;
                                 LineRegionProjectorRef.UpdateProjectors();
                                 PreviousChargeDurationFloatPercentage = chargeDurationPercentage;
@@ -724,10 +724,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             return new AnimationCurve(keyframes);
         }
-        private float EaseInOutExpo(float percentage)
+        //private float EaseInOutExpo(float percentage)
+        //{
+        //    return percentage < 0.5f ? (float)Math.Pow(2, 20 * percentage - 10) / 2 :
+        //        (2 - (float)Math.Pow(2, -20 * percentage + 10)) / 2;
+        //}
+        private float EaseInOutQuad(float percentage)
         {
-            return percentage < 0.5f ? (float)Math.Pow(2, 20 * percentage - 10) / 2 :
-                (2 - (float)Math.Pow(2, -20 * percentage + 10)) / 2;
+            return percentage * percentage;
         }
         private Vector3 GetTerrainProjectorPosition()
         {
