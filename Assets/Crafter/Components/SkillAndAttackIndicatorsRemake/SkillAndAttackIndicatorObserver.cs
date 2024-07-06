@@ -77,7 +77,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
 
-        private Vector3 PreviousPosition;
+        private Vector3 PreviousTerrainProjectorPosition;
         private float PreviousRotationY;
         private float PreviousChargeDurationFloatPercentage;
 
@@ -117,7 +117,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                     // hard coded lengths that need to be used in fx too.
 
-                    Vector3 terrainPosition = GetTerrainPosition();
+                    Vector3 terrainProjectorPosition = GetTerrainProjectorPosition();
                     float playerRotation = GetThirdPersonControllerRotation();
 
                     switch (AbilityProjectorType)
@@ -175,8 +175,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             return;
                     }
 
-                    ProjectorMonoBehaviour.transform.position = terrainPosition;
-                    PreviousPosition = terrainPosition;
+                    ProjectorMonoBehaviour.transform.position = terrainProjectorPosition;
+                    PreviousTerrainProjectorPosition = terrainProjectorPosition;
                     PreviousRotationY = playerRotation;
 
                     if (AbilityFXTypes != null)
@@ -188,7 +188,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             {
                                 case AbilityFXType.DashParticles:
                                     DashParticlesItems = CreateDashParticlesItems(LineLengthUnits,
-                                        terrainPosition.x, terrainPosition.z, GetThirdPersonControllerRotation(),
+                                        terrainProjectorPosition.x, terrainProjectorPosition.z, GetThirdPersonControllerRotation(),
                                         i);
                                     break;
                             }
@@ -259,10 +259,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 }
 
-                Vector3 terrainPosition = GetTerrainPosition();
+                Vector3 terrainProjectorPosition = GetTerrainProjectorPosition();
                 float playerRotation = GetThirdPersonControllerRotation();
                 
-                ProjectorMonoBehaviour.transform.position = terrainPosition;
+                ProjectorMonoBehaviour.transform.position = terrainProjectorPosition;
 
                 Vector3 previousProjectorRotation = ProjectorMonoBehaviour.transform.localEulerAngles;
                 ProjectorMonoBehaviour.transform.localEulerAngles = new Vector3(previousProjectorRotation.x, playerRotation, previousProjectorRotation.z);
@@ -271,20 +271,20 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 {
                     float rotationDifference = playerRotation - PreviousRotationY;
                     if (rotationDifference < -10f || rotationDifference > 10f ||
-                        (PreviousPosition - terrainPosition).magnitude > 0.03f)
+                        (PreviousTerrainProjectorPosition - terrainProjectorPosition).magnitude > 0.03f)
                     {
                         foreach (AbilityFXType abilityFXType in AbilityFXTypes)
                         {
                             switch (abilityFXType)
                             {
                                 case AbilityFXType.DashParticles:
-                                    UpdateDashParticlesItems(LineLengthUnits, terrainPosition.x, terrainPosition.z, playerRotation,
+                                    UpdateDashParticlesItems(LineLengthUnits, terrainProjectorPosition.x, terrainProjectorPosition.z, playerRotation,
                                         fillProgress: newFillProgress);
                                     break;
                             }
                         }
                         
-                        PreviousPosition = terrainPosition;
+                        PreviousTerrainProjectorPosition = terrainProjectorPosition;
                         PreviousRotationY = playerRotation;
                     }
 
@@ -436,9 +436,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone) - 1, 0, lineLengthUnits - 1);
 
+                Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
                 {
-                    ArcPath arcPath = (ArcPath)arcPathInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
+                    ArcPath arcPath = (ArcPath)arcPathInstancePool.InstantiatePooled(dashParticlesPosition);
                     arcPath.gameObject.SetActive(false);
                     arcPath.SetOffsetFX_FromSky(Random);
                     arcPaths[(i * ArcPathFromSkyPerClone) + j] = arcPath;
@@ -522,17 +523,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             {
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
-
+                Vector3 dashParticlesPosition = dashParticlesArray[particlesIndex].transform.position;
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++) 
                 {
                     Transform arcPathsTransform = arcPathsArray[(i * ArcPathFromSkyPerClone) + j].transform;
 
-                    arcPathsTransform.position = dashParticlesArray[particlesIndex].transform.position;
-
+                    arcPathsTransform.position = dashParticlesPosition;
+                    // particles orient towards camera, no need to change the rotation.
                 }
-                
-                
-                // particles orient towards camera, no need to change the rotation.
+
             }
         }
 
@@ -648,7 +647,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             return percentage < 0.5f ? (float)Math.Pow(2, 20 * percentage - 10) / 2 :
                 (2 - (float)Math.Pow(2, -20 * percentage + 10)) / 2;
         }
-        private Vector3 GetTerrainPosition()
+        private Vector3 GetTerrainProjectorPosition()
         {
             if (Props.SkillAndAttackIndicatorSystem.PlayerComponent != null)
             {
