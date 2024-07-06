@@ -529,7 +529,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     Transform arcPathsTransform = arcPathsArray[(i * ArcPathFromSkyPerClone) + j].transform;
 
                     arcPathsTransform.position = dashParticlesPosition;
-                    // particles orient towards camera, no need to change the rotation.
+                    // although particles orient towards camera, the rotation should change so the axis properties change the shader right
+                    arcPathsTransform.localEulerAngles = new Vector3(0f, yRotation, 0f);
                 }
 
             }
