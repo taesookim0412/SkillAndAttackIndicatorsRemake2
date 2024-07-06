@@ -102,7 +102,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
 
             if (abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.DashParticles, out AbstractAbilityFX dashParticlesPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ArcPath, out AbstractAbilityFX arcPathPrefab))
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ArcPath_Small_Floating, out AbstractAbilityFX arcPathPrefab))
             {
                 abilityFXInstancePools[AbilityFXType.DashParticles] = new PoolBagDco<AbstractAbilityFX>[2]
                 {
