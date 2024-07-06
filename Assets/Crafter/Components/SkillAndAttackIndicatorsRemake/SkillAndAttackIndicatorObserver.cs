@@ -434,7 +434,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             for (int i = 0; i < numPlayerClones; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
-                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone) - 1, 0, lineLengthUnits - 1);
+                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
 
                 Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
