@@ -567,8 +567,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         dashParticlesPosition.y, 
                         dashParticlesPosition.z + rotatedLocalPositionZ);
 
-                    // although particles orient towards camera, the rotation should change so the axis properties change the shader right
-                    arcPathsTransform.localEulerAngles = new Vector3(0f, yRotation, 0f);
+                    // no need to change the angle, x/z offsets do not get used in the shader.
+                    // arcPathsTransform.localEulerAngles = yRotationVector;
                 }
             }
         }
