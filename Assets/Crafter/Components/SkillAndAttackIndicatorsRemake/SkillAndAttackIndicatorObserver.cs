@@ -362,6 +362,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
 
+            Vector3 yRotationVector = new Vector3(0f, yRotation, 0f);
+
             float worldRotatedPositionX = startPositionX;
             float worldRotatedPositionZ = startPositionZ;
 
@@ -407,7 +409,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 dashParticlesComponent.transform.position = new Vector3(worldRotatedPositionX,
                     positionY,
                     worldRotatedPositionZ);
-                dashParticlesComponent.transform.localEulerAngles = new Vector3(0f, yRotation, 0f);
+                dashParticlesComponent.transform.localEulerAngles = yRotationVector;
 
                 dashParticles[i] = dashParticlesComponent;
 
@@ -424,7 +426,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
 
                 PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
-                playerComponentClone.gameObject.transform.localEulerAngles = new Vector3(0f, yRotation, 0f);
+                playerComponentClone.gameObject.transform.localEulerAngles = yRotationVector;
                 playerComponentClone.SetCloneFX();
                 playerComponentClone.gameObject.SetActive(false);
                 playerClones[i] = playerComponentClone;
@@ -461,6 +463,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     ArcPath arcPath = (ArcPath)arcPathInstancePool.InstantiatePooled(new Vector3(dashParticlesPosition.x + rotatedLocalPositionX,
                         dashParticlesPosition.y,
                         dashParticlesPosition.z + rotatedLocalPositionZ));
+                    arcPath.transform.localEulerAngles = yRotationVector;
                     arcPath.gameObject.SetActive(false);
 
                     arcPath.SetLocalPositionFields(
@@ -567,8 +570,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         dashParticlesPosition.y, 
                         dashParticlesPosition.z + rotatedLocalPositionZ);
 
-                    // no need to change the angle, x/z offsets do not get used in the shader.
-                    // arcPathsTransform.localEulerAngles = yRotationVector;
+                    arcPathsTransform.localEulerAngles = yRotationVector;
+
                 }
             }
         }
