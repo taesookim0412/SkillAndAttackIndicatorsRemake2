@@ -48,7 +48,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private static readonly int LineLengthUnits = 20;
         private static readonly int CloneOffsetUnits = 2;
         private static readonly int UnitsPerClone = 5;
-        private static readonly int ArcPathFromSkyPerClone = 4;
+        private static readonly int ArcPathFromSkyPerClone = 5;
+        private static readonly float ArcPathZUnitsPerCluster = 1f;
 
         private SkillAndAttackIndicatorObserverProps Props;
 
@@ -72,7 +73,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPLineRegionProjector LineRegionProjectorRef;
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
-        private (DashParticles[] dashParticles, PlayerComponent[] playerClones, ArcPath[] arcPaths) DashParticlesItems;
+        private (DashParticles[] dashParticles, PlayerComponent[] playerClones,
+            FXContainer[] arcPathContainers,
+            ArcPath[] arcPaths) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -313,7 +316,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         {
                             case AbilityFXType.DashParticles:
                                 PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[0];
-                                PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[1];
+                                PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[2];
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                                 {
                                     dashParticlesPool.ReturnPooled(dashParticles);
@@ -346,6 +349,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private (DashParticles[] dashParticles,
             PlayerComponent[] playerClones,
+            FXContainer[] arcPathContainers,
             ArcPath[] arcPaths
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -354,8 +358,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             int numPlayerClones = (int)Math.Floor((lineLengthUnits - CloneOffsetUnits) / (float)UnitsPerClone);
 
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
-            //?? potentially unsafe fixed array size so just convert it to array.
             PlayerComponent[] playerClones = new PlayerComponent[numPlayerClones];
+            FXContainer[] arcPathContainers = new FXContainer[numPlayerClones];
             ArcPath[] arcPaths = new ArcPath[numPlayerClones * ArcPathFromSkyPerClone];
 
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
@@ -429,24 +433,43 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 playerClones[i] = playerComponentClone;
             }
 
-            PoolBagDco<AbstractAbilityFX> arcPathInstancePool = AbilityFXInstancePools[abilityFXIndex][1];
-
+            PoolBagDco<AbstractAbilityFX> arcPathContainerInstancePool = AbilityFXInstancePools[abilityFXIndex][1];
+            PoolBagDco<AbstractAbilityFX> arcPathInstancePool = AbilityFXInstancePools[abilityFXIndex][2];
+            
+            float arcLocalZStart = -1 * 0.5f * ArcPathZUnitsPerCluster;
+            float arcLocalZUnitsPerIndex = ArcPathZUnitsPerCluster / ArcPathFromSkyPerClone;
             for (int i = 0; i < numPlayerClones; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
 
                 Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
+
+                FXContainer arcPathContainer = (FXContainer)arcPathContainerInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
+                Transform arcPathContainerTransform = arcPathContainer.transform;
+                arcPathContainers[i] = arcPathContainer;
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
                 {
-                    ArcPath arcPath = (ArcPath)arcPathInstancePool.InstantiatePooled(dashParticlesPosition);
+                    ArcPath arcPath = (ArcPath)arcPathInstancePool.InstantiatePooled(arcPathContainerTransform);
                     arcPath.gameObject.SetActive(false);
-                    arcPath.SetOffsetFX_FromSky(Random);
+                    // alternate side with 2 vs 1
+                    float localPositionX;
+                    float localPositionZ = arcLocalZStart + (j * arcLocalZUnitsPerIndex);
+                    if ((i + j) % 2 == 0)
+                    {
+                        localPositionX = (Random.Next(-50, -24) + Random.Next(-3, 1)) * 0.01f;
+                    }
+                    else
+                    {
+                        localPositionX = (Random.Next(25, 51) + Random.Next(0, 4)) * 0.01f;
+                    }
+                    arcPath.transform.localPosition = new Vector3(localPositionX, 0f, localPositionZ);
+
                     arcPaths[(i * ArcPathFromSkyPerClone) + j] = arcPath;
                 }
             }
 
-            return (dashParticles, playerClones, arcPaths);
+            return (dashParticles, playerClones, arcPathContainers, arcPaths);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -454,6 +477,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         {
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
+
+            Vector3 yRotationVector = new Vector3(0f, yRotation, 0f);
 
             float worldRotatedPositionX = startPositionX;
             float worldRotatedPositionZ = startPositionZ;
@@ -497,7 +522,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 dashParticles.transform.position = new Vector3(worldRotatedPositionX,
                     positionY,
                     worldRotatedPositionZ);
-                dashParticles.transform.localEulerAngles = new Vector3(0f, yRotation, 0f);
+                dashParticles.transform.localEulerAngles = yRotationVector;
 
                 worldRotatedPositionX += sinYAngle;
                 worldRotatedPositionZ += cosYAngle;
@@ -515,24 +540,22 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 Transform playerCloneTransform = playerClonesArray[i].transform;
 
                 playerCloneTransform.position = dashParticlesArray[particlesIndex].transform.position;
-                playerCloneTransform.localEulerAngles = new Vector3(0f, yRotation, 0f);
+                playerCloneTransform.localEulerAngles = yRotationVector;
             }
 
-            ArcPath[] arcPathsArray = DashParticlesItems.arcPaths;
+            FXContainer[] arcPathContainersArray = DashParticlesItems.arcPathContainers;
             for (int i = 0; i < playerClonesArray.Length; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
-                Vector3 dashParticlesPosition = dashParticlesArray[particlesIndex].transform.position;
-                for (int j = 0; j < ArcPathFromSkyPerClone; j++) 
-                {
-                    Transform arcPathsTransform = arcPathsArray[(i * ArcPathFromSkyPerClone) + j].transform;
 
-                    arcPathsTransform.position = dashParticlesPosition;
-                    // although particles orient towards camera, the rotation should change so the axis properties change the shader right
-                    arcPathsTransform.localEulerAngles = new Vector3(0f, yRotation, 0f);
-                }
-
+                Transform arcPathContainersTransform = arcPathContainersArray[i].transform;
+                arcPathContainersTransform.position = dashParticlesArray[particlesIndex].transform.position;
+                arcPathContainersTransform.localEulerAngles = yRotationVector;
+                // the engine will handle the rotation / position change for nested arc paths, which is preferred
+                // because a lot of calculations will be repeated to rotate the offset.
+                // Usually, this kind of math isn't required (nor desired)
+                // so it's not a problem to let the engine handle it here.
             }
         }
 
@@ -703,7 +726,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     }
     public enum AbilityFXComponentType
     {
+        FXContainer,
         DashParticles,
-        ArcPath
+        ArcPath,
     }
 }
