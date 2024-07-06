@@ -10,7 +10,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 {
     public class ArcPath : AbstractAbilityFX
     {
-
         //private static readonly int EndYOffsetId = Shader.PropertyToID("_EndYOffset");
+        public float LocalPositionX;
+        public float LocalPositionZ;
+
+        public void SetLocalPositionFields(float localPositionX, float localPositionZ)
+        {
+            LocalPositionX = localPositionX;
+            LocalPositionZ = localPositionZ;
+        }
+        
     }
 }
