@@ -50,9 +50,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private static readonly int CloneOffsetUnits = 2;
         private static readonly int UnitsPerClone = 5;
         private static readonly int ArcPathFromSkyPerClone = 5;
-        private static readonly int ArcPathFromSkyPerCloneQuarter = ArcPathFromSkyPerClone / 4;
-        private static readonly int ArcPathFromSkyPerCloneHalf = ArcPathFromSkyPerClone / 2;
-        private static readonly int ArcPathFromSkyPerCloneThreeQuarters = ArcPathFromSkyPerClone / 4 * 3;
+        private static readonly float ArcPathFromSkyPerCloneFloat = (float)ArcPathFromSkyPerClone;
         private static readonly int ArcPathFromSkyRadiusMultTenMin = 5;
         private static readonly int ArcPathFromSkyRadiusMultTenMax = 9;
         private static readonly float ArcPathZUnitsPerCluster = 1f;
@@ -460,28 +458,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 float randomRadius = Random.Next(ArcPathFromSkyRadiusMultTenMin, ArcPathFromSkyRadiusMultTenMax) * 0.1f;
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
                 {
-                    int rangeStart;
-                    int rangeEnd;
-                    if (j < ArcPathFromSkyPerCloneQuarter)
-                    {
-                        rangeStart = 25;
-                        rangeEnd = 65;
-                    }
-                    else if (j < ArcPathFromSkyPerCloneHalf)
-                    {
-                        rangeStart = 115;
-                        rangeEnd = 155;
-                    }
-                    else if (j < ArcPathFromSkyPerCloneThreeQuarters)
-                    {
-                        rangeStart = 205;
-                        rangeEnd = 245;
-                    }
-                    else
-                    {
-                        rangeStart = 295;
-                        rangeEnd = 335;
-                    }
+                    int quadrant = (int) (j / ArcPathFromSkyPerCloneFloat / 0.25f);
+
+                    int rangeStart = quadrant * 90 + 25;
+                    int rangeEnd = (quadrant + 1) * 90 - 25;
 
                     int randomRotationY = Random.Next(rangeStart, rangeEnd);
 
