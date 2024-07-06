@@ -78,7 +78,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
         private (DashParticles[] dashParticles, PlayerComponent[] playerClones,
-            ArcPath_Small_Floating[] arcPathsFromSky, ArcPath[] arcPathsFromCloneOffset) DashParticlesItems;
+            ArcPath_Small_Floating[] arcPathsFromSky, ArcPath[] arcPathsForClone) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -333,7 +333,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 {
                                     arcPathSmallFloatingPool.ReturnPooled(arcPath);
                                 }
-                                foreach (ArcPath arcPath in DashParticlesItems.arcPathsFromCloneOffset)
+                                foreach (ArcPath arcPath in DashParticlesItems.arcPathsForClone)
                                 {
                                     arcPathPool.ReturnPooled(arcPath);
                                 }
@@ -358,7 +358,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private (DashParticles[] dashParticles,
             PlayerComponent[] playerClones,
             ArcPath_Small_Floating[] arcPathsFromSky,
-            ArcPath[] arcPathsFromCloneOffset
+            ArcPath[] arcPathsForClone
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation, int abilityFXIndex)
@@ -368,7 +368,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
             PlayerComponent[] playerClones = new PlayerComponent[numPlayerClones];
             ArcPath_Small_Floating[] arcPathsFromSky = new ArcPath_Small_Floating[numPlayerClones * ArcPathFromSkyPerClone];
-            ArcPath[] arcPathsFromCloneOffset = new ArcPath[numPlayerClones * CloneOffsetUnits];
+            ArcPath[] arcPathsForClone = new ArcPath[numPlayerClones];
 
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
@@ -489,23 +489,21 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                     arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j] = arcPath;
                 }
-                for (int j = 0; j < CloneOffsetUnits; j++)
-                {
-                    int cloneOffsetDashParticlesIndex = particlesIndex - j;
 
-                    Vector3 cloneOffsetDashParticlesPosition = dashParticles[cloneOffsetDashParticlesIndex].transform.position;
+                int cloneOffsetDashParticlesIndex = particlesIndex;
 
-                    ArcPath arcPath = (ArcPath)arcPathInstancePool.InstantiatePooled(cloneOffsetDashParticlesPosition);
-                    //arcPath.SetOffsetFX(
-                    //    startYOffset: -2.5f,
-                    //    endYOffset: 2.5f);
-                    arcPath.transform.localEulerAngles = yRotationVector;
-                    arcPath.gameObject.SetActive(false);
-                    arcPathsFromCloneOffset[(i * CloneOffsetUnits) + j] = arcPath;
-                }
+                Vector3 cloneOffsetDashParticlesPosition = dashParticles[cloneOffsetDashParticlesIndex].transform.position;
+
+                ArcPath arcPathForClone = (ArcPath)arcPathInstancePool.InstantiatePooled(cloneOffsetDashParticlesPosition);
+                //arcPath.SetOffsetFX(
+                //    startYOffset: -2.5f,
+                //    endYOffset: 2.5f);
+                arcPathForClone.transform.localEulerAngles = yRotationVector;
+                arcPathForClone.gameObject.SetActive(false);
+                arcPathsForClone[i] = arcPathForClone;
             }
 
-            return (dashParticles, playerClones, arcPathsFromSky, arcPathsFromCloneOffset);
+            return (dashParticles, playerClones, arcPathsFromSky, arcPathsForClone);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -587,7 +585,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 Vector3 dashParticlesPosition = dashParticlesArray[particlesIndex].transform.position;
 
                 ArcPath_Small_Floating[] arcPathsFromSkyArray = DashParticlesItems.arcPathsFromSky;
-                ArcPath[] arcPathsFromCloneOffsetArray = DashParticlesItems.arcPathsFromCloneOffset;
+                ArcPath[] arcPathsForCloneArray = DashParticlesItems.arcPathsForClone;
 
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
                 {
@@ -606,17 +604,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 }
 
-                for (int j = 0; j < CloneOffsetUnits; j++)
-                {
-                    int cloneOffsetDashParticlesIndex = particlesIndex - j;
+                int cloneOffsetDashParticlesIndex = particlesIndex;
 
-                    Vector3 cloneOffsetDashParticlesPosition = dashParticlesArray[cloneOffsetDashParticlesIndex].transform.position;
+                Vector3 cloneOffsetDashParticlesPosition = dashParticlesArray[cloneOffsetDashParticlesIndex].transform.position;
 
-                    Transform arcPathFromOffsetTransform = arcPathsFromCloneOffsetArray[(i * CloneOffsetUnits) + j].transform;
+                Transform arcPathFromOffsetTransform = arcPathsForCloneArray[i].transform;
 
-                    arcPathFromOffsetTransform.position = cloneOffsetDashParticlesPosition;
-                    arcPathFromOffsetTransform.localEulerAngles = yRotationVector;
-                }
+                arcPathFromOffsetTransform.position = cloneOffsetDashParticlesPosition;
+                arcPathFromOffsetTransform.localEulerAngles = yRotationVector;
             }
         }
 
@@ -651,7 +646,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             activePassed = false;
             PlayerComponent[] playerClones = DashParticlesItems.playerClones;
             ArcPath_Small_Floating[] arcPathsFromSky = DashParticlesItems.arcPathsFromSky;
-            ArcPath[] arcPathsFromCloneOffset = DashParticlesItems.arcPathsFromCloneOffset;
+            ArcPath[] arcPathsForClone = DashParticlesItems.arcPathsForClone;
 
             for (int i = playerClones.Length - 1; i >= 0; i--)
             {
@@ -668,11 +663,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         ArcPath_Small_Floating arcPath = arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j];
                         arcPath.gameObject.SetActive(active);
                     }
-                    for (int j = 0; j < CloneOffsetUnits; j++)
-                    {
-                        ArcPath arcPathFromCloneOffset = arcPathsFromCloneOffset[(i * CloneOffsetUnits) + j];
-                        arcPathFromCloneOffset.gameObject.SetActive(active);
-                    }
+                    ArcPath arcPathFromCloneOffset = arcPathsForClone[i];
+                    arcPathFromCloneOffset.gameObject.SetActive(active);
                 }
                 if (active)
                 {
