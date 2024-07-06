@@ -10,11 +10,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     {
         public float LocalPositionX;
         public float LocalPositionZ;
+        public float LocalRotationY;
 
-        public void SetLocalPositionFields(float localPositionX, float localPositionZ)
+        public void SetLocalPositionFields(float localPositionX, float localPositionZ,
+            float localRotationY)
         {
             LocalPositionX = localPositionX;
             LocalPositionZ = localPositionZ;
+            LocalRotationY = localRotationY;
         }
 
     }

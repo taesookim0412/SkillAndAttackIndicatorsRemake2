@@ -473,12 +473,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     ArcPath_Small_Floating arcPath = (ArcPath_Small_Floating)arcPathInstancePool.InstantiatePooled(new Vector3(dashParticlesPosition.x + rotatedLocalPositionX,
                         dashParticlesPosition.y,
                         dashParticlesPosition.z + rotatedLocalPositionZ));
-                    arcPath.transform.localEulerAngles = yRotationVector;
+
+                    arcPath.transform.localEulerAngles = new Vector3(15f, randomRotationY + yRotation, 0f);
                     arcPath.gameObject.SetActive(false);
 
                     arcPath.SetLocalPositionFields(
                         localPositionX: localPositionX,
-                        localPositionZ: localPositionZ);
+                        localPositionZ: localPositionZ,
+                        localRotationY: randomRotationY);
 
                     //float yStartOffset = Random.Next(-250, -239) * 0.01f;
                     //float yEndOffset = Random.Next(20, 51) * 0.1f;
@@ -598,7 +600,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         dashParticlesPosition.y, 
                         dashParticlesPosition.z + rotatedLocalPositionZ);
 
-                    arcPathsTransform.localEulerAngles = yRotationVector;
+                    arcPathsTransform.localEulerAngles = new Vector3(15f, arcPath.LocalRotationY + yRotation, 0f);
 
                 }
 
