@@ -490,6 +490,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     //    localRotationY: randomRotationY);
                     ArcPath_Small_Floating arcPath = (ArcPath_Small_Floating)arcPathSmallFloatingInstancePool.InstantiatePooled(dashParticlesPosition);
                     arcPath.transform.localEulerAngles = yRotationVector;
+                    arcPath.gameObject.SetActive(false);
 
                     //float yStartOffset = Random.Next(-250, -239) * 0.01f;
                     //float yEndOffset = Random.Next(20, 51) * 0.1f;
