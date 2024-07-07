@@ -51,8 +51,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private static readonly int UnitsPerClone = 5;
         private static readonly int ArcPathFromSkyPerClone = 3;
         private static readonly float ArcPathFromSkyPerCloneFloat = (float)ArcPathFromSkyPerClone;
-        private static readonly int ArcPathFromSkyRadiusMultTenMin = 5;
-        private static readonly int ArcPathFromSkyRadiusMultTenMax = 9;
+        private static readonly float ArcPathFromSkyRadius = 0.5f;
         private static readonly float ArcPathZUnitsPerCluster = 1f;
 
         private SkillAndAttackIndicatorObserverProps Props;
@@ -463,7 +462,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
 
-                float randomRadius = Random.Next(ArcPathFromSkyRadiusMultTenMin, ArcPathFromSkyRadiusMultTenMax) * 0.1f;
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
                 {
                     int quadrant = (int) (j / ArcPathFromSkyPerCloneFloat * 4f);
@@ -473,8 +471,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                     int randomRotationY = Random.Next(rangeStart, rangeEnd);
 
-                    float localPositionX = (float)Math.Sin(randomRotationY * Mathf.Deg2Rad) * randomRadius;
-                    float localPositionZ = (float)Math.Cos(randomRotationY * Mathf.Deg2Rad) * randomRadius;
+                    float localPositionX = (float)Math.Sin(randomRotationY * Mathf.Deg2Rad) * ArcPathFromSkyRadius;
+                    float localPositionZ = (float)Math.Cos(randomRotationY * Mathf.Deg2Rad) * ArcPathFromSkyRadius;
 
                     float rotatedLocalPositionX = localPositionZ * sinYAngle + localPositionX * cosYAngle;
                     float rotatedLocalPositionZ = localPositionZ * cosYAngle - localPositionX * sinYAngle;
@@ -483,7 +481,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         dashParticlesPosition.y,
                         dashParticlesPosition.z + rotatedLocalPositionZ));
 
-                    arcPath.transform.localEulerAngles = new Vector3(15f, randomRotationY + yRotation, 0f);
+                    arcPath.transform.localEulerAngles = new Vector3(-15f, randomRotationY + yRotation, 0f);
                     arcPath.gameObject.SetActive(false);
 
                     arcPath.SetLocalPositionFields(
@@ -612,7 +610,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         dashParticlesPosition.y, 
                         dashParticlesPosition.z + rotatedLocalPositionZ);
 
-                    arcPathsTransform.localEulerAngles = new Vector3(15f, arcPath.LocalRotationY + yRotation, 0f);
+                    arcPathsTransform.localEulerAngles = new Vector3(-15f, arcPath.LocalRotationY + yRotation, 0f);
 
                 }
 
