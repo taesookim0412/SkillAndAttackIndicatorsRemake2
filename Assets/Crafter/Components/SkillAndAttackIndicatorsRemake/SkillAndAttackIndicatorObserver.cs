@@ -78,7 +78,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
         private (DashParticles[] dashParticles, PlayerComponent[] playerClones,
-            ArcPath_Small_Floating[] arcPathsFromSky, ArcPath[] arcPathsForClone) DashParticlesItems;
+            ArcPath_Small_Floating[] arcPathsFromSky, ArcPath[] arcPathsForClone,
+            ElectricTrail electricTrail) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -299,7 +300,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         switch (abilityFXType)
                         {
                             case AbilityFXType.DashParticles:
-                                UpdateDashParticlesOpacities(LineLengthUnits, newFillProgress);
+                                UpdateDashParticles(LineLengthUnits, newFillProgress);
                                 break;
                         }
                     }
@@ -321,6 +322,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int) DashParticlesFXTypePrefabPools.DashParticles];
                                 PoolBagDco<AbstractAbilityFX> arcPathSmallFloatingPool = abilityFXInstancePool[(int) DashParticlesFXTypePrefabPools.ArcPath_Small_Floating];
                                 PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ArcPath];
+                                PoolBagDco<AbstractAbilityFX> electricTrailPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ElectricTrail];
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                                 {
                                     dashParticlesPool.ReturnPooled(dashParticles);
@@ -337,6 +339,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 {
                                     arcPathPool.ReturnPooled(arcPath);
                                 }
+
+                                electricTrailPool.ReturnPooled(DashParticlesItems.electricTrail);
                                 break;
                         }
                     }
@@ -358,7 +362,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private (DashParticles[] dashParticles,
             PlayerComponent[] playerClones,
             ArcPath_Small_Floating[] arcPathsFromSky,
-            ArcPath[] arcPathsForClone
+            ArcPath[] arcPathsForClone,
+            ElectricTrail electricTrail
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation, int abilityFXIndex)
@@ -505,7 +510,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 arcPathsForClone[i] = arcPathForClone;
             }
 
-            return (dashParticles, playerClones, arcPathsFromSky, arcPathsForClone);
+
+            PoolBagDco<AbstractAbilityFX> electricTrailInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ElectricTrail];
+            ElectricTrail electricTrail = (ElectricTrail) electricTrailInstancePool.InstantiatePooled(dashParticles[0].transform.position);
+
+            return (dashParticles, playerClones, arcPathsFromSky, arcPathsForClone, electricTrail);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -617,40 +626,55 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
         }
 
-        private void UpdateDashParticlesOpacities(int lineLengthUnits, float fillProgress)
+        private void UpdateDashParticles(int lineLengthUnits, float fillProgress)
         {
             bool activePassed = false;
             DashParticles[] dashParticlesArray = DashParticlesItems.dashParticles;
-            for (int i = 0; i < lineLengthUnits; i++)
+
+            int i = 0;
+            if (fillProgress > 0.1f)
             {
-                (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, i);
-                DashParticles dashParticles = dashParticlesArray[i];
-                if (dashParticles.gameObject.activeSelf != active)
+                for (i = 0; i < lineLengthUnits; i++)
                 {
-                    dashParticles.gameObject.SetActive(active);
-                }
-                if (active)
-                {
-                    if (!activePassed)
+                    (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, i);
+                    DashParticles dashParticles = dashParticlesArray[i];
+                    if (dashParticles.gameObject.activeSelf != active)
                     {
-                        activePassed = true;
+                        dashParticles.gameObject.SetActive(active);
                     }
-                }
-                else
-                {
-                    if (activePassed)
+                    if (active)
                     {
-                        break;
+                        if (!activePassed)
+                        {
+                            activePassed = true;
+                        }
+                    }
+                    else
+                    {
+                        if (activePassed)
+                        {
+                            break;
+                        }
                     }
                 }
             }
+
+            if (i >= lineLengthUnits)
+            {
+                i--;
+            }
+
+            Vector3 dashParticlesPosition = dashParticlesArray[i].transform.position;
+
+            DashParticlesItems.electricTrail.transform.position = new Vector3(dashParticlesPosition.x, dashParticlesPosition.y + 0.5f, dashParticlesPosition.z);
+            // rotation??
 
             activePassed = false;
             PlayerComponent[] playerClones = DashParticlesItems.playerClones;
             ArcPath_Small_Floating[] arcPathsFromSky = DashParticlesItems.arcPathsFromSky;
             ArcPath[] arcPathsForClone = DashParticlesItems.arcPathsForClone;
 
-            for (int i = playerClones.Length - 1; i >= 0; i--)
+            for (i = playerClones.Length - 1; i >= 0; i--)
             {
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
                 (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, particlesIndex);
