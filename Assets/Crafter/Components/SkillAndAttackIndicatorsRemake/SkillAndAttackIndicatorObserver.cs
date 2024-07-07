@@ -318,9 +318,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         switch (AbilityFXTypes[i])
                         {
                             case AbilityFXType.DashParticles:
-                                PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[0];
-                                PoolBagDco<AbstractAbilityFX> arcPathSmallFloatingPool = abilityFXInstancePool[1];
-                                PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[2];
+                                PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int) DashParticlesFXTypePrefabPools.DashParticles];
+                                PoolBagDco<AbstractAbilityFX> arcPathSmallFloatingPool = abilityFXInstancePool[(int) DashParticlesFXTypePrefabPools.ArcPath_Small_Floating];
+                                PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ArcPath];
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                                 {
                                     dashParticlesPool.ReturnPooled(dashParticles);
@@ -378,7 +378,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float worldRotatedPositionX = startPositionX;
             float worldRotatedPositionZ = startPositionZ;
 
-            PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = AbilityFXInstancePools[abilityFXIndex][0];
+            PoolBagDco<AbstractAbilityFX>[] dashParticlesTypeFXPools = AbilityFXInstancePools[abilityFXIndex];
+
+            PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.DashParticles];
 
             float previousPositionY = 0f;
             float prevXAnglei0 = 0f;
@@ -443,8 +445,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 playerClones[i] = playerComponentClone;
             }
 
-            PoolBagDco<AbstractAbilityFX> arcPathSmallFloatingInstancePool = AbilityFXInstancePools[abilityFXIndex][1];
-            PoolBagDco<AbstractAbilityFX> arcPathInstancePool = AbilityFXInstancePools[abilityFXIndex][2];
+            PoolBagDco<AbstractAbilityFX> arcPathSmallFloatingInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ArcPath_Small_Floating];
+            PoolBagDco<AbstractAbilityFX> arcPathInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ArcPath];
 
             float arcLocalZStart = -1 * 0.5f * ArcPathZUnitsPerCluster;
             float arcLocalZUnitsPerIndex = ArcPathZUnitsPerCluster / ArcPathFromSkyPerClone;
@@ -787,10 +789,18 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         None,
         DashParticles
     }
+    public enum DashParticlesFXTypePrefabPools
+    {
+        DashParticles,
+        ArcPath_Small_Floating,
+        ArcPath,
+        ElectricTrail
+    }
     public enum AbilityFXComponentType
     {
         DashParticles,
         ArcPath,
-        ArcPath_Small_Floating
+        ArcPath_Small_Floating,
+        ElectricTrail
     }
 }

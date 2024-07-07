@@ -103,14 +103,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             if (abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.DashParticles, out AbstractAbilityFX dashParticlesPrefab) &&
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ArcPath_Small_Floating, out AbstractAbilityFX arcPathSmallFloatingPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ArcPath, out AbstractAbilityFX arcPathnPrefab))
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ArcPath, out AbstractAbilityFX arcPathPrefab) &&
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ElectricTrail, out AbstractAbilityFX electricTrailPrefab)
+                )
             {
-                abilityFXInstancePools[AbilityFXType.DashParticles] = new PoolBagDco<AbstractAbilityFX>[3]
-                {
-                    new PoolBagDco<AbstractAbilityFX>(dashParticlesPrefab, 30),
-                    new PoolBagDco<AbstractAbilityFX>(arcPathSmallFloatingPrefab, 30),
-                    new PoolBagDco<AbstractAbilityFX>(arcPathnPrefab, 30)
-                };
+                PoolBagDco<AbstractAbilityFX>[] dashParticlesPoolBag = new PoolBagDco<AbstractAbilityFX>[4];
+                dashParticlesPoolBag[(int)DashParticlesFXTypePrefabPools.DashParticles] = new PoolBagDco<AbstractAbilityFX>(dashParticlesPrefab, 30);
+                dashParticlesPoolBag[(int)DashParticlesFXTypePrefabPools.ArcPath_Small_Floating] = new PoolBagDco<AbstractAbilityFX>(arcPathSmallFloatingPrefab, 30);
+                dashParticlesPoolBag[(int)DashParticlesFXTypePrefabPools.ArcPath] = new PoolBagDco<AbstractAbilityFX>(arcPathPrefab, 30);
+                dashParticlesPoolBag[(int)DashParticlesFXTypePrefabPools.ElectricTrail] = new PoolBagDco<AbstractAbilityFX>(electricTrailPrefab, 30);
+
+                abilityFXInstancePools[AbilityFXType.DashParticles] = dashParticlesPoolBag;
             }
 
             AbilityFXInstancePools = abilityFXInstancePools;
