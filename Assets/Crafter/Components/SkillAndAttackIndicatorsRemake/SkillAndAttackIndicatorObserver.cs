@@ -464,30 +464,32 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
                 {
-                    int quadrant = (int) (j / ArcPathFromSkyPerCloneFloat * 4f);
+                    //int quadrant = (int) (j / ArcPathFromSkyPerCloneFloat * 4f);
 
-                    int rangeStart = quadrant * 90 + 25;
-                    int rangeEnd = (quadrant + 1) * 90 - 25;
+                    //int rangeStart = quadrant * 90 + 25;
+                    //int rangeEnd = (quadrant + 1) * 90 - 25;
 
-                    int randomRotationY = Random.Next(rangeStart, rangeEnd);
+                    //int randomRotationY = Random.Next(rangeStart, rangeEnd);
 
-                    float localPositionX = (float)Math.Sin(randomRotationY * Mathf.Deg2Rad) * ArcPathFromSkyRadius;
-                    float localPositionZ = (float)Math.Cos(randomRotationY * Mathf.Deg2Rad) * ArcPathFromSkyRadius;
+                    //float localPositionX = (float)Math.Sin(randomRotationY * Mathf.Deg2Rad) * ArcPathFromSkyRadius;
+                    //float localPositionZ = (float)Math.Cos(randomRotationY * Mathf.Deg2Rad) * ArcPathFromSkyRadius;
 
-                    float rotatedLocalPositionX = localPositionZ * sinYAngle + localPositionX * cosYAngle;
-                    float rotatedLocalPositionZ = localPositionZ * cosYAngle - localPositionX * sinYAngle;
+                    //float rotatedLocalPositionX = localPositionZ * sinYAngle + localPositionX * cosYAngle;
+                    //float rotatedLocalPositionZ = localPositionZ * cosYAngle - localPositionX * sinYAngle;
 
-                    ArcPath_Small_Floating arcPath = (ArcPath_Small_Floating)arcPathSmallFloatingInstancePool.InstantiatePooled(new Vector3(dashParticlesPosition.x + rotatedLocalPositionX,
-                        dashParticlesPosition.y,
-                        dashParticlesPosition.z + rotatedLocalPositionZ));
+                    //ArcPath_Small_Floating arcPath = (ArcPath_Small_Floating)arcPathSmallFloatingInstancePool.InstantiatePooled(new Vector3(dashParticlesPosition.x + rotatedLocalPositionX,
+                    //    dashParticlesPosition.y,
+                    //    dashParticlesPosition.z + rotatedLocalPositionZ));
 
-                    arcPath.transform.localEulerAngles = new Vector3(-15f, randomRotationY + yRotation, 0f);
-                    arcPath.gameObject.SetActive(false);
+                    //arcPath.transform.localEulerAngles = new Vector3(-15f, randomRotationY + yRotation, 0f);
+                    //arcPath.gameObject.SetActive(false);
 
-                    arcPath.SetLocalPositionFields(
-                        localPositionX: localPositionX,
-                        localPositionZ: localPositionZ,
-                        localRotationY: randomRotationY);
+                    //arcPath.SetLocalPositionFields(
+                    //    localPositionX: localPositionX,
+                    //    localPositionZ: localPositionZ,
+                    //    localRotationY: randomRotationY);
+                    ArcPath_Small_Floating arcPath = (ArcPath_Small_Floating)arcPathSmallFloatingInstancePool.InstantiatePooled(dashParticlesPosition);
+                    arcPath.transform.localEulerAngles = yRotationVector;
 
                     //float yStartOffset = Random.Next(-250, -239) * 0.01f;
                     //float yEndOffset = Random.Next(20, 51) * 0.1f;
@@ -603,15 +605,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                     Transform arcPathsTransform = arcPathsFromSkyArray[(i * ArcPathFromSkyPerClone) + j].transform;
 
-                    float rotatedLocalPositionX = arcPath.LocalPositionZ * sinYAngle + arcPath.LocalPositionX * cosYAngle;
-                    float rotatedLocalPositionZ = arcPath.LocalPositionZ * cosYAngle - arcPath.LocalPositionX * sinYAngle;
+                    //float rotatedLocalPositionX = arcPath.LocalPositionZ * sinYAngle + arcPath.LocalPositionX * cosYAngle;
+                    //float rotatedLocalPositionZ = arcPath.LocalPositionZ * cosYAngle - arcPath.LocalPositionX * sinYAngle;
 
-                    arcPathsTransform.position = new Vector3(dashParticlesPosition.x + rotatedLocalPositionX, 
-                        dashParticlesPosition.y, 
-                        dashParticlesPosition.z + rotatedLocalPositionZ);
+                    //arcPathsTransform.position = new Vector3(dashParticlesPosition.x + rotatedLocalPositionX, 
+                    //    dashParticlesPosition.y, 
+                    //    dashParticlesPosition.z + rotatedLocalPositionZ);
 
-                    arcPathsTransform.localEulerAngles = new Vector3(-15f, arcPath.LocalRotationY + yRotation, 0f);
+                    //arcPathsTransform.localEulerAngles = new Vector3(-15f, arcPath.LocalRotationY + yRotation, 0f);
 
+                    arcPathsTransform.position = dashParticlesPosition;
+                    arcPathsTransform.localEulerAngles = yRotationVector;
                 }
 
                 int cloneOffsetDashParticlesIndex = particlesIndex;
