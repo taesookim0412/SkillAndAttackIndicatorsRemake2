@@ -79,7 +79,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private (DashParticles[] dashParticles, PlayerComponent[] playerClones,
             ArcPath_Small_Floating[] arcPathsFromSky, ArcPath[] arcPathsForClone,
-            ElectricTrail electricTrail) DashParticlesItems;
+            ElectricTrail electricTrail, PlayerComponent activePlayerClone) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -363,7 +363,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             PlayerComponent[] playerClones,
             ArcPath_Small_Floating[] arcPathsFromSky,
             ArcPath[] arcPathsForClone,
-            ElectricTrail electricTrail
+            ElectricTrail electricTrail,
+            PlayerComponent activePlayerClone
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation, int abilityFXIndex)
@@ -514,7 +515,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             PoolBagDco<AbstractAbilityFX> electricTrailInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ElectricTrail];
             ElectricTrail electricTrail = (ElectricTrail) electricTrailInstancePool.InstantiatePooled(dashParticles[0].transform.position);
 
-            return (dashParticles, playerClones, arcPathsFromSky, arcPathsForClone, electricTrail);
+            return (dashParticles, playerClones, arcPathsFromSky, arcPathsForClone, electricTrail, null);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -631,10 +632,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             bool activePassed = false;
             DashParticles[] dashParticlesArray = DashParticlesItems.dashParticles;
 
-            int i = 0;
             if (fillProgress > 0.1f)
             {
-                for (i = 0; i < lineLengthUnits; i++)
+                for (int i = 0; i < lineLengthUnits; i++)
                 {
                     (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, i);
                     DashParticles dashParticles = dashParticlesArray[i];
@@ -659,22 +659,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 }
             }
 
-            if (i >= lineLengthUnits)
-            {
-                i--;
-            }
-
-            Vector3 dashParticlesPosition = dashParticlesArray[i].transform.position;
-
-            DashParticlesItems.electricTrail.transform.position = new Vector3(dashParticlesPosition.x, dashParticlesPosition.y + 0.5f, dashParticlesPosition.z);
-            // rotation??
-
             activePassed = false;
             PlayerComponent[] playerClones = DashParticlesItems.playerClones;
             ArcPath_Small_Floating[] arcPathsFromSky = DashParticlesItems.arcPathsFromSky;
             ArcPath[] arcPathsForClone = DashParticlesItems.arcPathsForClone;
 
-            for (i = playerClones.Length - 1; i >= 0; i--)
+            for (int i = playerClones.Length - 1; i >= 0; i--)
             {
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
                 (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, particlesIndex);
@@ -695,6 +685,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 if (active)
                 {
                     activePassed = true;
+                    if (DashParticlesItems.activePlayerClone == null || 
+                        DashParticlesItems.activePlayerClone.GetHashCode() != playerClone.GetHashCode())
+                    {
+                        Vector3 playerClonePosition = playerClone.transform.position;
+                        DashParticlesItems.electricTrail.transform.position = new Vector3(playerClonePosition.x,
+                            playerClonePosition.y + 0.5f, playerClonePosition.z); 
+
+                        DashParticlesItems.activePlayerClone = playerClone;
+                    }
                 }
                 else
                 {
