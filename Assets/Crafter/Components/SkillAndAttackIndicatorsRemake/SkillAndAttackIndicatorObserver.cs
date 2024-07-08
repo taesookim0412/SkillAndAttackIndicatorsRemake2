@@ -77,7 +77,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
         private (DashParticles[] dashParticles, PlayerComponent[] playerClones,
-            ArcPath[] arcPathsFromSky, ElectricTrail electricTrail, PlayerComponent activePlayerClone) DashParticlesItems;
+            ArcPath[] arcPathsFromSky, ElectricTrailRenderer electricTrailRenderer, PlayerComponent activePlayerClone) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -319,7 +319,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             case AbilityFXType.DashParticles:
                                 PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int) DashParticlesFXTypePrefabPools.DashParticles];
                                 PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ArcPath];
-                                PoolBagDco<AbstractAbilityFX> electricTrailPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ElectricTrail];
+                                PoolBagDco<AbstractAbilityFX> electricTrailRendererPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer];
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                                 {
                                     dashParticlesPool.ReturnPooled(dashParticles);
@@ -329,7 +329,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                     PlayerCloneInstancePool.ReturnPooled(playerClone);
                                 }
 
-                                electricTrailPool.ReturnPooled(DashParticlesItems.electricTrail);
+                                electricTrailRendererPool.ReturnPooled(DashParticlesItems.electricTrailRenderer);
                                 break;
                         }
                     }
@@ -351,7 +351,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private (DashParticles[] dashParticles,
             PlayerComponent[] playerClones,
             ArcPath[] arcPathsFromSky,
-            ElectricTrail electricTrail,
+            ElectricTrailRenderer electricTrailRenderer,
             PlayerComponent activePlayerClone
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -488,10 +488,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
 
-            PoolBagDco<AbstractAbilityFX> electricTrailInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ElectricTrail];
-            ElectricTrail electricTrail = (ElectricTrail) electricTrailInstancePool.InstantiatePooled(dashParticles[0].transform.position);
+            PoolBagDco<AbstractAbilityFX> electricTrailRendererInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer];
+            ElectricTrailRenderer electricTrailRenderer = (ElectricTrailRenderer) electricTrailRendererInstancePool.InstantiatePooled(dashParticles[0].transform.position);
 
-            return (dashParticles, playerClones, arcPathsFromSky, electricTrail, null);
+            return (dashParticles, playerClones, arcPathsFromSky, electricTrailRenderer, null);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -659,7 +659,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         DashParticlesItems.activePlayerClone.GetHashCode() != playerClone.GetHashCode())
                     {
                         Vector3 playerClonePosition = playerClone.transform.position;
-                        DashParticlesItems.electricTrail.transform.position = new Vector3(playerClonePosition.x,
+                        DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(playerClonePosition.x,
                             playerClonePosition.y + 0.5f, playerClonePosition.z); 
 
                         DashParticlesItems.activePlayerClone = playerClone;
@@ -786,13 +786,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     {
         DashParticles,
         ArcPath,
-        ElectricTrail
+        ElectricTrailRenderer
     }
     public enum AbilityFXComponentType
     {
         DashParticles,
         ArcPath,
         ArcPath_Small_Floating,
-        ElectricTrail
+        ElectricTrail,
+        ElectricTrailRenderer
     }
 }
