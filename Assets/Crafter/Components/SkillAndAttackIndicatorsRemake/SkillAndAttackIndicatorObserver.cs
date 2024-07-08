@@ -53,6 +53,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private static readonly float ArcPathFromSkyPerCloneFloat = (float)ArcPathFromSkyPerClone;
         private static readonly float ArcPathFromSkyRadius = 0.5f;
         private static readonly float ArcPathZUnitsPerCluster = 1f;
+        private static readonly float TrailRendererYOffset = 0.5f;
 
         private SkillAndAttackIndicatorObserverProps Props;
 
@@ -77,7 +78,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
         private (DashParticles[] dashParticles, PlayerComponent[] playerClones,
-            ArcPath[] arcPathsFromSky, ElectricTrailRenderer electricTrailRenderer, PlayerComponent activePlayerClone) DashParticlesItems;
+            ArcPath[] arcPathsFromSky, ElectricTrailRenderer electricTrailRenderer, PlayerComponent activePlayerClone,
+            int numElectricTrailRendererPositions) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -329,6 +331,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                     PlayerCloneInstancePool.ReturnPooled(playerClone);
                                 }
 
+                                DashParticlesItems.electricTrailRenderer.ClearAll();
                                 electricTrailRendererPool.ReturnPooled(DashParticlesItems.electricTrailRenderer);
                                 break;
                         }
@@ -352,7 +355,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             PlayerComponent[] playerClones,
             ArcPath[] arcPathsFromSky,
             ElectricTrailRenderer electricTrailRenderer,
-            PlayerComponent activePlayerClone
+            PlayerComponent activePlayerClone,
+            int numElectricTrailRendererPositions
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation, int abilityFXIndex)
@@ -489,9 +493,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
 
             PoolBagDco<AbstractAbilityFX> electricTrailRendererInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer];
+
             ElectricTrailRenderer electricTrailRenderer = (ElectricTrailRenderer) electricTrailRendererInstancePool.InstantiatePooled(dashParticles[0].transform.position);
 
-            return (dashParticles, playerClones, arcPathsFromSky, electricTrailRenderer, null);
+            return (dashParticles, playerClones, arcPathsFromSky, electricTrailRenderer, null, 1);
         }
         private void UpdateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -580,15 +585,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                     Transform arcPathsTransform = arcPathsFromSkyArray[(i * ArcPathFromSkyPerClone) + j].transform;
 
-                    //float rotatedLocalPositionX = arcPath.LocalPositionZ * sinYAngle + arcPath.LocalPositionX * cosYAngle;
-                    //float rotatedLocalPositionZ = arcPath.LocalPositionZ * cosYAngle - arcPath.LocalPositionX * sinYAngle;
-
-                    //arcPathsTransform.position = new Vector3(dashParticlesPosition.x + rotatedLocalPositionX, 
-                    //    dashParticlesPosition.y, 
-                    //    dashParticlesPosition.z + rotatedLocalPositionZ);
-
-                    //arcPathsTransform.localEulerAngles = new Vector3(-15f, arcPath.LocalRotationY + yRotation, 0f);
-
                     arcPathsTransform.position = dashParticlesPosition;
                     arcPathsTransform.localEulerAngles = yRotationVector;
                 }
@@ -598,6 +594,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 Vector3 cloneOffsetDashParticlesPosition = dashParticlesArray[cloneOffsetDashParticlesIndex].transform.position;
 
             }
+
+            Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
+
+            worldElectricTrailRendererPositions[0] = dashParticlesArray[0].transform.position;
+            for (int i = 1; i < worldElectricTrailRendererPositions.Length; i++)
+            {
+                Vector3 playerClonePosition = playerClonesArray[i - 1].transform.position;
+                worldElectricTrailRendererPositions[i] = new Vector3(playerClonePosition.x, playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
+            }
+
+            DashParticlesItems.electricTrailRenderer.OverwritePositions(worldElectricTrailRendererPositions);   
         }
 
         private void UpdateDashParticles(int lineLengthUnits, float fillProgress)
@@ -660,8 +667,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     {
                         Vector3 playerClonePosition = playerClone.transform.position;
                         DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(playerClonePosition.x,
-                            playerClonePosition.y + 0.5f, playerClonePosition.z); 
-
+                            playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
+                        DashParticlesItems.numElectricTrailRendererPositions++;
                         DashParticlesItems.activePlayerClone = playerClone;
                     }
                 }

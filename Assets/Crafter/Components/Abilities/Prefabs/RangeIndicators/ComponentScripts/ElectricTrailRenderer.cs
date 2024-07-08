@@ -10,8 +10,24 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class ElectricTrailRenderer : AbstractAbilityFX
     {
         [SerializeField]
-        public TrailRenderer TrailRenderer;
+        public TrailRenderer[] TrailRenderer;
 
-
+        public void ClearAll()
+        {
+            foreach (TrailRenderer trailRenderer in TrailRenderer)
+            {
+                trailRenderer.Clear();
+            }
+        }
+        public void OverwritePositions(Vector3[] worldElectricTrailRendererPositions)
+        {
+            Vector3 lastPosition = worldElectricTrailRendererPositions[worldElectricTrailRendererPositions.Length - 1];
+            foreach (TrailRenderer trailRenderer in TrailRenderer) 
+            {
+                trailRenderer.Clear();
+                trailRenderer.AddPositions(worldElectricTrailRendererPositions);
+                trailRenderer.transform.position = lastPosition;
+            }
+        }
     }
 }
