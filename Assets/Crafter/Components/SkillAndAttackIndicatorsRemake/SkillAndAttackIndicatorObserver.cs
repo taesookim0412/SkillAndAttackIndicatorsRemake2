@@ -49,7 +49,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         // Also used for adding ArcPathFromCloneOffset
         private static readonly int CloneOffsetUnits = 2;
         private static readonly int UnitsPerClone = 5;
-        private static readonly int ArcPathFromSkyPerClone = 3;
+        private static readonly int ArcPathFromSkyPerClone = 1;
         private static readonly float ArcPathFromSkyPerCloneFloat = (float)ArcPathFromSkyPerClone;
         private static readonly float ArcPathFromSkyRadius = 0.5f;
         private static readonly float ArcPathZUnitsPerCluster = 1f;
