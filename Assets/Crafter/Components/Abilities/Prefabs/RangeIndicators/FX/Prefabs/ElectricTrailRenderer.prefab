@@ -325,5 +325,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   VisualEffect: {fileID: 0}
-  TrailRenderer:
+  TrailRenderers:
   - {fileID: 8342742513677420172}

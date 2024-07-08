@@ -10,11 +10,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class ElectricTrailRenderer : AbstractAbilityFX
     {
         [SerializeField]
-        public TrailRenderer[] TrailRenderer;
+        public TrailRenderer[] TrailRenderers;
 
         public void ClearAll()
         {
-            foreach (TrailRenderer trailRenderer in TrailRenderer)
+            foreach (TrailRenderer trailRenderer in TrailRenderers)
             {
                 trailRenderer.Clear();
             }
@@ -22,7 +22,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public void OverwritePositions(Vector3[] worldElectricTrailRendererPositions)
         {
             Vector3 lastPosition = worldElectricTrailRendererPositions[worldElectricTrailRendererPositions.Length - 1];
-            foreach (TrailRenderer trailRenderer in TrailRenderer) 
+            foreach (TrailRenderer trailRenderer in TrailRenderers) 
             {
                 trailRenderer.Clear();
                 trailRenderer.AddPositions(worldElectricTrailRendererPositions);
