@@ -229,16 +229,16 @@ TrailRenderer:
     colorGradient:
       serializedVersion: 2
       key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
-      key2: {r: 0, g: 0, b: 0, a: 0}
+      key1: {r: 0.4, g: 0.69803923, b: 1, a: 1}
+      key2: {r: 0.101960786, g: 0.17254902, b: 1, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
       key5: {r: 0, g: 0, b: 0, a: 0}
       key6: {r: 0, g: 0, b: 0, a: 0}
       key7: {r: 0, g: 0, b: 0, a: 0}
       ctime0: 0
-      ctime1: 65535
-      ctime2: 0
+      ctime1: 12517
+      ctime2: 59440
       ctime3: 0
       ctime4: 0
       ctime5: 0
@@ -253,13 +253,13 @@ TrailRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
-      m_NumColorKeys: 2
+      m_ColorSpace: 0
+      m_NumColorKeys: 3
       m_NumAlphaKeys: 2
     numCornerVertices: 0
     numCapVertices: 0
     alignment: 0
-    textureMode: 0
+    textureMode: 1
     textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
@@ -1089,6 +1089,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 47940657191296749, guid: 20145a71b26dd244daa15e9c20bb60af, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7156061177868482806, guid: 20145a71b26dd244daa15e9c20bb60af, type: 3}
       propertyPath: m_LocalPosition.x
       value: 2.498
@@ -1132,6 +1136,10 @@ PrefabInstance:
     - target: {fileID: 7716441417431913458, guid: 20145a71b26dd244daa15e9c20bb60af, type: 3}
       propertyPath: m_Name
       value: DashParticles
+      objectReference: {fileID: 0}
+    - target: {fileID: 7716441417431913458, guid: 20145a71b26dd244daa15e9c20bb60af, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1468,9 +1476,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2110063215}
-  - component: {fileID: 2110063214}
-  - component: {fileID: 2110063213}
-  - component: {fileID: 2110063212}
   m_Layer: 0
   m_Name: ElectricTrailRenderer
   m_TagString: Untagged
@@ -1478,80 +1483,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!64 &2110063212
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2110063211}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &2110063213
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2110063211}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials: []
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &2110063214
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2110063211}
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &2110063215
 Transform:
   m_ObjectHideFlags: 0
@@ -1561,7 +1492,7 @@ Transform:
   m_GameObject: {fileID: 2110063211}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.48418295, w: 0.8749668}
-  m_LocalPosition: {x: 0, y: 0.91, z: 37.31}
+  m_LocalPosition: {x: 0, y: 0.91, z: 5.52}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.147596}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1734,6 +1665,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1278279609522046277, guid: 3c2f14533dfb4f1429e8af29e54279dd, type: 3}
+      propertyPath: TrailModule.colorOverTrail.maxGradient.m_ColorSpace
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1687360159726502973, guid: 3c2f14533dfb4f1429e8af29e54279dd, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.32
@@ -1744,7 +1679,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1687360159726502973, guid: 3c2f14533dfb4f1429e8af29e54279dd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.92
+      value: 5.66
       objectReference: {fileID: 0}
     - target: {fileID: 1687360159726502973, guid: 3c2f14533dfb4f1429e8af29e54279dd, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1774,9 +1709,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8018000502501367225, guid: 3c2f14533dfb4f1429e8af29e54279dd, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8961108782344921202, guid: 3c2f14533dfb4f1429e8af29e54279dd, type: 3}
       propertyPath: m_Name
       value: ElectricTrail
+      objectReference: {fileID: 0}
+    - target: {fileID: 8961108782344921202, guid: 3c2f14533dfb4f1429e8af29e54279dd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1900,9 +1843,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 614441683841179453, guid: 3815aa478abde9d4fa356b17af9b11d6, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2195327893701469498, guid: 3815aa478abde9d4fa356b17af9b11d6, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3985532110084074843, guid: 3815aa478abde9d4fa356b17af9b11d6, type: 3}
       propertyPath: m_Name
       value: ArcPath_Small_Floating
+      objectReference: {fileID: 0}
+    - target: {fileID: 3985532110084074843, guid: 3815aa478abde9d4fa356b17af9b11d6, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2009,9 +1964,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2471164491307277281, guid: f86b4911f1a90d045997cddd7eed331b, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5275354320333826702, guid: f86b4911f1a90d045997cddd7eed331b, type: 3}
       propertyPath: m_Name
       value: ArcPath
+      objectReference: {fileID: 0}
+    - target: {fileID: 5275354320333826702, guid: f86b4911f1a90d045997cddd7eed331b, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
