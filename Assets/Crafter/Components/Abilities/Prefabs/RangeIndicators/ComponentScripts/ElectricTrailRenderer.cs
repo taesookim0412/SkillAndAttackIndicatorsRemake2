@@ -21,13 +21,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         }
         public void OverwritePositions(Vector3[] worldElectricTrailRendererPositions)
         {
-            Vector3 lastPosition = worldElectricTrailRendererPositions[worldElectricTrailRendererPositions.Length - 1];
             foreach (TrailRenderer trailRenderer in TrailRenderers) 
             {
                 trailRenderer.Clear();
                 trailRenderer.AddPositions(worldElectricTrailRendererPositions);
-                trailRenderer.transform.position = lastPosition;
             }
+            transform.position = worldElectricTrailRendererPositions[worldElectricTrailRendererPositions.Length - 1];
         }
     }
 }
