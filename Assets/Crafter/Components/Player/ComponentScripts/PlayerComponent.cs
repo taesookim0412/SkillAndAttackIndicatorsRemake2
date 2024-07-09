@@ -1,14 +1,24 @@
-﻿using System;
+﻿using StarterAssets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Assets.Crafter.Components.Player.ComponentScripts
 {
     public class PlayerComponent : MonoBehaviour
     {
+        [SerializeField]
+        public CharacterController CharacterController;
+        [SerializeField]
+        public ThirdPersonController ThirdPersonController;
+        [SerializeField]
+        public StarterAssetsInputs StarterAssetsInputs;
+        [SerializeField]
+        public PlayerInput PlayerInput;
         [SerializeField]
         public SkinnedMeshRenderer[] Meshes;
 
@@ -38,6 +48,13 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
             }
 
             Materials = materials;
+        }
+        public void InitializeClone()
+        {
+            GameObject.Destroy(ThirdPersonController);
+            GameObject.Destroy(CharacterController);
+            GameObject.Destroy(StarterAssetsInputs);
+            GameObject.Destroy(PlayerInput);
         }
         public void SetCloneFX()
         {

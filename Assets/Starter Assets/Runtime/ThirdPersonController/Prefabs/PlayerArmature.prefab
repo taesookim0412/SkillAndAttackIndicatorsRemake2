@@ -1301,6 +1301,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a52ab5ed932deb4facc305dae43f734, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CharacterController: {fileID: 4416926081852918491}
+  ThirdPersonController: {fileID: 4416926081852918490}
+  StarterAssetsInputs: {fileID: 135756642000475821}
+  PlayerInput: {fileID: 4416926081852918493}
   Meshes:
   - {fileID: 5597113867290821413}
   Materials: []

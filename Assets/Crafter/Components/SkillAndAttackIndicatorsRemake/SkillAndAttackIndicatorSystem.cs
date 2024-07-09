@@ -116,9 +116,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             AbilityFXInstancePools = abilityFXInstancePools;
 
+            PlayerComponent playerComponentInstance = GameObject.Instantiate(PlayerComponent);
+            playerComponentInstance.InitializeClone();
+            playerComponentInstance.gameObject.SetActive(false);
+
             Dictionary<Guid, PoolBagDco<PlayerComponent>> playerCloneInstancePools = new Dictionary<Guid, PoolBagDco<PlayerComponent>>(1)
             {
-                { PlayerGuid, new PoolBagDco<PlayerComponent>(PlayerComponent, 10) }
+                { PlayerGuid, new PoolBagDco<PlayerComponent>(playerComponentInstance, 10) }
             };
 
             PlayerCloneInstancePools = playerCloneInstancePools;
