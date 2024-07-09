@@ -285,7 +285,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             switch (abilityFXType)
                             {
                                 case AbilityFXType.DashParticles:
-                                    UpdateDashParticlesItems(LineLengthUnits, terrainProjectorPosition.x, terrainProjectorPosition.z, playerRotation,
+                                    UpdateDashParticlesItemsPositions(LineLengthUnits, terrainProjectorPosition.x, terrainProjectorPosition.z, playerRotation,
                                         fillProgress: newFillProgress);
                                     break;
                             }
@@ -300,7 +300,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         switch (abilityFXType)
                         {
                             case AbilityFXType.DashParticles:
-                                UpdateDashParticles(LineLengthUnits, newFillProgress);
+                                UpdateDashParticlesItems(LineLengthUnits, newFillProgress);
                                 break;
                         }
                     }
@@ -437,8 +437,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
                 playerComponentClone.gameObject.transform.localEulerAngles = yRotationVector;
-                playerComponentClone.SetCloneFX();
-                playerComponentClone.gameObject.SetActive(false);
+                playerComponentClone.OnCloneFXInit();
                 playerClones[i] = playerComponentClone;
             }
 
@@ -498,7 +497,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             return (dashParticles, playerClones, arcPathsFromSky, electricTrailRenderer, null, 1);
         }
-        private void UpdateDashParticlesItems(int lineLengthUnits,
+        private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation, float fillProgress)
         {
@@ -607,7 +606,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             DashParticlesItems.electricTrailRenderer.OverwritePositions(worldElectricTrailRendererPositions);   
         }
 
-        private void UpdateDashParticles(int lineLengthUnits, float fillProgress)
+        private void UpdateDashParticlesItems(int lineLengthUnits, float fillProgress)
         {
             bool activePassed = false;
             DashParticles[] dashParticlesArray = DashParticlesItems.dashParticles;
@@ -616,7 +615,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             {
                 for (int i = 0; i < lineLengthUnits; i++)
                 {
-                    (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, i);
+                    float lineLengthPercentage = (float)i / LineLengthUnits;
+                    (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, lineLengthPercentage);
                     DashParticles dashParticles = dashParticlesArray[i];
                     if (dashParticles.gameObject.activeSelf != active)
                     {
@@ -646,36 +646,46 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             for (int i = playerClones.Length - 1; i >= 0; i--)
             {
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
-                (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, particlesIndex);
+                float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
 
-                active = active && !activePassed;
+                (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, lineLengthPercentage);
+                (bool cloneActive, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
+
+                ArcPath arcPath = arcPathsFromSky[i * ArcPathFromSkyPerClone];
                 PlayerComponent playerClone = playerClones[i];
-                if (playerClone.gameObject.activeSelf != active)
+
+                bool gameObjectActive = arcPath.gameObject.activeSelf;
+                bool newlyActive = !gameObjectActive && active;
+
+                if (gameObjectActive != active)
                 {
-                    playerClone.gameObject.SetActive(active);
-                    for (int j = 0; j < ArcPathFromSkyPerClone; j++)
+                    arcPath.gameObject.SetActive(active);
+                    for (int j = 1; j < ArcPathFromSkyPerClone; j++)
                     {
-                        ArcPath arcPath = arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j];
+                        arcPath = arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j];
                         arcPath.gameObject.SetActive(active);
                     }
                 }
-                if (active)
+
+                if (newlyActive)
                 {
+                    Vector3 playerClonePosition = playerClone.transform.position;
+                    DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(playerClonePosition.x,
+                        playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
+                    DashParticlesItems.numElectricTrailRendererPositions++;
+                    DashParticlesItems.activePlayerClone = playerClone;
+                }
+
+                if (cloneActive)
+                {
+                    playerClone.SetCloneFXOpacity(cloneOpacity);
                     activePassed = true;
-                    if (DashParticlesItems.activePlayerClone == null || 
-                        DashParticlesItems.activePlayerClone.GetHashCode() != playerClone.GetHashCode())
-                    {
-                        Vector3 playerClonePosition = playerClone.transform.position;
-                        DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(playerClonePosition.x,
-                            playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
-                        DashParticlesItems.numElectricTrailRendererPositions++;
-                        DashParticlesItems.activePlayerClone = playerClone;
-                    }
                 }
                 else
                 {
                     if (activePassed)
                     {
+                        playerClone.gameObject.SetActive(false);
                         break;
                     }
                 }
@@ -684,10 +694,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             // set opacity...
         }
 
-        private (bool active, float opacity) CalculateDashParticlesOpacity(float fillProgress, int lineLengthIndex)
+        private (bool active, float opacity) CalculateDashParticlesOpacity(float fillProgress, float lineLengthPercentage)
         {
-            float lineLengthPercentage = (float) lineLengthIndex / LineLengthUnits;
-
             if (fillProgress > 0.1f && fillProgress < 0.9f && lineLengthPercentage <= fillProgress)
             {
                 float lineLengthDifference = fillProgress - lineLengthPercentage;
@@ -695,6 +703,21 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 if (lineLengthDifference < 0.28f)
                 {
                     return (true, 1f - lineLengthDifference);
+                }
+            }
+            return (false, 0f);
+        }
+        private (bool active, float opacity) CalculatePlayerCloneOpacity(float fillProgress, float lineLengthPercentage)
+        {
+            if (fillProgress > 0.1f && fillProgress < 0.9f)
+            {
+                if (lineLengthPercentage >= fillProgress)
+                {
+                    return (true, 1f - lineLengthPercentage - fillProgress);
+                }
+                else
+                {
+                    return (true, 1f);
                 }
             }
             return (false, 0f);

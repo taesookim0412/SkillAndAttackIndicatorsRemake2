@@ -1306,7 +1306,7 @@ MonoBehaviour:
   StarterAssetsInputs: {fileID: 135756642000475821}
   PlayerInput: {fileID: 4416926081852918493}
   Meshes:
-  - {fileID: 5597113867290821413}
+  - {fileID: 260446959380757318}
   Materials: []
 --- !u!1 &4523139366846529165
 GameObject:
@@ -2246,6 +2246,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6392546784736076633}
   - component: {fileID: 5597113867290821413}
+  - component: {fileID: 260446959380757318}
   m_Layer: 0
   m_Name: Armature_Mesh
   m_TagString: Untagged
@@ -2394,6 +2395,23 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.000000029802322, y: -0.09214255, z: 0.026248664}
     m_Extent: {x: 0.52818465, y: 0.88092995, z: 0.22050178}
   m_DirtyAABB: 0
+--- !u!114 &260446959380757318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8187455079231382173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f996d511f940b6b40a87ae0abc26a947, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SkinnedMeshRenderer: {fileID: 5597113867290821413}
+  TransparentMaterials:
+  - {fileID: 2100000, guid: 60024c70b2446df48a8c41abf3c6d03c, type: 2}
+  - {fileID: 2100000, guid: 4c5990480f4bdd1409c4514a254b4abf, type: 2}
+  - {fileID: 2100000, guid: 89a2f04ed1e440d4dbf4e5aa5bab2aa8, type: 2}
 --- !u!1 &8338988566280778634
 GameObject:
   m_ObjectHideFlags: 0

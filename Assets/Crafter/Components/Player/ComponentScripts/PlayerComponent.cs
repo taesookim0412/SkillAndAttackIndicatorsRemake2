@@ -20,7 +20,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         [SerializeField]
         public PlayerInput PlayerInput;
         [SerializeField]
-        public SkinnedMeshRenderer[] Meshes;
+        public SkinnedMeshRendererContainer[] Meshes;
 
         [HideInInspector]
         public Material[] Materials;
@@ -32,16 +32,16 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         private void InitializeMaterials()
         {
             int materialsCount = 0;
-            foreach (SkinnedMeshRenderer skinnedMeshRenderer in Meshes)
+            foreach (SkinnedMeshRendererContainer holder in Meshes)
             {
-                materialsCount += skinnedMeshRenderer.materials.Length;
+                materialsCount += holder.SkinnedMeshRenderer.materials.Length;
             }
 
             Material[] materials = new Material[materialsCount];
             int i = 0;
-            foreach (SkinnedMeshRenderer skinnedMeshRenderer in Meshes)
+            foreach (SkinnedMeshRendererContainer holder in Meshes)
             {
-                foreach (Material material in skinnedMeshRenderer.materials)
+                foreach (Material material in holder.SkinnedMeshRenderer.materials)
                 {
                     materials[i++] = material;
                 }
@@ -49,17 +49,30 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
             Materials = materials;
         }
-        public void InitializeClone()
+        public PlayerComponent CreateInactiveTransparentCloneInstance()
         {
-            GameObject.Destroy(ThirdPersonController);
-            GameObject.Destroy(CharacterController);
-            GameObject.Destroy(StarterAssetsInputs);
-            GameObject.Destroy(PlayerInput);
+            PlayerComponent playerComponentInstance = GameObject.Instantiate(this);
+            playerComponentInstance.gameObject.SetActive(false);
+            GameObject.Destroy(playerComponentInstance.ThirdPersonController);
+            GameObject.Destroy(playerComponentInstance.CharacterController);
+            GameObject.Destroy(playerComponentInstance.StarterAssetsInputs);
+            GameObject.Destroy(playerComponentInstance.PlayerInput);
+            foreach (SkinnedMeshRendererContainer holder in playerComponentInstance.Meshes)
+            {
+                holder.SkinnedMeshRenderer.materials = holder.TransparentMaterials;
+            }
+
+            return playerComponentInstance;
         }
-        public void SetCloneFX()
+        public void OnCloneFXInit()
         {
-            foreach (Material material in Materials) {
-                material.color = Color.black;
+            SetCloneFXOpacity(0f);
+        }
+        public void SetCloneFXOpacity(float opacity)
+        {
+            foreach (Material material in Materials)
+            {
+                material.color = new Color(1f, 1f, 1f, opacity);
             }
         }
     }
