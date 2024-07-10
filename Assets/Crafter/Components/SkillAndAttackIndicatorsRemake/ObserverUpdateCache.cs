@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
-    public class ObserverUpdateProps
+    public class ObserverUpdateCache
     {
         public long UpdateTickTimeFixedUpdate;
 
-        public ObserverUpdateProps(long updateTickTime)
+        public ObserverUpdateCache(long updateTickTime)
         {
             UpdateTickTimeFixedUpdate = updateTickTime;
         }

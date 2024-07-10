@@ -1,4 +1,6 @@
-﻿using StarterAssets;
+﻿using Assets.Crafter.Components.Models;
+using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
+using StarterAssets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +26,8 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
         [HideInInspector]
         public Material[] Materials;
+        [HideInInspector]
+        public PlayerComponentCloneItems PlayerComponentCloneItems;
 
         private void Awake()
         {
@@ -64,8 +68,9 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
             return playerComponentInstance;
         }
-        public void OnCloneFXInit()
+        public void OnCloneFXInit(ObserverUpdateCache observerUpdateCache)
         {
+            PlayerComponentCloneItems = new PlayerComponentCloneItems(observerUpdateCache);
             SetCloneFXOpacity(0f);
         }
         public void SetCloneFXOpacity(float opacity)
@@ -74,6 +79,18 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
             {
                 material.color = new Color(1f, 1f, 1f, opacity);
             }
+        }
+    }
+
+    public class PlayerComponentCloneItems
+    {
+        public TimerStructDco_Observer AnimationTimer = new TimerStructDco_Observer(125L);
+        public bool AnimationTimerCompleted = false;
+        public bool AnimationTimerSet = false;
+
+        public PlayerComponentCloneItems(ObserverUpdateCache observerUpdateCache)
+        {
+            AnimationTimer.ObserverUpdateCache = observerUpdateCache;
         }
     }
 }

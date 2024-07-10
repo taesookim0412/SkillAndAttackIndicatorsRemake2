@@ -20,11 +20,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     {
         public SkillAndAttackIndicatorSystem SkillAndAttackIndicatorSystem;
 
-        public ObserverUpdateProps ObserverUpdateProps;
-        public SkillAndAttackIndicatorObserverProps(SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem, ObserverUpdateProps observerUpdateProps)
+        public ObserverUpdateCache ObserverUpdateCache;
+        public SkillAndAttackIndicatorObserverProps(SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem, ObserverUpdateCache observerUpdateCache)
         {
             SkillAndAttackIndicatorSystem = skillAndAttackIndicatorSystem;
-            ObserverUpdateProps = observerUpdateProps;
+            ObserverUpdateCache = observerUpdateCache;
         }
     }
     public class SkillAndAttackIndicatorObserver
@@ -222,7 +222,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     }
 
                     ProjectorSet = true;
-                    LastTickTime = Props.ObserverUpdateProps.UpdateTickTimeFixedUpdate;
+                    LastTickTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                 }
                 else
                 {
@@ -232,8 +232,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
             else
             {
-                long elapsedTickTime = Props.ObserverUpdateProps.UpdateTickTimeFixedUpdate - LastTickTime;
-                LastTickTime = Props.ObserverUpdateProps.UpdateTickTimeFixedUpdate;
+                long elapsedTickTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastTickTime;
+                LastTickTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                 ElapsedTime += elapsedTickTime;
                 ElapsedTimeSecondsFloat += elapsedTickTime * 0.001f;
 
@@ -437,7 +437,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
                 playerComponentClone.gameObject.transform.localEulerAngles = yRotationVector;
-                playerComponentClone.OnCloneFXInit();
+                playerComponentClone.OnCloneFXInit(Props.ObserverUpdateCache);
                 playerClones[i] = playerComponentClone;
             }
 
@@ -649,7 +649,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
 
                 (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, lineLengthPercentage);
-                (bool cloneActive, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
+                (bool fullCloneOpacity, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
 
                 ArcPath arcPath = arcPathsFromSky[i * ArcPathFromSkyPerClone];
                 PlayerComponent playerClone = playerClones[i];
@@ -676,18 +676,40 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     DashParticlesItems.activePlayerClone = playerClone;
                 }
 
-                if (cloneActive)
+                if (!activePassed)
                 {
-                    playerClone.SetCloneFXOpacity(cloneOpacity);
-                    activePassed = true;
+                    if (fullCloneOpacity)
+                    {
+                        if (!playerClone.PlayerComponentCloneItems.AnimationTimerCompleted)
+                        {
+                            if (!playerClone.PlayerComponentCloneItems.AnimationTimerSet)
+                            {
+                                // temp, set based on hardcoded timer instead of motion duration...
+                                playerClone.PlayerComponentCloneItems.AnimationTimer.LastCheckedTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                                playerClone.PlayerComponentCloneItems.AnimationTimerSet = true;
+                            }
+                            else if (playerClone.PlayerComponentCloneItems.AnimationTimer.IsTimeElapsed_FixedUpdateThread())
+                            {
+                                playerClone.PlayerComponentCloneItems.AnimationTimerCompleted = true;
+                                playerClone.gameObject.SetActive(false);
+                            }
+                            else
+                            {
+                                float timerPercentage = playerClone.PlayerComponentCloneItems.AnimationTimer.RemainingDurationPercentage();
+                                playerClone.SetCloneFXOpacity(1f - timerPercentage);
+                                //Debug.Log($"{i}, {1f - timerPercentage}");
+                            }
+                        }
+                        activePassed = true;
+                    }
+                    else
+                    {
+                        playerClone.SetCloneFXOpacity(cloneOpacity);
+                    }
                 }
                 else
                 {
-                    if (activePassed)
-                    {
-                        playerClone.gameObject.SetActive(false);
-                        break;
-                    }
+                    break;
                 }
             }
             
@@ -707,13 +729,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
             return (false, 0f);
         }
-        private (bool active, float opacity) CalculatePlayerCloneOpacity(float fillProgress, float lineLengthPercentage)
+        private (bool fullOpacity, float opacity) CalculatePlayerCloneOpacity(float fillProgress, float lineLengthPercentage)
         {
             if (fillProgress > 0.1f && fillProgress < 0.9f)
             {
                 if (lineLengthPercentage >= fillProgress)
                 {
-                    return (true, 1f - lineLengthPercentage - fillProgress);
+                    return (false, 1f - lineLengthPercentage - fillProgress);
                 }
                 else
                 {

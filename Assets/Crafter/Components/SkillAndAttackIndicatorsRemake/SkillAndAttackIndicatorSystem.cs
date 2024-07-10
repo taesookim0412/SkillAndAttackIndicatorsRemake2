@@ -36,7 +36,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public Camera Camera;
 
         [HideInInspector]
-        private ObserverUpdateProps ObserverUpdateProps;
+        private ObserverUpdateCache ObserverUpdateProps;
         [HideInInspector]
         public SkillAndAttackIndicatorObserverProps SkillAndAttackIndicatorObserverProps;
         [HideInInspector]
@@ -58,7 +58,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public void OnEnable()
         {
             long updateTickTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            ObserverUpdateProps = new ObserverUpdateProps(updateTickTime);
+            ObserverUpdateProps = new ObserverUpdateCache(updateTickTime);
 
             SkillAndAttackIndicatorObserverProps = new SkillAndAttackIndicatorObserverProps(this, ObserverUpdateProps);
 
