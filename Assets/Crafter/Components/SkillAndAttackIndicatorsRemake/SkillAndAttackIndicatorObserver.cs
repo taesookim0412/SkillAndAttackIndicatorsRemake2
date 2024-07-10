@@ -78,8 +78,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
         private (DashParticles[] dashParticles, PlayerComponent[] playerClones,
-            ArcPath[] arcPathsFromSky, ElectricTrailRenderer electricTrailRenderer, PlayerComponent activePlayerClone,
-            int numElectricTrailRendererPositions) DashParticlesItems;
+            ArcPath[] arcPathsFromSky, ElectricTrailRenderer electricTrailRenderer,
+            int numElectricTrailRendererPositions,
+            int lastArcPathsIndex) DashParticlesItems;
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
@@ -355,8 +356,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             PlayerComponent[] playerClones,
             ArcPath[] arcPathsFromSky,
             ElectricTrailRenderer electricTrailRenderer,
-            PlayerComponent activePlayerClone,
-            int numElectricTrailRendererPositions
+            int numElectricTrailRendererPositions,
+            int lastArcPathsIndex
             ) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation, int abilityFXIndex)
@@ -495,7 +496,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             ElectricTrailRenderer electricTrailRenderer = (ElectricTrailRenderer) electricTrailRendererInstancePool.InstantiatePooled(dashParticles[0].transform.position);
 
-            return (dashParticles, playerClones, arcPathsFromSky, electricTrailRenderer, null, 1);
+            return (dashParticles, playerClones, arcPathsFromSky, electricTrailRenderer, 1, -1);
         }
         private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -642,22 +643,16 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             activePassed = false;
             PlayerComponent[] playerClones = DashParticlesItems.playerClones;
             ArcPath[] arcPathsFromSky = DashParticlesItems.arcPathsFromSky;
-
             for (int i = playerClones.Length - 1; i >= 0; i--)
             {
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
                 float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
 
                 (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, lineLengthPercentage);
-                (bool fullCloneOpacity, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
 
                 ArcPath arcPath = arcPathsFromSky[i * ArcPathFromSkyPerClone];
-                PlayerComponent playerClone = playerClones[i];
 
-                bool gameObjectActive = arcPath.gameObject.activeSelf;
-                bool newlyActive = !gameObjectActive && active;
-
-                if (gameObjectActive != active)
+                if (arcPath.gameObject.activeSelf != active)
                 {
                     arcPath.gameObject.SetActive(active);
                     for (int j = 1; j < ArcPathFromSkyPerClone; j++)
@@ -665,16 +660,39 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         arcPath = arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j];
                         arcPath.gameObject.SetActive(active);
                     }
+                    if (DashParticlesItems.lastArcPathsIndex < i)
+                    {
+                        Vector3 playerClonePosition = playerClones[i].transform.position;
+                        DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(playerClonePosition.x,
+                            playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
+                        DashParticlesItems.numElectricTrailRendererPositions = i + 1;
+                        DashParticlesItems.lastArcPathsIndex = i;
+                        //Debug.Log(DashParticlesItems.numElectricTrailRendererPositions);
+                    }
                 }
 
-                if (newlyActive)
+                if (!activePassed)
                 {
-                    Vector3 playerClonePosition = playerClone.transform.position;
-                    DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(playerClonePosition.x,
-                        playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
-                    DashParticlesItems.numElectricTrailRendererPositions++;
-                    DashParticlesItems.activePlayerClone = playerClone;
+                    if (active)
+                    {
+                        activePassed = true;
+                    }
                 }
+                else
+                {
+                    break;
+                }
+            }
+
+            activePassed = false;
+            for (int i = playerClones.Length - 1; i >= 0; i--)
+            {
+                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
+                float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
+
+                (bool fullCloneOpacity, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
+
+                PlayerComponent playerClone = playerClones[i];
 
                 if (!activePassed)
                 {
