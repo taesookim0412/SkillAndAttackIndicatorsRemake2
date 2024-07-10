@@ -693,41 +693,40 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 (bool fullCloneOpacity, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
 
                 PlayerComponent playerClone = playerClones[i];
-
                 if (!activePassed)
                 {
                     if (fullCloneOpacity)
                     {
-                        if (!playerClone.PlayerComponentCloneItems.AnimationTimerCompleted)
-                        {
-                            if (!playerClone.PlayerComponentCloneItems.AnimationTimerSet)
-                            {
-                                // temp, set based on hardcoded timer instead of motion duration...
-                                playerClone.PlayerComponentCloneItems.AnimationTimer.LastCheckedTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-                                playerClone.PlayerComponentCloneItems.AnimationTimerSet = true;
-                            }
-                            else if (playerClone.PlayerComponentCloneItems.AnimationTimer.IsTimeElapsed_FixedUpdateThread())
-                            {
-                                playerClone.PlayerComponentCloneItems.AnimationTimerCompleted = true;
-                                playerClone.gameObject.SetActive(false);
-                            }
-                            else
-                            {
-                                float timerPercentage = playerClone.PlayerComponentCloneItems.AnimationTimer.RemainingDurationPercentage();
-                                playerClone.SetCloneFXOpacity(1f - timerPercentage);
-                                //Debug.Log($"{i}, {1f - timerPercentage}");
-                            }
-                        }
+                        playerClone.SetCloneFXOpacity(cloneOpacity);
                         activePassed = true;
                     }
-                    else
+                    else if (cloneOpacity > 0.1f)
                     {
                         playerClone.SetCloneFXOpacity(cloneOpacity);
                     }
                 }
                 else
                 {
-                    break;
+                    if (!playerClone.PlayerComponentCloneItems.AnimationTimerCompleted)
+                    {
+                        if (!playerClone.PlayerComponentCloneItems.AnimationTimerSet)
+                        {
+                            // temp, set based on hardcoded timer instead of motion duration...
+                            playerClone.PlayerComponentCloneItems.AnimationTimer.LastCheckedTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                            playerClone.PlayerComponentCloneItems.AnimationTimerSet = true;
+                        }
+                        else if (playerClone.PlayerComponentCloneItems.AnimationTimer.IsTimeElapsed_FixedUpdateThread())
+                        {
+                            playerClone.PlayerComponentCloneItems.AnimationTimerCompleted = true;
+                            playerClone.gameObject.SetActive(false);
+                        }
+                        else
+                        {
+                            float timerPercentage = playerClone.PlayerComponentCloneItems.AnimationTimer.RemainingDurationPercentage();
+                            playerClone.SetCloneFXOpacity(1f - timerPercentage);
+                            //Debug.Log($"{i}, {1f - timerPercentage}");
+                        }
+                    }
                 }
             }
             
