@@ -660,7 +660,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         arcPath = arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j];
                         arcPath.gameObject.SetActive(active);
                     }
-                    if (DashParticlesItems.lastArcPathsIndex < i)
+                    if (active && DashParticlesItems.lastArcPathsIndex < i)
                     {
                         Vector3 playerClonePosition = playerClones[i].transform.position;
                         DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(playerClonePosition.x,
