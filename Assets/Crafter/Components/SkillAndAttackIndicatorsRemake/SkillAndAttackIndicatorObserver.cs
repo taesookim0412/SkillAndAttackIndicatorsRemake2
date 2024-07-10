@@ -78,7 +78,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPLineRegionProjector LineRegionProjectorRef;
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
-        private (DashParticles[] dashParticles, PlayerComponent[] playerClones,
+        private (DashParticles[] dashParticles, PlayerClientData[] playerClones,
             ArcPath[] arcPathsFromSky, 
             ShockAura[] shockAuras,
             ElectricTrailRenderer electricTrailRenderer,
@@ -331,9 +331,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 {
                                     dashParticlesPool.ReturnPooled(dashParticles);
                                 }
-                                foreach (PlayerComponent playerClone in DashParticlesItems.playerClones)
+                                foreach (PlayerClientData playerClientData in DashParticlesItems.playerClones)
                                 {
-                                    PlayerCloneInstancePool.ReturnPooled(playerClone);
+                                    playerClientData.PlayerComponent.Animator.StopPlayback();
+                                    PlayerCloneInstancePool.ReturnPooled(playerClientData.PlayerComponent);
                                 }
                                 foreach (ArcPath arcPath in DashParticlesItems.arcPathsFromSky)
                                 {
@@ -365,7 +366,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
 
         private (DashParticles[] dashParticles,
-            PlayerComponent[] playerClones,
+            PlayerClientData[] playerClones,
             ArcPath[] arcPathsFromSky,
             ShockAura[] shockAuras,
             ElectricTrailRenderer electricTrailRenderer,
@@ -378,7 +379,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             int numPlayerClones = (int)Math.Floor((lineLengthUnits - CloneOffsetUnits) / (float)UnitsPerClone);
 
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
-            PlayerComponent[] playerClones = new PlayerComponent[numPlayerClones];
+            PlayerClientData[] playerClones = new PlayerClientData[numPlayerClones];
             ArcPath[] arcPathsFromSky = new ArcPath[numPlayerClones * ArcPathFromSkyPerClone];
             ShockAura[] shockAuras = new ShockAura[numPlayerClones];
 
@@ -461,7 +462,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 playerComponentClone.gameObject.transform.localEulerAngles = yRotationVector;
                 playerComponentClone.OnCloneFXInit(Props.ObserverUpdateCache);
-                playerClones[i] = playerComponentClone;
+                playerClones[i] = new PlayerClientData(playerComponentClone);
 
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
                 {
@@ -574,7 +575,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 prevXAnglei1 = xAngle;
             }
 
-            PlayerComponent[] playerClonesArray = DashParticlesItems.playerClones;
+            PlayerClientData[] playerClonesArray = DashParticlesItems.playerClones;
             ArcPath[] arcPathsFromSkyArray = DashParticlesItems.arcPathsFromSky;
             ShockAura[] shockAurasArray = DashParticlesItems.shockAuras;
 
@@ -583,7 +584,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
 
-                Transform playerCloneTransform = playerClonesArray[i].transform;
+                Transform playerCloneTransform = playerClonesArray[i].PlayerComponent.transform;
 
                 Vector3 dashParticlesPosition = dashParticlesArray[particlesIndex].transform.position;
                 playerCloneTransform.position = dashParticlesPosition;
@@ -610,7 +611,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             for (int i = 1; i < worldElectricTrailRendererPositions.Length; i++)
             {
-                Vector3 playerClonePosition = playerClonesArray[i - 1].transform.position;
+                Vector3 playerClonePosition = playerClonesArray[i - 1].PlayerComponent.transform.position;
                 worldElectricTrailRendererPositions[i] = new Vector3(playerClonePosition.x, playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
             }
 
@@ -651,7 +652,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
             activePassed = false;
-            PlayerComponent[] playerClones = DashParticlesItems.playerClones;
+            PlayerClientData[] playerClones = DashParticlesItems.playerClones;
             ArcPath[] arcPathsFromSky = DashParticlesItems.arcPathsFromSky;
             ShockAura[] shockAurasArray = DashParticlesItems.shockAuras;
             for (int i = playerClones.Length - 1; i >= 0; i--)
@@ -674,7 +675,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     }
                     if (active && DashParticlesItems.lastArcPathsIndex < i)
                     {
-                        Vector3 playerClonePosition = playerClones[i].transform.position;
+                        Vector3 playerClonePosition = playerClones[i].PlayerComponent.transform.position;
                         DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(playerClonePosition.x,
                             playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
                         DashParticlesItems.numElectricTrailRendererPositions = i + 1;
@@ -704,18 +705,29 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 (bool fullCloneOpacity, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
 
-                PlayerComponent playerClone = playerClones[i];
+                PlayerClientData playerCloneClientData = playerClones[i];
+                PlayerComponent playerClone = playerCloneClientData.PlayerComponent;
                 if (!activePassed)
                 {
+
                     if (fullCloneOpacity)
                     {
                         playerClone.SetCloneFXOpacity(cloneOpacity);
                         activePassed = true;
                     }
-                    else if (cloneOpacity > 0.1f)
+                    else if (cloneOpacity > 0.2f)
                     {
                         playerClone.SetCloneFXOpacity(cloneOpacity);
                     }
+                    if (cloneOpacity > 0.2f)
+                    {
+                        if (!playerClone.PlayerComponentCloneItems.AnimationStarted)
+                        {
+                            playerCloneClientData.PlayWalkingState();
+                            playerClone.PlayerComponentCloneItems.AnimationStarted = true;
+                        }
+                    }
+
                 }
                 else if (!playerClone.PlayerComponentCloneItems.AnimationTimerCompleted)
                 {
@@ -728,6 +740,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     else if (playerClone.PlayerComponentCloneItems.AnimationTimer.IsTimeElapsed_FixedUpdateThread())
                     {
                         playerClone.PlayerComponentCloneItems.AnimationTimerCompleted = true;
+                        playerClone.Animator.StopPlayback();
                         playerClone.gameObject.SetActive(false);
                     }
                     else
@@ -761,7 +774,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             {
                 if (lineLengthPercentage >= fillProgress)
                 {
-                    return (false, 1f - lineLengthPercentage - fillProgress);
+                    return (false, 1f - ((lineLengthPercentage - fillProgress) / 0.2f));
                 }
                 else
                 {

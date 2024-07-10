@@ -23,6 +23,8 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         public PlayerInput PlayerInput;
         [SerializeField]
         public SkinnedMeshRendererContainer[] Meshes;
+        [SerializeField]
+        public Animator Animator;
 
         [HideInInspector]
         public Material[] Materials;
@@ -87,6 +89,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         public TimerStructDco_Observer AnimationTimer = new TimerStructDco_Observer(125L);
         public bool AnimationTimerCompleted = false;
         public bool AnimationTimerSet = false;
+        public bool AnimationStarted = false;
 
         public PlayerComponentCloneItems(ObserverUpdateCache observerUpdateCache)
         {
