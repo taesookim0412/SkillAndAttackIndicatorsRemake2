@@ -103,13 +103,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             if (abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.DashParticles, out AbstractAbilityFX dashParticlesPrefab) &&
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ArcPath, out AbstractAbilityFX arcPathPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ElectricTrailRenderer, out AbstractAbilityFX electricTrailRendererPrefab)
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ElectricTrailRenderer, out AbstractAbilityFX electricTrailRendererPrefab) &&
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ShockAura, out AbstractAbilityFX shockAuraPrefab)
                 )
             {
-                PoolBagDco<AbstractAbilityFX>[] dashParticlesPoolBag = new PoolBagDco<AbstractAbilityFX>[3];
+                PoolBagDco<AbstractAbilityFX>[] dashParticlesPoolBag = new PoolBagDco<AbstractAbilityFX>[4];
                 dashParticlesPoolBag[(int)DashParticlesFXTypePrefabPools.DashParticles] = new PoolBagDco<AbstractAbilityFX>(dashParticlesPrefab, 30);
                 dashParticlesPoolBag[(int)DashParticlesFXTypePrefabPools.ArcPath] = new PoolBagDco<AbstractAbilityFX>(arcPathPrefab, 30);
                 dashParticlesPoolBag[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer] = new PoolBagDco<AbstractAbilityFX>(electricTrailRendererPrefab, 30);
+                dashParticlesPoolBag[(int)DashParticlesFXTypePrefabPools.ShockAura] = new PoolBagDco<AbstractAbilityFX>(shockAuraPrefab, 30);
 
                 abilityFXInstancePools[AbilityFXType.DashParticles] = dashParticlesPoolBag;
             }

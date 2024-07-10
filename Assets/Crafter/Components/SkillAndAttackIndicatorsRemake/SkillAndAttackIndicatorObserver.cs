@@ -53,6 +53,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private static readonly float ArcPathFromSkyPerCloneFloat = (float)ArcPathFromSkyPerClone;
         private static readonly float ArcPathFromSkyRadius = 0.5f;
         private static readonly float ArcPathZUnitsPerCluster = 1f;
+        private static readonly float ShockAuraYOffset = 0.5f;
         private static readonly float TrailRendererYOffset = 0.5f;
 
         private SkillAndAttackIndicatorObserverProps Props;
@@ -78,7 +79,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
         private (DashParticles[] dashParticles, PlayerComponent[] playerClones,
-            ArcPath[] arcPathsFromSky, ElectricTrailRenderer electricTrailRenderer,
+            ArcPath[] arcPathsFromSky, 
+            ShockAura[] shockAuras,
+            ElectricTrailRenderer electricTrailRenderer,
             int numElectricTrailRendererPositions,
             int lastArcPathsIndex) DashParticlesItems;
 
@@ -323,6 +326,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int) DashParticlesFXTypePrefabPools.DashParticles];
                                 PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ArcPath];
                                 PoolBagDco<AbstractAbilityFX> electricTrailRendererPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer];
+                                PoolBagDco<AbstractAbilityFX> shockAuraPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ShockAura];
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                                 {
                                     dashParticlesPool.ReturnPooled(dashParticles);
@@ -330,6 +334,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 foreach (PlayerComponent playerClone in DashParticlesItems.playerClones)
                                 {
                                     PlayerCloneInstancePool.ReturnPooled(playerClone);
+                                }
+                                foreach (ArcPath arcPath in DashParticlesItems.arcPathsFromSky)
+                                {
+                                    arcPathPool.ReturnPooled(arcPath);
+                                }
+                                foreach (ShockAura shockAura in DashParticlesItems.shockAuras)
+                                {
+                                    shockAuraPool.ReturnPooled(shockAura);
                                 }
 
                                 DashParticlesItems.electricTrailRenderer.ClearAll();
@@ -355,6 +367,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private (DashParticles[] dashParticles,
             PlayerComponent[] playerClones,
             ArcPath[] arcPathsFromSky,
+            ShockAura[] shockAuras,
             ElectricTrailRenderer electricTrailRenderer,
             int numElectricTrailRendererPositions,
             int lastArcPathsIndex
@@ -367,6 +380,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
             PlayerComponent[] playerClones = new PlayerComponent[numPlayerClones];
             ArcPath[] arcPathsFromSky = new ArcPath[numPlayerClones * ArcPathFromSkyPerClone];
+            ShockAura[] shockAuras = new ShockAura[numPlayerClones];
 
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
@@ -431,27 +445,23 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 prevXAnglei1 = xAngle;
             }
 
-            for (int i = 0; i < numPlayerClones; i++)
-            {
-                // Ensure the index is clamped to avoid approx error...
-                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
-
-                PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticles[particlesIndex].transform.position);
-                playerComponentClone.gameObject.transform.localEulerAngles = yRotationVector;
-                playerComponentClone.OnCloneFXInit(Props.ObserverUpdateCache);
-                playerClones[i] = playerComponentClone;
-            }
-
             PoolBagDco<AbstractAbilityFX> arcPathInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ArcPath];
+            PoolBagDco<AbstractAbilityFX> shockAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ShockAura];
 
             float arcLocalZStart = -1 * 0.5f * ArcPathZUnitsPerCluster;
             float arcLocalZUnitsPerIndex = ArcPathZUnitsPerCluster / ArcPathFromSkyPerClone;
+
             for (int i = 0; i < numPlayerClones; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
 
                 Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
+                PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticlesPosition);
+
+                playerComponentClone.gameObject.transform.localEulerAngles = yRotationVector;
+                playerComponentClone.OnCloneFXInit(Props.ObserverUpdateCache);
+                playerClones[i] = playerComponentClone;
 
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
                 {
@@ -489,14 +499,20 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                     arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j] = arcPath;
                 }
-            }
 
+                ShockAura shockAura = (ShockAura)shockAuraInstancePool.InstantiatePooled(new Vector3(dashParticlesPosition.x,
+                    dashParticlesPosition.y + ShockAuraYOffset, dashParticlesPosition.z));
+                shockAura.transform.localEulerAngles = yRotationVector;
+                shockAura.gameObject.SetActive(false);
+
+                shockAuras[i] = shockAura;
+            }
 
             PoolBagDco<AbstractAbilityFX> electricTrailRendererInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer];
 
             ElectricTrailRenderer electricTrailRenderer = (ElectricTrailRenderer) electricTrailRendererInstancePool.InstantiatePooled(dashParticles[0].transform.position);
 
-            return (dashParticles, playerClones, arcPathsFromSky, electricTrailRenderer, 1, -1);
+            return (dashParticles, playerClones, arcPathsFromSky, shockAuras, electricTrailRenderer, 1, -1);
         }
         private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -559,6 +575,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
             PlayerComponent[] playerClonesArray = DashParticlesItems.playerClones;
+            ArcPath[] arcPathsFromSkyArray = DashParticlesItems.arcPathsFromSky;
+            ShockAura[] shockAurasArray = DashParticlesItems.shockAuras;
+
             for (int i = 0; i < playerClonesArray.Length; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
@@ -566,18 +585,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 Transform playerCloneTransform = playerClonesArray[i].transform;
 
-                playerCloneTransform.position = dashParticlesArray[particlesIndex].transform.position;
-                playerCloneTransform.localEulerAngles = yRotationVector;
-            }
-
-            for (int i = 0; i < playerClonesArray.Length; i++)
-            {
-                // Ensure the index is clamped to avoid approx error...
-                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
-
                 Vector3 dashParticlesPosition = dashParticlesArray[particlesIndex].transform.position;
-
-                ArcPath[] arcPathsFromSkyArray = DashParticlesItems.arcPathsFromSky;
+                playerCloneTransform.position = dashParticlesPosition;
+                playerCloneTransform.localEulerAngles = yRotationVector;
 
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
                 {
@@ -589,15 +599,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     arcPathsTransform.localEulerAngles = yRotationVector;
                 }
 
-                int cloneOffsetDashParticlesIndex = particlesIndex;
-
-                Vector3 cloneOffsetDashParticlesPosition = dashParticlesArray[cloneOffsetDashParticlesIndex].transform.position;
-
+                Transform shockAuraTransform = shockAurasArray[i].transform;
+                shockAuraTransform.position = new Vector3(dashParticlesPosition.x, dashParticlesPosition.y + ShockAuraYOffset, dashParticlesPosition.z);
+                shockAuraTransform.localEulerAngles = yRotationVector;
             }
 
-            Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
 
+            Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
             worldElectricTrailRendererPositions[0] = dashParticlesArray[0].transform.position;
+
             for (int i = 1; i < worldElectricTrailRendererPositions.Length; i++)
             {
                 Vector3 playerClonePosition = playerClonesArray[i - 1].transform.position;
@@ -643,6 +653,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             activePassed = false;
             PlayerComponent[] playerClones = DashParticlesItems.playerClones;
             ArcPath[] arcPathsFromSky = DashParticlesItems.arcPathsFromSky;
+            ShockAura[] shockAurasArray = DashParticlesItems.shockAuras;
             for (int i = playerClones.Length - 1; i >= 0; i--)
             {
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
@@ -655,6 +666,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 if (arcPath.gameObject.activeSelf != active)
                 {
                     arcPath.gameObject.SetActive(active);
+                    shockAurasArray[i].gameObject.SetActive(active);
                     for (int j = 1; j < ArcPathFromSkyPerClone; j++)
                     {
                         arcPath = arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j];
@@ -852,7 +864,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     {
         DashParticles,
         ArcPath,
-        ElectricTrailRenderer
+        ElectricTrailRenderer,
+        ShockAura
     }
     public enum AbilityFXComponentType
     {
@@ -860,6 +873,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         ArcPath,
         ArcPath_Small_Floating,
         ElectricTrail,
-        ElectricTrailRenderer
+        ElectricTrailRenderer,
+        ShockAura
     }
 }
