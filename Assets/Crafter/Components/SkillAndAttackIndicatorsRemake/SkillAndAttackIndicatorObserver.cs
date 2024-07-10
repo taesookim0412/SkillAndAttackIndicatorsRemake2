@@ -705,27 +705,24 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         playerClone.SetCloneFXOpacity(cloneOpacity);
                     }
                 }
-                else
+                else if (!playerClone.PlayerComponentCloneItems.AnimationTimerCompleted)
                 {
-                    if (!playerClone.PlayerComponentCloneItems.AnimationTimerCompleted)
+                    if (!playerClone.PlayerComponentCloneItems.AnimationTimerSet)
                     {
-                        if (!playerClone.PlayerComponentCloneItems.AnimationTimerSet)
-                        {
-                            // temp, set based on hardcoded timer instead of motion duration...
-                            playerClone.PlayerComponentCloneItems.AnimationTimer.LastCheckedTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-                            playerClone.PlayerComponentCloneItems.AnimationTimerSet = true;
-                        }
-                        else if (playerClone.PlayerComponentCloneItems.AnimationTimer.IsTimeElapsed_FixedUpdateThread())
-                        {
-                            playerClone.PlayerComponentCloneItems.AnimationTimerCompleted = true;
-                            playerClone.gameObject.SetActive(false);
-                        }
-                        else
-                        {
-                            float timerPercentage = playerClone.PlayerComponentCloneItems.AnimationTimer.RemainingDurationPercentage();
-                            playerClone.SetCloneFXOpacity(1f - timerPercentage);
-                            //Debug.Log($"{i}, {1f - timerPercentage}");
-                        }
+                        // temp, set based on hardcoded timer instead of motion duration...
+                        playerClone.PlayerComponentCloneItems.AnimationTimer.LastCheckedTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                        playerClone.PlayerComponentCloneItems.AnimationTimerSet = true;
+                    }
+                    else if (playerClone.PlayerComponentCloneItems.AnimationTimer.IsTimeElapsed_FixedUpdateThread())
+                    {
+                        playerClone.PlayerComponentCloneItems.AnimationTimerCompleted = true;
+                        playerClone.gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        float timerPercentage = playerClone.PlayerComponentCloneItems.AnimationTimer.RemainingDurationPercentage();
+                        playerClone.SetCloneFXOpacity(1f - timerPercentage);
+                        //Debug.Log($"{i}, {1f - timerPercentage}");
                     }
                 }
             }
