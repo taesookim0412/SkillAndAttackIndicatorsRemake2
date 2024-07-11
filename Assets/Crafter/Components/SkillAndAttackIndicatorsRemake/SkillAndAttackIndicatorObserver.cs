@@ -14,6 +14,7 @@ using Assets.Crafter.Components.Player.ComponentScripts;
 
 using Random = System.Random;
 using UnityEngine.Rendering;
+using Unity.VisualScripting;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
@@ -54,8 +55,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private static readonly float ArcPathFromSkyPerCloneFloat = (float)ArcPathFromSkyPerClone;
         private static readonly float ArcPathFromSkyRadius = 0.5f;
         private static readonly float ArcPathZUnitsPerCluster = 1f;
-        private static readonly float CrimsonAuraYOffset = 0.85f;
         private static readonly float ShockAuraYOffset = 0.7f;
+        private static readonly float CrimsonAuraYOffset = 0.85f;
+        private static readonly float PortalOrbYOffset = 0.7f;
         private static readonly float TrailRendererYOffset = 0.7f;
         
 
@@ -85,6 +87,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             ArcPath[] arcPathsFromSky, 
             ShockAura[] shockAuras,
             CrimsonAuraBlack[] crimsonAuras,
+            PortalOrbPurple[] portalOrbs,
             ElectricTrailRenderer electricTrailRenderer,
             int numElectricTrailRendererPositions,
             int lastArcPathsIndex) DashParticlesItems;
@@ -332,6 +335,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 PoolBagDco<AbstractAbilityFX> electricTrailRendererPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer];
                                 PoolBagDco<AbstractAbilityFX> shockAuraPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ShockAura];
                                 PoolBagDco<AbstractAbilityFX> crimsonAuraPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.CrimsonAuraBlack];
+                                PoolBagDco<AbstractAbilityFX> portalOrbPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.PortalOrbPurple];
+
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                                 {
                                     dashParticlesPool.ReturnPooled(dashParticles);
@@ -352,6 +357,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 foreach (CrimsonAuraBlack crimsonAura in DashParticlesItems.crimsonAuras)
                                 {
                                     crimsonAuraPool.ReturnPooled(crimsonAura);
+                                }
+                                foreach (PortalOrbPurple portalOrb in DashParticlesItems.portalOrbs)
+                                {
+                                    portalOrbPool.ReturnPooled(portalOrb);
                                 }
 
                                 DashParticlesItems.electricTrailRenderer.ClearAll();
@@ -379,6 +388,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             ArcPath[] arcPathsFromSky,
             ShockAura[] shockAuras,
             CrimsonAuraBlack[] crimsonAuras,
+            PortalOrbPurple[] portalOrbs,
             ElectricTrailRenderer electricTrailRenderer,
             int numElectricTrailRendererPositions,
             int lastArcPathsIndex
@@ -393,6 +403,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             ArcPath[] arcPathsFromSky = new ArcPath[numPlayerClones * ArcPathFromSkyPerClone];
             ShockAura[] shockAuras = new ShockAura[numPlayerClones];
             CrimsonAuraBlack[] crimsonAuras = new CrimsonAuraBlack[numPlayerClones];
+            PortalOrbPurple[] portalOrbs = new PortalOrbPurple[numPlayerClones];
 
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
@@ -460,6 +471,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             PoolBagDco<AbstractAbilityFX> arcPathInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ArcPath];
             PoolBagDco<AbstractAbilityFX> shockAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ShockAura];
             PoolBagDco<AbstractAbilityFX> crimsonAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.CrimsonAuraBlack];
+            PoolBagDco<AbstractAbilityFX> portalOrbInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.PortalOrbPurple];
 
             float arcLocalZStart = -1 * 0.5f * ArcPathZUnitsPerCluster;
             float arcLocalZUnitsPerIndex = ArcPathZUnitsPerCluster / ArcPathFromSkyPerClone;
@@ -527,13 +539,20 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 crimsonAura.gameObject.SetActive(false);
 
                 crimsonAuras[i] = crimsonAura;
+
+                PortalOrbPurple portalOrb = (PortalOrbPurple)portalOrbInstancePool.InstantiatePooled(new Vector3(dashParticlesPosition.x,
+                    dashParticlesPosition.y + PortalOrbYOffset, dashParticlesPosition.z));
+                portalOrb.transform.localEulerAngles = yRotationVector;
+                portalOrb.gameObject.SetActive(false);
+
+                portalOrbs[i] = portalOrb;
             }
 
             PoolBagDco<AbstractAbilityFX> electricTrailRendererInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer];
 
             ElectricTrailRenderer electricTrailRenderer = (ElectricTrailRenderer) electricTrailRendererInstancePool.InstantiatePooled(dashParticles[0].transform.position);
 
-            return (dashParticles, playerClones, arcPathsFromSky, shockAuras, crimsonAuras, electricTrailRenderer, 1, -1);
+            return (dashParticles, playerClones, arcPathsFromSky, shockAuras, crimsonAuras, portalOrbs, electricTrailRenderer, 1, -1);
         }
         private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -599,6 +618,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             ArcPath[] arcPathsFromSkyArray = DashParticlesItems.arcPathsFromSky;
             ShockAura[] shockAurasArray = DashParticlesItems.shockAuras;
             CrimsonAuraBlack[] crimsonAurasArray = DashParticlesItems.crimsonAuras;
+            PortalOrbPurple[] portalOrbs = DashParticlesItems.portalOrbs;
 
             for (int i = 0; i < playerClonesArray.Length; i++)
             {
@@ -628,6 +648,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 Transform crimsonAuraTransform = crimsonAurasArray[i].transform;
                 crimsonAuraTransform.position = new Vector3(dashParticlesPosition.x, dashParticlesPosition.y + CrimsonAuraYOffset, dashParticlesPosition.z);
                 crimsonAuraTransform.localEulerAngles = yRotationVector;
+
+                Transform portalOrbTransform = portalOrbs[i].transform;
+                portalOrbTransform.position = new Vector3(dashParticlesPosition.x, dashParticlesPosition.y + PortalOrbYOffset, dashParticlesPosition.z);
+                portalOrbTransform.localEulerAngles = yRotationVector;
             }
 
             Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
@@ -681,6 +705,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             ArcPath[] arcPathsFromSky = DashParticlesItems.arcPathsFromSky;
             ShockAura[] shockAurasArray = DashParticlesItems.shockAuras;
             CrimsonAuraBlack[] crimsonAurasArray = DashParticlesItems.crimsonAuras;
+            PortalOrbPurple[] portalOrbsArray = DashParticlesItems.portalOrbs;
             for (int i = playerClones.Length - 1; i >= 0; i--)
             {
                 int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
@@ -695,6 +720,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     arcPath.gameObject.SetActive(active);
                     shockAurasArray[i].gameObject.SetActive(active);
                     crimsonAurasArray[i].gameObject.SetActive(active);
+                    portalOrbsArray[i].gameObject.SetActive(active);
                     for (int j = 1; j < ArcPathFromSkyPerClone; j++)
                     {
                         arcPath = arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j];
@@ -905,7 +931,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         ArcPath,
         ElectricTrailRenderer,
         ShockAura,
-        CrimsonAuraBlack
+        CrimsonAuraBlack,
+        PortalOrbPurple
     }
     public enum AbilityFXComponentType
     {
@@ -915,6 +942,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         ElectricTrail,
         ElectricTrailRenderer,
         ShockAura,
-        CrimsonAuraBlack
+        CrimsonAuraBlack,
+        PortalOrbPurple
     }
 }
