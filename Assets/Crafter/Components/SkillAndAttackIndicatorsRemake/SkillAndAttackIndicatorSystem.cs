@@ -7,12 +7,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public class SkillAndAttackIndicatorSystem : MonoBehaviour
     {
+        [HideInInspector]
+        public static SkillAndAttackIndicatorSystem EditorInstance;
+
         [SerializeField]
         public LayerMask TerrainLayer;
         [SerializeField]
@@ -54,6 +58,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public void Awake()
         {
             Camera = Camera.main;
+            EditorInstance = this;
         }
         public void OnEnable()
         {
