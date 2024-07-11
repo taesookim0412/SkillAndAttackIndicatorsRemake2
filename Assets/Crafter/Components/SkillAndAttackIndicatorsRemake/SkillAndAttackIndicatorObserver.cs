@@ -607,19 +607,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
 
-            if (DashParticlesItems.numElectricTrailRendererPositions > 0)
-            {
-                Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
-
-                for (int i = 0; i < worldElectricTrailRendererPositions.Length; i++)
-                {
-                    Vector3 playerClonePosition = playerClonesArray[i].PlayerComponent.transform.position;
-                    worldElectricTrailRendererPositions[i] = new Vector3(playerClonePosition.x, playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
-                }
-
-                DashParticlesItems.electricTrailRenderer.OverwritePositions(worldElectricTrailRendererPositions);
-            }
+            Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
+            worldElectricTrailRendererPositions[0] = dashParticlesArray[0].transform.position;
             
+            for (int i = 1; i < worldElectricTrailRendererPositions.Length; i++)
+            {
+                Vector3 playerClonePosition = playerClonesArray[i - 1].PlayerComponent.transform.position;
+                worldElectricTrailRendererPositions[i] = new Vector3(playerClonePosition.x, playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
+            }
+
+            DashParticlesItems.electricTrailRenderer.OverwritePositions(worldElectricTrailRendererPositions);
+
         }
 
         private void UpdateDashParticlesItems(int lineLengthUnits, float fillProgress)
@@ -682,7 +680,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         Vector3 playerClonePosition = playerClones[i].PlayerComponent.transform.position;
                         DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(playerClonePosition.x,
                             playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
-                        DashParticlesItems.numElectricTrailRendererPositions = i + 1;
+                        DashParticlesItems.numElectricTrailRendererPositions = i + 2;
                         DashParticlesItems.lastArcPathsIndex = i;
                     }
                 }
