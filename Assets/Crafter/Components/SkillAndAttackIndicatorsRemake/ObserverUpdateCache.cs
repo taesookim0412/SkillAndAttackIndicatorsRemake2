@@ -10,9 +10,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     {
         public long UpdateTickTimeFixedUpdate;
 
-        public ObserverUpdateCache(long updateTickTime)
+        public ObserverUpdateCache(long newTime)
         {
-            UpdateTickTimeFixedUpdate = updateTickTime;
+            UpdateTickTimeFixedUpdate = newTime;
         }
 
         public void Update_FixedUpdate()

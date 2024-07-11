@@ -1,4 +1,5 @@
-﻿using Assets.Crafter.Components.Player.ComponentScripts;
+﻿using Assets.Crafter.Components.Editors.ComponentScripts;
+using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using System;
 using System.Collections.Generic;
@@ -13,21 +14,63 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class PortalBuilder : AbstractAbilityFXBuilder
     {
         [NonSerialized]
+        public ObserverUpdateCache ObserverUpdateCache;
+        [NonSerialized]
         public PlayerClientData PlayerClientData;
         [NonSerialized]
         public PortalOrbPurple PortalOrb;
         [NonSerialized]
         public CrimsonAuraBlack CrimsonAura;
+
+        public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
+            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura)
+        {
+            ObserverUpdateCache = observerUpdateCache;
+            PlayerClientData = playerClientData;
+            PortalOrb = portalOrb;
+            CrimsonAura = crimsonAura;
+        }
+        public void ManualUpdate()
+        {
+
+        }
+
+        public void EditorDestroy()
+        {
+            ObserverUpdateCache = null;
+            PlayerClientData = null;
+            PortalOrb = null;
+            CrimsonAura = null;
+        }
     }
 
     [CustomEditor(typeof(PortalBuilder))]
-    public class PortalBuilderEditor : Editor
+    public class PortalBuilderEditor : AbstractEditor
     {
         [HideInInspector]
         private PortalBuilder Editor;
 
         private bool VariablesSet = false;
+        private bool VariablesAdded = false;
         public void OnSceneGUI()
+        {
+            Initialize();
+
+            if (VariablesSet)
+            {
+
+            }
+        }
+
+        public void OnDestroy()
+        {
+            if (VariablesAdded)
+            {
+                Editor.EditorDestroy();
+            }
+        }
+
+        private void Initialize()
         {
             if (!VariablesSet)
             {
@@ -38,14 +81,19 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 SkillAndAttackIndicatorSystem instance = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
                 if (instance != null)
                 {
-                    Editor.PlayerClientData = new PlayerClientData(instance.PlayerComponent);
-                    string portalOrbPurpleType = AbilityFXComponentType.PortalOrbPurple.ToString();
-                    Editor.PortalOrb = (PortalOrbPurple)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == portalOrbPurpleType);
-                    string crimsonAuraBlackType = AbilityFXComponentType.CrimsonAuraBlack.ToString();
-                    Editor.CrimsonAura = (CrimsonAuraBlack)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == crimsonAuraBlackType);
+                    PlayerClientData playerClientData = new PlayerClientData(instance.PlayerComponent);
 
-                    if (Editor.PortalOrb != null && Editor.CrimsonAura != null)
+                    string portalOrbPurpleType = AbilityFXComponentType.PortalOrbPurple.ToString();
+                    PortalOrbPurple portalOrb = (PortalOrbPurple)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == portalOrbPurpleType);
+
+                    string crimsonAuraBlackType = AbilityFXComponentType.CrimsonAuraBlack.ToString();
+                    CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == crimsonAuraBlackType);
+
+                    if (playerClientData != null && portalOrb != null && crimsonAura != null)
                     {
+                        SetObserverUpdateCache();
+                        Editor.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura);
+                        VariablesAdded = true;
                         VariablesSet = true;
                     }
                     else
@@ -57,11 +105,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 {
                     Debug.LogError("System null");
                 }
-            }
-
-            if (VariablesSet)
-            {
-
             }
         }
 
