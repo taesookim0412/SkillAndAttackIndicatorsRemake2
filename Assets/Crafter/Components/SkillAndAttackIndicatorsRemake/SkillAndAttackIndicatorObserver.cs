@@ -53,8 +53,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private static readonly float ArcPathFromSkyPerCloneFloat = (float)ArcPathFromSkyPerClone;
         private static readonly float ArcPathFromSkyRadius = 0.5f;
         private static readonly float ArcPathZUnitsPerCluster = 1f;
-        private static readonly float ShockAuraYOffset = 0.5f;
-        private static readonly float TrailRendererYOffset = 0.5f;
+        private static readonly float ShockAuraYOffset = 0.7f;
+        private static readonly float TrailRendererYOffset = 0.7f;
 
         private SkillAndAttackIndicatorObserverProps Props;
 
@@ -462,6 +462,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 playerComponentClone.gameObject.transform.localEulerAngles = yRotationVector;
                 playerComponentClone.OnCloneFXInit(Props.ObserverUpdateCache);
+                playerComponentClone.gameObject.SetActive(false);
                 playerClones[i] = new PlayerClientData(playerComponentClone);
 
                 for (int j = 0; j < ArcPathFromSkyPerClone; j++)
@@ -606,16 +607,19 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
 
-            Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
-            worldElectricTrailRendererPositions[0] = dashParticlesArray[0].transform.position;
-
-            for (int i = 1; i < worldElectricTrailRendererPositions.Length; i++)
+            if (DashParticlesItems.numElectricTrailRendererPositions > 0)
             {
-                Vector3 playerClonePosition = playerClonesArray[i - 1].PlayerComponent.transform.position;
-                worldElectricTrailRendererPositions[i] = new Vector3(playerClonePosition.x, playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
-            }
+                Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
 
-            DashParticlesItems.electricTrailRenderer.OverwritePositions(worldElectricTrailRendererPositions);   
+                for (int i = 0; i < worldElectricTrailRendererPositions.Length; i++)
+                {
+                    Vector3 playerClonePosition = playerClonesArray[i].PlayerComponent.transform.position;
+                    worldElectricTrailRendererPositions[i] = new Vector3(playerClonePosition.x, playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
+                }
+
+                DashParticlesItems.electricTrailRenderer.OverwritePositions(worldElectricTrailRendererPositions);
+            }
+            
         }
 
         private void UpdateDashParticlesItems(int lineLengthUnits, float fillProgress)
@@ -680,7 +684,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
                         DashParticlesItems.numElectricTrailRendererPositions = i + 1;
                         DashParticlesItems.lastArcPathsIndex = i;
-                        //Debug.Log(DashParticlesItems.numElectricTrailRendererPositions);
                     }
                 }
 
@@ -709,18 +712,18 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 PlayerComponent playerClone = playerCloneClientData.PlayerComponent;
                 if (!activePassed)
                 {
-
                     if (fullCloneOpacity)
                     {
-                        playerClone.SetCloneFXOpacity(cloneOpacity);
                         activePassed = true;
                     }
-                    else if (cloneOpacity > 0.2f)
-                    {
-                        playerClone.SetCloneFXOpacity(cloneOpacity);
-                    }
+
                     if (cloneOpacity > 0.2f)
                     {
+                        playerClone.SetCloneFXOpacity(cloneOpacity);
+                        if (!playerClone.gameObject.activeSelf)
+                        {
+                            playerClone.gameObject.SetActive(true);
+                        }
                         if (!playerClone.PlayerComponentCloneItems.AnimationStarted)
                         {
                             playerCloneClientData.PlayWalkingState();
@@ -774,11 +777,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             {
                 if (lineLengthPercentage >= fillProgress)
                 {
-                    return (false, 1f - ((lineLengthPercentage - fillProgress) / 0.2f));
+                    return (false, Mathf.Min(0.4f, 1f - ((lineLengthPercentage - fillProgress) / 0.1f)));
                 }
                 else
                 {
-                    return (true, 1f);
+                    return (true, 0.4f);
                 }
             }
             return (false, 0f);

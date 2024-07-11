@@ -79,14 +79,14 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         {
             foreach (Material material in Materials)
             {
-                material.color = new Color(1f, 1f, 1f, opacity);
+                material.color = new Color(0f, 0f, 0f, opacity);
             }
         }
     }
 
     public class PlayerComponentCloneItems
     {
-        public TimerStructDco_Observer AnimationTimer = new TimerStructDco_Observer(125L);
+        public TimerStructDco_Observer AnimationTimer = new TimerStructDco_Observer(25L);
         public bool AnimationTimerCompleted = false;
         public bool AnimationTimerSet = false;
         public bool AnimationStarted = false;
