@@ -61,5 +61,6 @@ MonoBehaviour:
   - {fileID: 3575813114113570967, guid: 3c2f14533dfb4f1429e8af29e54279dd, type: 3}
   - {fileID: 174158110560981894, guid: b6889250b0b304e4a802a711ede08e82, type: 3}
   - {fileID: 5188164868778049955, guid: 2e6421279860dfb4c9d24b4a10a0bd48, type: 3}
+  - {fileID: 411614805520454163, guid: 4bb3071cf167ca8438dbfb2ba4ebde22, type: 3}
   PlayerComponent: {fileID: 0}
   Camera: {fileID: 0}
