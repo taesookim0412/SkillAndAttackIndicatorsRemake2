@@ -1,4 +1,5 @@
 ﻿using Assets.Crafter.Components.Editors.ComponentScripts;
+using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using System;
@@ -22,17 +23,110 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized]
         public CrimsonAuraBlack CrimsonAura;
 
+        [Range(0f, 2f), SerializeField]
+        public float PortalScaleDuration;
+        [Range(0f, 2f), SerializeField]
+        public float PlayerOpacityDuration;
+        [Range(0f, 2f), SerializeField]
+        public float PlayerOpaqueDuration;
+        [SerializeField]
+        public bool SetPlayerInactive;
+
+        private void OnValidate()
+        {
+            PortalScaleTimer.RequiredDuration = (long) (PortalScaleDuration * 1000f);
+            PlayerOpacityTimer.RequiredDuration = (long)(PlayerOpacityDuration * 1000f);
+            PlayerOpaqueTimer.RequiredDuration = (long)(PlayerOpaqueDuration * 1000f);
+        }
+
+        [HideInInspector]
+        private TimerStructDco_Observer PortalScaleTimer;
+        [HideInInspector]
+        private TimerStructDco_Observer PlayerOpacityTimer;
+        [HideInInspector]
+        private TimerStructDco_Observer PlayerOpaqueTimer;
+        [HideInInspector]
+        private bool PortalCreated;
+        [HideInInspector]
+        private bool PortalScaleCompleted;
+        [HideInInspector]
+        private bool PlayerCreated;
+        [HideInInspector]
+        private bool PlayerOpaque;
+        [HideInInspector]
+        private bool PlayerDespawned;
+        [HideInInspector]
+        private bool Completed = false;
+
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
-            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura)
+            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, bool setPlayerInactive)
         {
             ObserverUpdateCache = observerUpdateCache;
             PlayerClientData = playerClientData;
             PortalOrb = portalOrb;
             CrimsonAura = crimsonAura;
+            SetPlayerInactive = setPlayerInactive;
         }
         public void ManualUpdate()
         {
+            if (Completed)
+            {
+                return;
+            }
+            if (!PortalCreated)
+            {
+                PortalOrb.transform.localScale = Vector3.zero;
+                PortalOrb.gameObject.SetActive(true);
+                PortalScaleTimer = new TimerStructDco_Observer((long)(PortalScaleDuration * 1000f));
+                PortalScaleTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                PortalCreated = true;
+            }
+            else if (!PortalScaleCompleted)
+            {
+                if (PortalScaleTimer.IsTimeNotElapsed_FixedUpdateThread())
+                {
+                    float scalePercentage = PortalScaleTimer.RemainingDurationPercentage();
+                    PortalOrb.transform.localScale = new Vector3(scalePercentage, scalePercentage, scalePercentage);
+                }
+                else
+                {
+                    PortalScaleCompleted = true;
+                }
+            }
+            else if (!PlayerCreated)
+            {
+                PlayerClientData.PlayerComponent.gameObject.SetActive(true);
+                PlayerOpacityTimer = new TimerStructDco_Observer((long)(PlayerOpacityDuration * 1000f));
+                PlayerOpacityTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+            }
+            else if (!PlayerOpaque)
+            {
+                if (PlayerOpacityTimer.IsTimeNotElapsed_FixedUpdateThread())
+                {
+                    float scalePercentage = PlayerOpacityTimer.RemainingDurationPercentage();
+                    PlayerClientData.PlayerComponent.SetCloneFXOpacity(scalePercentage);
+                }
+                else
+                {
+                    PlayerClientData.PlayerComponent.SetCloneFXOpacity(1f);
 
+                    if (SetPlayerInactive)
+                    {
+                        PlayerOpaqueTimer = new TimerStructDco_Observer((long)(PlayerOpaqueDuration * 1000f));
+                        PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                    }
+                    PlayerOpaque = true;
+                }
+            }
+            else if (SetPlayerInactive && !PlayerDespawned)
+            {
+                if (PlayerOpaqueTimer.IsTimeElapsed_FixedUpdateThread())
+                {
+                    PlayerClientData.PlayerComponent.gameObject.SetActive(false);
+                    PlayerDespawned = true;
+                    Completed = true;
+                }
+            }
         }
 
         public void EditorDestroy()
@@ -58,7 +152,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             if (VariablesSet)
             {
-
+                Editor.ManualUpdate();
             }
         }
 
@@ -92,7 +186,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     if (playerClientData != null && portalOrb != null && crimsonAura != null)
                     {
                         SetObserverUpdateCache();
-                        Editor.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura);
+                        Editor.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, Editor.SetPlayerInactive);
                         VariablesAdded = true;
                         VariablesSet = true;
                     }
