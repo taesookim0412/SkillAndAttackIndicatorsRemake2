@@ -183,6 +183,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 Instance.EditorDestroy();
             }
         }
+        public void OnDisable()
+        {
+            if (VariablesAdded)
+            {
+                Instance.EditorDestroy();
+            }
+        }
 
         private void Initialize()
         {
