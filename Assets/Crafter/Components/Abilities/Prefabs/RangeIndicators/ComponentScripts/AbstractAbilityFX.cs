@@ -12,5 +12,23 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     {
         [SerializeField]
         protected VisualEffect VisualEffect;
+
+        [SerializeField]
+        protected ParticleSystem[] ParticleSystems;
+
+        public void DisableParticleSystems()
+        {
+            foreach (ParticleSystem particleSystem in ParticleSystems)
+            {
+                particleSystem.enableEmission = false;
+            }
+        }
+        public void EnableParticleSystems()
+        {
+            foreach (ParticleSystem particleSystem in ParticleSystems)
+            {
+                particleSystem.enableEmission = true;
+            }
+        }
     }
 }
