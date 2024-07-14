@@ -229,6 +229,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         crimsonAura.gameObject.SetActive(false);
                         SetObserverUpdateCache();
                         Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, Instance.SetPlayerInactive);
+                        TryAddNonPrefabParticleSystem(Instance.gameObject);
                         VariablesAdded = true;
                         VariablesSet = true;
                     }
