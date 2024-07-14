@@ -66,6 +66,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PortalOrb = portalOrb;
             CrimsonAura = crimsonAura;
             SetPlayerInactive = setPlayerInactive;
+            PortalCreated = false;
+            PortalScaleCompleted = false;
+            PlayerCreated = false;
+            PlayerOpaque = false;
+            PlayerDespawned = false;
+            Completed = false;
         }
         public void ManualUpdate()
         {
@@ -77,8 +83,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 PortalOrb.transform.localScale = Vector3.zero;
                 PortalOrb.gameObject.SetActive(true);
-                PortalScaleTimer = new TimerStructDco_Observer((long)(PortalScaleDuration * 1000f));
-                PortalScaleTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                PortalScaleTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate,(long)(PortalScaleDuration * 1000f));
                 PortalCreated = true;
             }
             else if (!PortalScaleCompleted)
@@ -96,8 +101,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             else if (!PlayerCreated)
             {
                 PlayerClientData.PlayerComponent.gameObject.SetActive(true);
-                PlayerOpacityTimer = new TimerStructDco_Observer((long)(PlayerOpacityDuration * 1000f));
-                PlayerOpacityTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                PlayerOpacityTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PlayerOpacityDuration * 1000f));
+                PlayerCreated = true;
             }
             else if (!PlayerOpaque)
             {
@@ -112,7 +117,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                     if (SetPlayerInactive)
                     {
-                        PlayerOpaqueTimer = new TimerStructDco_Observer((long)(PlayerOpaqueDuration * 1000f));
+                        PlayerOpaqueTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PlayerOpaqueDuration * 1000f));
                         PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                     }
                     PlayerOpaque = true;
@@ -127,11 +132,21 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     Completed = true;
                 }
             }
+            else
+            {
+                PlayerClientData.PlayerComponent.gameObject.SetActive(false);
+                PlayerDespawned = true;
+                Completed = true;
+            }
         }
 
         public void EditorDestroy()
         {
             ObserverUpdateCache = null;
+            GameObject.DestroyImmediate(PlayerClientData.PlayerComponent.gameObject);
+            GameObject.DestroyImmediate(CrimsonAura.gameObject);
+            GameObject.DestroyImmediate(PortalOrb.gameObject);
+
             PlayerClientData = null;
             PortalOrb = null;
             CrimsonAura = null;
@@ -142,17 +157,22 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class PortalBuilderEditor : AbstractEditor
     {
         [HideInInspector]
-        private PortalBuilder Editor;
+        private PortalBuilder Instance;
 
         private bool VariablesSet = false;
         private bool VariablesAdded = false;
+
+        private long PreviousSimulationTime = 0;
+        private int Iteration;
         public void OnSceneGUI()
         {
             Initialize();
 
             if (VariablesSet)
             {
-                Editor.ManualUpdate();
+                long previousUpdateTickTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                ObserverUpdateCache.Update_FixedUpdate();
+                Instance.ManualUpdate();
             }
         }
 
@@ -160,7 +180,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             if (VariablesAdded)
             {
-                Editor.EditorDestroy();
+                Instance.EditorDestroy();
             }
         }
 
@@ -168,25 +188,36 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             if (!VariablesSet)
             {
-                VariablesSet = Editor != null && Editor.PlayerClientData != null && Editor.PortalOrb != null && Editor.CrimsonAura != null;
+                VariablesSet = Instance != null && Instance.PlayerClientData != null && Instance.PortalOrb != null && Instance.CrimsonAura != null;
             }
             if (!VariablesSet)
             {
                 SkillAndAttackIndicatorSystem instance = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
                 if (instance != null)
                 {
-                    PlayerClientData playerClientData = new PlayerClientData(instance.PlayerComponent);
+                    PlayerComponent playerComponentPrefab = instance.PlayerComponent;
 
                     string portalOrbPurpleType = AbilityFXComponentType.PortalOrbPurple.ToString();
-                    PortalOrbPurple portalOrb = (PortalOrbPurple)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == portalOrbPurpleType);
+                    PortalOrbPurple portalOrbPrefab = (PortalOrbPurple)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == portalOrbPurpleType);
 
                     string crimsonAuraBlackType = AbilityFXComponentType.CrimsonAuraBlack.ToString();
-                    CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == crimsonAuraBlackType);
+                    CrimsonAuraBlack crimsonAuraPrefab = (CrimsonAuraBlack)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == crimsonAuraBlackType);
 
-                    if (playerClientData != null && portalOrb != null && crimsonAura != null)
+                    if (playerComponentPrefab != null && portalOrbPrefab != null && crimsonAuraPrefab != null)
                     {
+                        PlayerComponent playerComponent = GameObject.Instantiate(playerComponentPrefab, Instance.transform);
+                        playerComponent.transform.localPosition = Vector3.zero;
+                        playerComponent.gameObject.SetActive(false);
+                        PlayerClientData playerClientData = new PlayerClientData(playerComponent);
+                        PortalOrbPurple portalOrb = GameObject.Instantiate(portalOrbPrefab, Instance.transform);
+                        portalOrb.transform.localPosition = Vector3.zero;
+                        portalOrb.gameObject.SetActive(false);
+
+                        CrimsonAuraBlack crimsonAura = GameObject.Instantiate(crimsonAuraPrefab, Instance.transform);
+                        crimsonAura.transform.localPosition = Vector3.zero;
+                        crimsonAura.gameObject.SetActive(false);
                         SetObserverUpdateCache();
-                        Editor.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, Editor.SetPlayerInactive);
+                        Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, Instance.SetPlayerInactive);
                         VariablesAdded = true;
                         VariablesSet = true;
                     }
@@ -205,16 +236,16 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            Editor = (PortalBuilder)target;
+            Instance = (PortalBuilder)target;
 
-            Undo.RecordObject(Editor, "Editor State");
+            Undo.RecordObject(Instance, "Editor State");
 
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
             EditorGUI.BeginChangeCheck();
-            PlayerComponent playerComponent = (PlayerComponent) EditorGUILayout.ObjectField("PlayerComponent", Editor.PlayerClientData != null ? Editor.PlayerClientData.PlayerComponent : null, typeof(PlayerComponent), true);
-            PortalOrbPurple portalOrbPurple = (PortalOrbPurple) EditorGUILayout.ObjectField("PortalOrb", Editor.PortalOrb, typeof(PortalOrbPurple), true);
-            CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack) EditorGUILayout.ObjectField("CrimsonAura", Editor.CrimsonAura, typeof(CrimsonAuraBlack), true);
+            PlayerComponent playerComponent = (PlayerComponent) EditorGUILayout.ObjectField("PlayerComponent", Instance.PlayerClientData != null ? Instance.PlayerClientData.PlayerComponent : null, typeof(PlayerComponent), true);
+            PortalOrbPurple portalOrbPurple = (PortalOrbPurple) EditorGUILayout.ObjectField("PortalOrb", Instance.PortalOrb, typeof(PortalOrbPurple), true);
+            CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack) EditorGUILayout.ObjectField("CrimsonAura", Instance.CrimsonAura, typeof(CrimsonAuraBlack), true);
             EditorGUI.EndChangeCheck();
         }
     }
