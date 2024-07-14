@@ -181,6 +181,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             if (VariablesAdded)
             {
                 Instance.EditorDestroy();
+                VariablesSet = false;
+                VariablesAdded = false;
             }
         }
         public void OnDisable()
@@ -188,6 +190,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             if (VariablesAdded)
             {
                 Instance.EditorDestroy();
+                VariablesSet = false;
+                VariablesAdded = false;
             }
         }
 
