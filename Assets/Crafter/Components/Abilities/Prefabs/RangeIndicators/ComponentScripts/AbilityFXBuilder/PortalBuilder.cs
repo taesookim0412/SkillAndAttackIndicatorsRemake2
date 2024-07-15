@@ -46,6 +46,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         private Vector3 PortalScaleDifference;
 
+        public void Awake()
+        {
+            PortalScaleDifference = PortalScaleMax - PortalScaleMin;
+        }
+
         private void OnValidate()
         {
             PortalScaleTimer.RequiredDuration = (long) (PortalScaleDuration * 1000f);
@@ -55,7 +60,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PortalOrb.transform.localPosition = PortalOrbOffsetPosition;
             CrimsonAura.transform.localPosition = CrimsonAuraOffsetPosition;
 
-            PortalScaleDifference = PortalScaleMax - PortalScaleMin;
+            Awake();
         }
 
         [HideInInspector]
@@ -74,7 +79,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             ObserverUpdateCache = observerUpdateCache;
             PlayerClientData = playerClientData;
-            playerClientData.PlayerComponent.InitializeMaterials();
 
             PlayerComponent playerComponent = playerClientData.PlayerComponent;
             if (!IsTeleportSource)
@@ -263,6 +267,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         CrimsonAuraBlack crimsonAura = GameObject.Instantiate(crimsonAuraPrefab, Instance.transform);
 
                         SetObserverUpdateCache();
+                        Instance.Awake();
                         Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, Instance.SetPlayerInactive, Instance.IsTeleportSource);
                         TryAddNonPrefabParticleSystem(Instance.gameObject);
                         VariablesAdded = true;

@@ -31,7 +31,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         [HideInInspector]
         public PlayerComponentCloneItems PlayerComponentCloneItems;
 
-        public void InitializeMaterials()
+        private void InitializeMaterials()
         {
             int materialsCount = 0;
             foreach (SkinnedMeshRendererContainer holder in Meshes)
@@ -63,6 +63,8 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
             {
                 holder.SkinnedMeshRenderer.materials = holder.TransparentMaterials;
             }
+
+            playerComponentInstance.InitializeMaterials();
 
             return playerComponentInstance;
         }
