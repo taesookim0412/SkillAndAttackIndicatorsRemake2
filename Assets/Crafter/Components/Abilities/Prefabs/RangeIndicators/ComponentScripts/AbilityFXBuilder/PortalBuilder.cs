@@ -57,21 +57,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         }
 
         [HideInInspector]
+        private PortalState PortalState; 
+        [HideInInspector]
         private TimerStructDco_Observer PortalScaleTimer;
         [HideInInspector]
         private TimerStructDco_Observer PlayerOpacityTimer;
         [HideInInspector]
         private TimerStructDco_Observer PlayerOpaqueTimer;
-        [HideInInspector]
-        private bool PortalCreated;
-        [HideInInspector]
-        private bool PortalScaleCompleted;
-        [HideInInspector]
-        private bool PlayerCreated;
-        [HideInInspector]
-        private bool PlayerOpaque;
-        [HideInInspector]
-        private bool PlayerDespawned;
         [HideInInspector]
         private bool Completed = false;
 
@@ -95,11 +87,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             crimsonAura.transform.localPosition = CrimsonAuraOffsetPosition;
 
             SetPlayerInactive = setPlayerInactive;
-            PortalCreated = false;
-            PortalScaleCompleted = false;
-            PlayerCreated = false;
-            PlayerOpaque = false;
-            PlayerDespawned = false;
+            PortalState = PortalState.PortalCreate;
+
             Completed = false;
         }
         public void ManualUpdate()
@@ -108,69 +97,67 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 return;
             }
-            if (!PortalCreated)
+            switch (PortalState)
             {
-                PortalOrb.transform.localScale = Vector3.zero;
-                PortalOrb.EnableParticleSystems();
-                CrimsonAura.EnableParticleSystems();
-                PortalScaleTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate,(long)(PortalScaleDuration * 1000f));
-                PortalCreated = true;
-            }
-            else if (!PortalScaleCompleted)
-            {
-                if (PortalScaleTimer.IsTimeNotElapsed_FixedUpdateThread())
-                {
-                    float scalePercentage = PortalScaleTimer.RemainingDurationPercentage();
-                    Vector3 scaleAddend = PortalScaleDifference * scalePercentage;
-                    PortalOrb.transform.localScale = PortalScaleMin + scaleAddend;
-                }
-                else
-                {
-                    PortalScaleCompleted = true;
-                }
-            }
-            else if (!PlayerCreated)
-            {
-                PlayerClientData.PlayerComponent.gameObject.SetActive(true);
-                PlayerOpacityTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PlayerOpacityDuration * 1000f));
-                PlayerCreated = true;
-            }
-            else if (!PlayerOpaque)
-            {
-                if (PlayerOpacityTimer.IsTimeNotElapsed_FixedUpdateThread())
-                {
-                    float scalePercentage = PlayerOpacityTimer.RemainingDurationPercentage();
-                    PlayerClientData.PlayerComponent.SetCloneFXOpacity(scalePercentage);
-                }
-                else
-                {
-                    PlayerClientData.PlayerComponent.SetCloneFXOpacity(1f);
+                case PortalState.PortalCreate:
+                    PortalOrb.transform.localScale = Vector3.zero;
+                    PortalOrb.EnableParticleSystems();
+                    CrimsonAura.EnableParticleSystems();
+                    PortalScaleTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PortalScaleDuration * 1000f));
+                    PortalState = PortalState.PortalScale;
+                    break;
+                case PortalState.PortalScale:
+                    if (PortalScaleTimer.IsTimeNotElapsed_FixedUpdateThread())
+                    {
+                        float scalePercentage = PortalScaleTimer.RemainingDurationPercentage();
+                        Vector3 scaleAddend = PortalScaleDifference * scalePercentage;
+                        PortalOrb.transform.localScale = PortalScaleMin + scaleAddend;
+                    }
+                    else
+                    {
+                        PortalState = PortalState.PlayerCreate;
+                    }
+                    break;
+                case PortalState.PlayerCreate:
+                    PlayerClientData.PlayerComponent.gameObject.SetActive(true);
+                    PlayerOpacityTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PlayerOpacityDuration * 1000f));
+                    PortalState = PortalState.PlayerOpaque;
+                    break;
+                case PortalState.PlayerOpaque:
+                    if (PlayerOpacityTimer.IsTimeNotElapsed_FixedUpdateThread())
+                    {
+                        float scalePercentage = PlayerOpacityTimer.RemainingDurationPercentage();
+                        PlayerClientData.PlayerComponent.SetCloneFXOpacity(scalePercentage);
+                    }
+                    else
+                    {
+                        PlayerClientData.PlayerComponent.SetCloneFXOpacity(1f);
 
+                        if (SetPlayerInactive)
+                        {
+                            PlayerOpaqueTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PlayerOpaqueDuration * 1000f));
+                            PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                        }
+                        PortalOrb.gameObject.SetActive(false);
+                        PortalState = PortalState.PlayerDespawn;
+                    }
+                    break;
+                case PortalState.PlayerDespawn:
                     if (SetPlayerInactive)
                     {
-                        PlayerOpaqueTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PlayerOpaqueDuration * 1000f));
-                        PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                        if (PlayerOpaqueTimer.IsTimeElapsed_FixedUpdateThread())
+                        {
+                            CrimsonAura.gameObject.SetActive(false);
+                            PlayerClientData.PlayerComponent.gameObject.SetActive(false);
+                            Completed = true;
+                        }
                     }
-                    PortalOrb.gameObject.SetActive(false);
-                    PlayerOpaque = true;
-                }
-            }
-            else if (SetPlayerInactive && !PlayerDespawned)
-            {
-                if (PlayerOpaqueTimer.IsTimeElapsed_FixedUpdateThread())
-                {
-                    CrimsonAura.gameObject.SetActive(false);
-                    PlayerClientData.PlayerComponent.gameObject.SetActive(false);
-                    PlayerDespawned = true;
-                    Completed = true;
-                }
-            }
-            else
-            {
-                CrimsonAura.gameObject.SetActive(false);
-                PlayerClientData.PlayerComponent.gameObject.SetActive(false);
-                PlayerDespawned = true;
-                Completed = true;
+                    else
+                    {
+                        CrimsonAura.gameObject.SetActive(false);
+                        Completed = true;
+                    }
+                    break;
             }
         }
 
@@ -185,6 +172,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PortalOrb = null;
             CrimsonAura = null;
         }
+    }
+    enum PortalState
+    {
+        PortalCreate,
+        PortalScale,
+        PlayerCreate,
+        PlayerOpaque,
+        PlayerDespawn
     }
 
     [CustomEditor(typeof(PortalBuilder))]
