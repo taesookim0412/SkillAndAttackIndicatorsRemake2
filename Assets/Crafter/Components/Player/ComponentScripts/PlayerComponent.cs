@@ -31,11 +31,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         [HideInInspector]
         public PlayerComponentCloneItems PlayerComponentCloneItems;
 
-        private void Awake()
-        {
-            InitializeMaterials();
-        }
-        private void InitializeMaterials()
+        public void InitializeMaterials()
         {
             int materialsCount = 0;
             foreach (SkinnedMeshRendererContainer holder in Meshes)
@@ -79,7 +75,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         {
             foreach (Material material in Materials)
             {
-                material.color = new Color(0f, 0f, 0f, opacity);
+                material.color = new Color(1f, 1f, 1f, opacity);
             }
         }
     }

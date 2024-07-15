@@ -50,7 +50,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1865737455093638672, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: m_Name
-      value: PortalBuilder_Medium
+      value: PortalBuilder_Dest
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PortalScaleMax.x
@@ -82,7 +82,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PortalScaleDuration
-      value: 0.685
+      value: 0.47
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PlayerOpaqueDuration
