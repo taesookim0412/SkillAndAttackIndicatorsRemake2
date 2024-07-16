@@ -106,3 +106,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   VisualEffect: {fileID: 0}
+  ParticleSystems:
+  - {fileID: 7443566657803602151}
+  - {fileID: 7443984408339582223}
+  - {fileID: 7443717641069383229}
+  - {fileID: 7443600994036332057}
+  - {fileID: 7443366253180607351}
+--- !u!198 &7443366253180607351 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 198254902819333256, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
+  m_PrefabInstance: {fileID: 7317348714550624255}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &7443566657803602151 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 198349230612428568, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
+  m_PrefabInstance: {fileID: 7317348714550624255}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &7443600994036332057 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 198310432009931238, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
+  m_PrefabInstance: {fileID: 7317348714550624255}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &7443717641069383229 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 198461996994965954, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
+  m_PrefabInstance: {fileID: 7317348714550624255}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &7443984408339582223 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 198766972565189360, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
+  m_PrefabInstance: {fileID: 7317348714550624255}
+  m_PrefabAsset: {fileID: 0}

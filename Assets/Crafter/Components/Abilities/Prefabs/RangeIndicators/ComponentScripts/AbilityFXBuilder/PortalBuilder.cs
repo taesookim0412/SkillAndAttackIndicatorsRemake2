@@ -72,35 +72,37 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         private TimerStructDco_Observer PlayerOpaqueTimer;
         [HideInInspector]
-        private bool Completed = false;
+        public bool Active = false;
+        [HideInInspector]
+        public bool Completed = false;
 
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
-            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, bool setPlayerInactive, bool isTeleportSource)
+            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura)
         {
             ObserverUpdateCache = observerUpdateCache;
             PlayerClientData = playerClientData;
 
             PlayerComponent playerComponent = playerClientData.PlayerComponent;
+            playerComponent.transform.localPosition = Vector3.zero;
+            playerComponent.transform.SetParent(transform, worldPositionStays: false);
             if (!IsTeleportSource)
             {
                 playerComponent.gameObject.SetActive(false);
             }
 
-            playerComponent.transform.localPosition = Vector3.zero;
-
             PortalOrb = portalOrb;
-            portalOrb.DisableParticleSystems();
             portalOrb.transform.localPosition = PortalOrbOffsetPosition;
+            portalOrb.transform.SetParent(transform, worldPositionStays: false);
+            portalOrb.DisableParticleSystems();
             
-
             CrimsonAura = crimsonAura;
-            crimsonAura.DisableParticleSystems();
             crimsonAura.transform.localPosition = CrimsonAuraOffsetPosition;
-
-            SetPlayerInactive = setPlayerInactive;
-            IsTeleportSource = isTeleportSource;
+            crimsonAura.transform.SetParent(transform, worldPositionStays: false);
+            crimsonAura.DisableParticleSystems();
+            
             PortalState = PortalState.PortalCreate;
 
+            Active = false;
             Completed = false;
         }
         public void ManualUpdate()
@@ -112,6 +114,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             switch (PortalState)
             {
                 case PortalState.PortalCreate:
+                    Active = true;
                     PortalOrb.transform.localScale = Vector3.zero;
                     PortalOrb.EnableParticleSystems();
                     CrimsonAura.EnableParticleSystems();
@@ -157,7 +160,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             PlayerOpaqueTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PlayerOpaqueDuration * 1000f));
                             PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                         }
-                        PortalOrb.gameObject.SetActive(false);
+                        PortalOrb.DisableParticleSystems();
                         PortalState = PortalState.PlayerDespawn;
                     }
                     break;
@@ -166,18 +169,39 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     {
                         if (PlayerOpaqueTimer.IsTimeElapsed_FixedUpdateThread())
                         {
-                            CrimsonAura.gameObject.SetActive(false);
+                            CrimsonAura.DisableParticleSystems();
                             PlayerClientData.PlayerComponent.gameObject.SetActive(false);
                             Completed = true;
                         }
                     }
                     else
                     {
-                        CrimsonAura.gameObject.SetActive(false);
+                        CrimsonAura.DisableParticleSystems();
                         Completed = true;
                     }
                     break;
             }
+        }
+        public void Complete()
+        {
+            //PortalOrb.gameObject.SetActive(false);
+            //CrimsonAura.gameObject.SetActive(false);
+
+            //if (IsTeleportSource)
+            //{
+            //    PlayerClientData.PlayerComponent.gameObject.SetActive(false);
+            //}
+            PortalOrb.DisableParticleSystems();
+            CrimsonAura.DisableParticleSystems();
+            Completed = true;
+        }
+
+        public void ManualDisable()
+        {
+            ObserverUpdateCache = null;
+            PlayerClientData = null;
+            PortalOrb = null;
+            CrimsonAura = null;
         }
 
         public void EditorDestroy()
@@ -238,6 +262,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             if (!VariablesSet)
             {
                 VariablesSet = Instance != null && Instance.PlayerClientData != null && Instance.PortalOrb != null && Instance.CrimsonAura != null;
+                if (VariablesSet)
+                {
+                    ObserverUpdateCache = Instance.ObserverUpdateCache;
+                }
             }
             if (!VariablesSet)
             {
@@ -268,7 +296,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                         SetObserverUpdateCache();
                         Instance.Awake();
-                        Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, Instance.SetPlayerInactive, Instance.IsTeleportSource);
+                        Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura);
                         TryAddNonPrefabParticleSystem(Instance.gameObject);
                         VariablesAdded = true;
                         VariablesSet = true;

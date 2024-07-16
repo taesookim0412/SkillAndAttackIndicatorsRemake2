@@ -44460,6 +44460,14 @@ PrefabInstance:
       value: PortalBuilder_Source
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
+      propertyPath: Active
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
+      propertyPath: Completed
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: IsTeleportSource
       value: 1
       objectReference: {fileID: 0}
@@ -44493,7 +44501,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PortalScaleDuration
-      value: 0.369
+      value: 0.153
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PlayerOpaqueDuration
@@ -44501,7 +44509,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PlayerOpacityDuration
-      value: 0.607
+      value: 0.365
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PortalOrbOffsetPosition.y
