@@ -14,7 +14,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public class SkillAndAttackIndicatorSystem : MonoBehaviour
     {
+        // these are static due to cross-assembly when migrated.
         public static readonly long FixedTimestep = 20L;
+        public static readonly float ONE_THIRD = 1 / 3f;
+        public static readonly float TWO_THIRDS = 2 / 3f;
+
 
         [SerializeField]
         public LayerMask TerrainLayer;

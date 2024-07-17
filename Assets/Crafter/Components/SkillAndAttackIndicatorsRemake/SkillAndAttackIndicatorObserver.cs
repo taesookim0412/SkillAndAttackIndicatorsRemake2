@@ -96,6 +96,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
 
+        private float TimeMSPerZDist;
+
         private Vector3 PreviousTerrainProjectorPosition;
         private float PreviousRotationY;
         private float PreviousChargeDurationFloatPercentage;
@@ -219,6 +221,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         case AbilityProjectorMaterialType.First:
                             ChargeDuration = 3000L;
                             ChargeDurationSecondsFloat = 3000 * 0.001f;
+                            TimeMSPerZDist = (float) 3000 / LineLengthUnits;
                             break;
                         //case AbilityProjectorMaterialType.Second:
                         //    ChargeDuration = 5000L;
@@ -493,13 +496,22 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             PoolBagDco<AbstractAbilityFX> portalBuilderSrcInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.PortalBuilder_Source];
             PoolBagDco<AbstractAbilityFX> portalBuilderDestInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.PortalBuilder_Dest];
 
+            
             float arcLocalZStart = -1 * 0.5f * ArcPathZUnitsPerCluster;
             float arcLocalZUnitsPerIndex = ArcPathZUnitsPerCluster / ArcPathFromSkyPerClone;
+
+            // cached prev values
+            int particlesIndex = Math.Clamp(CloneOffsetUnits, 0, lineLengthUnits - 1);
+            float prevTimeDelay = particlesIndex * 0.1f * TimeMSPerZDist;
 
             for (int i = 0; i < numPlayerClones; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
-                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
+                int nextParticlesIndex = Math.Clamp(CloneOffsetUnits + ((i + 1) * UnitsPerClone), 0, lineLengthUnits - 1);
+
+                // units * totalTime / totalUnits = units
+                // nextTimeDelay = units * totalTime / totalUnits - prevTimeDelay
+                float nextTimeDelay = nextParticlesIndex * 0.1f * TimeMSPerZDist - prevTimeDelay;
 
                 Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
                 PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticlesPosition);
@@ -564,19 +576,24 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 portalOrbs[i] = portalOrb;
 
+                //src durationAllowed =  1/3 * nextTimeDelay
                 PortalBuilder portalSource = (PortalBuilder)portalBuilderSrcInstancePool.InstantiatePooled(dashParticlesPosition);
                 portalSource.transform.localEulerAngles = yRotationVector;
                 portalSource.gameObject.SetActive(false);
-                portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura);
+                portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, (long) (SkillAndAttackIndicatorSystem.ONE_THIRD * nextTimeDelay));
 
                 portalSources[i] = portalSource;
 
+                //dest durationAllowed = 2/3 * prevTimeDelay
                 PortalBuilder portalDest = (PortalBuilder)portalBuilderDestInstancePool.InstantiatePooled(dashParticlesPosition);
                 portalDest.transform.localEulerAngles = yRotationVector;
                 portalDest.gameObject.SetActive(false);
-                portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura);
+                portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, (long) (SkillAndAttackIndicatorSystem.TWO_THIRDS * prevTimeDelay));
 
                 portalDests[i] = portalDest;
+
+                particlesIndex = nextParticlesIndex;
+                prevTimeDelay = nextTimeDelay;
             }
 
             // the indices are based on playerClones so the last one will be the src / dest
@@ -794,6 +811,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             PortalBuilder[] portalDests = DashParticlesItems.portalDestinations;
 
             activePassed = false;
+            //if (timer > 1/3 * requiredDurations[0]) {}
             for (int i = 0; i < playerClones.Length; i++)
             {
                 if (!portalDests[i].Completed)
