@@ -15,6 +15,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 {
     public class PortalBuilder : AbstractAbilityFXBuilder
     {
+        private static readonly int PortalStateLength = Enum.GetNames(typeof(PortalState)).Length;
+
         [NonSerialized]
         public ObserverUpdateCache ObserverUpdateCache;
         [NonSerialized]
@@ -42,25 +44,37 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public bool SetPlayerInactive;
         [SerializeField]
         public bool IsTeleportSource;
+        // incompatible with onvalidate
+        [HideInInspector]
+        private float RequiredDurationMult;
 
         [HideInInspector]
         private Vector3 PortalScaleDifference;
 
-        public void Awake()
+        public override void ManualAwake()
         {
             PortalScaleDifference = PortalScaleMax - PortalScaleMin;
+        }
+        private float GetRequiredDuration()
+        {
+            return PortalScaleTimer.RequiredDuration + PlayerOpacityTimer.RequiredDuration + PlayerOpaqueTimer.RequiredDuration +
+                (SkillAndAttackIndicatorSystem.FixedTimestep * PortalStateLength);
+        }
+        private void ResetRequiredDuration()
+        {
+            PortalScaleTimer.RequiredDuration = (long)(PortalScaleDuration * 1000f);
+            PlayerOpacityTimer.RequiredDuration = (long)(PlayerOpacityDuration * 1000f);
+            PlayerOpaqueTimer.RequiredDuration = (long)(PlayerOpaqueDuration * 1000f);
         }
 
         private void OnValidate()
         {
-            PortalScaleTimer.RequiredDuration = (long) (PortalScaleDuration * 1000f);
-            PlayerOpacityTimer.RequiredDuration = (long)(PlayerOpacityDuration * 1000f);
-            PlayerOpaqueTimer.RequiredDuration = (long)(PlayerOpaqueDuration * 1000f);
+            ResetRequiredDuration();
 
             PortalOrb.transform.localPosition = PortalOrbOffsetPosition;
             CrimsonAura.transform.localPosition = CrimsonAuraOffsetPosition;
 
-            Awake();
+            ManualAwake();
         }
 
         [HideInInspector]
@@ -72,13 +86,35 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         private TimerStructDco_Observer PlayerOpaqueTimer;
         [HideInInspector]
+        private bool RequiredDurationsModified = false;
+        [HideInInspector]
         public bool Active = false;
         [HideInInspector]
         public bool Completed = false;
 
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
-            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura)
+            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed)
         {
+            InitializeManualAwake();
+            
+            if (durationAllowed != null)
+            {
+                float requiredDurationMultTimes1000 = (long) durationAllowed / GetRequiredDuration() * 1000f;
+
+                PortalScaleTimer.RequiredDuration = (long)(PortalScaleDuration * requiredDurationMultTimes1000);
+                PlayerOpacityTimer.RequiredDuration = (long)(PlayerOpacityDuration * requiredDurationMultTimes1000);
+                PlayerOpaqueTimer.RequiredDuration = (long)(PlayerOpaqueDuration * requiredDurationMultTimes1000);
+                RequiredDurationsModified = true;
+            }
+            else
+            {
+                if (RequiredDurationsModified)
+                {
+                    ResetRequiredDuration();
+                    RequiredDurationsModified = false;
+                }
+            }
+
             ObserverUpdateCache = observerUpdateCache;
             PlayerClientData = playerClientData;
 
@@ -234,8 +270,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private bool VariablesSet = false;
         private bool VariablesAdded = false;
         private bool SkipDestroy = false;
-        private long PreviousSimulationTime = 0;
-        private int Iteration;
         public void OnSceneGUI()
         {
             Initialize();
@@ -295,7 +329,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         CrimsonAuraBlack crimsonAura = GameObject.Instantiate(crimsonAuraPrefab, Instance.transform);
 
                         SetObserverUpdateCache();
-                        Instance.Awake();
+                        Instance.ManualAwake();
                         Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura);
                         TryAddNonPrefabParticleSystem(Instance.gameObject);
                         VariablesAdded = true;

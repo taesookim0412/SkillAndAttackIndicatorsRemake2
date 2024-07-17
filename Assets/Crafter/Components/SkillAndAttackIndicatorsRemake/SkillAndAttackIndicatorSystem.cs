@@ -14,6 +14,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public class SkillAndAttackIndicatorSystem : MonoBehaviour
     {
+        public static readonly long FixedTimestep = 20L;
+
         [SerializeField]
         public LayerMask TerrainLayer;
         [SerializeField]

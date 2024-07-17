@@ -801,7 +801,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     PortalBuilder portalDest = portalDests[i];
                     if (!portalDest.Active)
                     {
-                        Debug.Log("Set Dest Active");
                         portalDest.gameObject.SetActive(true);
                     }
                     portalDest.ManualUpdate();
@@ -814,7 +813,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     {
                         if (!portalSource.Active)
                         {
-                            Debug.Log("Set Source Active");
                             portalSource.gameObject.SetActive(true);
                         }
                         portalSource.ManualUpdate();
@@ -823,18 +821,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 }
                 if (activePassed)
                 {
-                    Debug.Log($"Pasesed, {i}");
                     if (i > 0)
                     {
                         int prevIdx = i - 1;
                         if (!portalDests[prevIdx].Completed)
                         {
-                            Debug.Log("Disable 0");
                             portalDests[prevIdx].Complete();
                         }
                         else if (!portalSources[prevIdx].Completed)
                         {
-                            Debug.Log("Disable 1");
                             portalSources[prevIdx].Complete();
                         }
                     }

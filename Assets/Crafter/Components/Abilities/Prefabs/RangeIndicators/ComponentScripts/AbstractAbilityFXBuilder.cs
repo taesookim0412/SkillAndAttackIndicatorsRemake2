@@ -8,6 +8,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 {
     public abstract class AbstractAbilityFXBuilder : AbstractAbilityFX
     {
-
+        protected bool AwakeInitialized = false;
+        protected void InitializeManualAwake()
+        {
+            if (!AwakeInitialized)
+            {
+                ManualAwake();
+                AwakeInitialized = true;
+            }
+        }
+        public abstract void ManualAwake();
     }
 }
