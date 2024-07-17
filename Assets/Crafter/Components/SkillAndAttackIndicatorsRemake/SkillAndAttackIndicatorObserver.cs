@@ -96,7 +96,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
 
-        private float TimeMSPerZDist;
+        private long[] TimeRequiredForDistancesPerUnit;
 
         private Vector3 PreviousTerrainProjectorPosition;
         private float PreviousRotationY;
@@ -215,13 +215,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             }
                         }
                     }
-                    
+
                     switch (AbilityProjectorMaterialType)
                     {
                         case AbilityProjectorMaterialType.First:
                             ChargeDuration = 3000L;
                             ChargeDurationSecondsFloat = 3000 * 0.001f;
-                            TimeMSPerZDist = (float) 3000 / LineLengthUnits;
                             break;
                         //case AbilityProjectorMaterialType.Second:
                         //    ChargeDuration = 5000L;
@@ -235,6 +234,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             ObserverStatus = ObserverStatus.Remove;
                             return;
                     }
+
+                    TimeRequiredForDistancesPerUnit = GenerateTimeRequiredForDistancesPerUnit();
 
                     ProjectorSet = true;
                     LastTickTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
@@ -271,6 +272,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 LineRegionProjectorRef.FillProgress = newFillProgress;
                                 LineRegionProjectorRef.UpdateProjectors();
                                 PreviousChargeDurationFloatPercentage = chargeDurationPercentage;
+                            }
+                            else
+                            {
+                                newFillProgress = EaseInOutQuad(PreviousChargeDurationFloatPercentage);
                             }
                         }
                         break;
@@ -390,6 +395,89 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
         }
 
+        private long[] GenerateTimeRequiredForDistancesPerUnit()
+        {
+            // iterate per 0.1sec
+            // get the time / total time
+            // fillProgress = convert into eased time
+            // since lineLengthPercentage = unitsIndex / totalUnits,
+            // index = minimize the difference between fillProgress and lineLengthPercentage
+            // fill prevIndex... (index)
+
+            int distUnitsIndex = 0;
+            int lineLengthUnits = LineLengthUnits;
+            long prevChargeDurationIterationTimeRequired = 0L;
+
+            long[] timeRequiredForDistancesPerUnit = new long[lineLengthUnits];
+            // iterate based on 0.1 sec interval
+            int numChargeDurationIterations = (int)Math.Ceiling(ChargeDurationSecondsFloat * 10);
+            for (int i = 0; i < numChargeDurationIterations; i++)
+            {
+                // mult by 10 and convert to milliseconds.
+                long iterationTimeValue = i * 10000;
+
+                float chargeDurationPercentage = i * 0.1f / ChargeDurationSecondsFloat;
+                float fillProgress = EaseInOutQuad(chargeDurationPercentage);
+
+                // set to max
+                bool minimumDifferenceFound = false;
+
+                int startDistUnitsIndex = distUnitsIndex;
+                float prevFillPercentageDifference = 1f;
+                while (distUnitsIndex < lineLengthUnits)
+                {
+                    float lineLengthPercentage = distUnitsIndex / lineLengthUnits;
+                    float lineLengthFillProgressDifferenceAbsolute = Mathf.Abs(lineLengthPercentage - fillProgress);
+
+                    if (lineLengthFillProgressDifferenceAbsolute > prevFillPercentageDifference)
+                    {
+                        minimumDifferenceFound = true;
+                    }
+                    else
+                    {
+                        prevFillPercentageDifference = lineLengthFillProgressDifferenceAbsolute;
+                    }
+
+                    //// Instead of setting here, the values are interpolated below.
+                    //timeRequiredForDistancesPerUnit[distUnitsIndex] = iterationTimeValue;
+
+                    distUnitsIndex++;
+                    // break after iteration, thus indices are exclusive of range of distUnitsIndex
+                    if (minimumDifferenceFound)
+                    {
+                        break;
+                    }
+                }
+
+                long iterationTimeDifference = iterationTimeValue - prevChargeDurationIterationTimeRequired;
+
+                int interpLen = distUnitsIndex - startDistUnitsIndex;
+                for (int j = 0; j < interpLen; j++)
+                {
+                    long timeRequired = prevChargeDurationIterationTimeRequired + iterationTimeDifference * ((j + 1) / interpLen);
+
+                    timeRequiredForDistancesPerUnit[startDistUnitsIndex + j] = timeRequired;
+
+                    if (j == distUnitsIndex - 1)
+                    {
+                        prevChargeDurationIterationTimeRequired = timeRequired;
+                    }
+                }
+            }
+
+            // fill the remaining values...
+            if (distUnitsIndex < lineLengthUnits)
+            {
+                long lastValue = distUnitsIndex > 0 ? timeRequiredForDistancesPerUnit[distUnitsIndex - 1] : 0L;
+                for (int i = distUnitsIndex; i < lineLengthUnits; i++)
+                {
+                    timeRequiredForDistancesPerUnit[i] = lastValue;
+                }
+            }
+
+            return timeRequiredForDistancesPerUnit;
+        }
+
         private float GetThirdPersonControllerRotation()
         {
             if (Props.SkillAndAttackIndicatorSystem.PlayerComponent != null)
@@ -496,22 +584,20 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             PoolBagDco<AbstractAbilityFX> portalBuilderSrcInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.PortalBuilder_Source];
             PoolBagDco<AbstractAbilityFX> portalBuilderDestInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.PortalBuilder_Dest];
 
-            
+            long[] timeRequiredForDistancesPerUnit = TimeRequiredForDistancesPerUnit;
+
             float arcLocalZStart = -1 * 0.5f * ArcPathZUnitsPerCluster;
             float arcLocalZUnitsPerIndex = ArcPathZUnitsPerCluster / ArcPathFromSkyPerClone;
 
             // cached prev values
             int particlesIndex = Math.Clamp(CloneOffsetUnits, 0, lineLengthUnits - 1);
-            float prevTimeDelay = particlesIndex * 0.1f * TimeMSPerZDist;
+            long prevTimeRequired = timeRequiredForDistancesPerUnit[particlesIndex];
 
             for (int i = 0; i < numPlayerClones; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
                 int nextParticlesIndex = Math.Clamp(CloneOffsetUnits + ((i + 1) * UnitsPerClone), 0, lineLengthUnits - 1);
-
-                // units * totalTime / totalUnits = units
-                // nextTimeDelay = units * totalTime / totalUnits - prevTimeDelay
-                float nextTimeDelay = nextParticlesIndex * 0.1f * TimeMSPerZDist - prevTimeDelay;
+                long nextTimeRequired = timeRequiredForDistancesPerUnit[nextParticlesIndex];
 
                 Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
                 PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticlesPosition);
@@ -580,7 +666,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 PortalBuilder portalSource = (PortalBuilder)portalBuilderSrcInstancePool.InstantiatePooled(dashParticlesPosition);
                 portalSource.transform.localEulerAngles = yRotationVector;
                 portalSource.gameObject.SetActive(false);
-                portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, (long) (SkillAndAttackIndicatorSystem.ONE_THIRD * nextTimeDelay));
+                portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, (long) (SkillAndAttackIndicatorSystem.ONE_THIRD * nextTimeRequired));
 
                 portalSources[i] = portalSource;
 
@@ -588,12 +674,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 PortalBuilder portalDest = (PortalBuilder)portalBuilderDestInstancePool.InstantiatePooled(dashParticlesPosition);
                 portalDest.transform.localEulerAngles = yRotationVector;
                 portalDest.gameObject.SetActive(false);
-                portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, (long) (SkillAndAttackIndicatorSystem.TWO_THIRDS * prevTimeDelay));
+                portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, (long) (SkillAndAttackIndicatorSystem.TWO_THIRDS * prevTimeRequired));
 
                 portalDests[i] = portalDest;
 
                 particlesIndex = nextParticlesIndex;
-                prevTimeDelay = nextTimeDelay;
+                prevTimeRequired = nextTimeRequired;
             }
 
             // the indices are based on playerClones so the last one will be the src / dest
