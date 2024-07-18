@@ -200,22 +200,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     PreviousTerrainProjectorPosition = terrainProjectorPosition;
                     PreviousRotationY = playerRotation;
 
-                    if (AbilityFXTypes != null)
-                    {
-                        for (int i = 0; i < AbilityFXTypes.Length; i++)
-                        {
-                            AbilityFXType abilityFXType = AbilityFXTypes[i];
-                            switch (abilityFXType)
-                            {
-                                case AbilityFXType.DashParticles:
-                                    DashParticlesItems = CreateDashParticlesItems(LineLengthUnits,
-                                        terrainProjectorPosition.x, terrainProjectorPosition.z, GetThirdPersonControllerRotation(),
-                                        i);
-                                    break;
-                            }
-                        }
-                    }
-
                     switch (AbilityProjectorMaterialType)
                     {
                         case AbilityProjectorMaterialType.First:
@@ -236,6 +220,24 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     }
 
                     TimeRequiredForDistancesPerUnit = GenerateTimeRequiredForDistancesPerUnit();
+
+                    if (AbilityFXTypes != null)
+                    {
+                        for (int i = 0; i < AbilityFXTypes.Length; i++)
+                        {
+                            AbilityFXType abilityFXType = AbilityFXTypes[i];
+                            switch (abilityFXType)
+                            {
+                                case AbilityFXType.DashParticles:
+                                    DashParticlesItems = CreateDashParticlesItems(LineLengthUnits,
+                                        terrainProjectorPosition.x, terrainProjectorPosition.z, GetThirdPersonControllerRotation(),
+                                        i);
+                                    break;
+                            }
+                        }
+                    }
+
+
 
                     ProjectorSet = true;
                     LastTickTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
@@ -395,81 +397,55 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
         }
 
+
         private long[] GenerateTimeRequiredForDistancesPerUnit()
         {
-            // iterate per 0.1sec
-            // get the time / total time
-            // fillProgress = convert into eased time
-            // since lineLengthPercentage = unitsIndex / totalUnits,
-            // index = minimize the difference between fillProgress and lineLengthPercentage
-            // fill prevIndex... (index)
-
-            int distUnitsIndex = 0;
+            // iterate the distances
+            // find the fillPercentage
+            // invert the fillPercentage into time
             int lineLengthUnits = LineLengthUnits;
+            float lineLengthUnitsFloat = (float) lineLengthUnits;
+
+            float chargeDurationFloat = (float) ChargeDuration;
+
+            int startDistUnitsIndex = 0;
             long prevChargeDurationIterationTimeRequired = 0L;
 
             long[] timeRequiredForDistancesPerUnit = new long[lineLengthUnits];
-            // iterate based on 0.1 sec interval
-            int numChargeDurationIterations = (int)Math.Ceiling(ChargeDurationSecondsFloat * 10);
-            for (int i = 0; i < numChargeDurationIterations; i++)
+            for (int i = 0; i < lineLengthUnits; i++)
             {
-                // mult by 10 and convert to milliseconds.
-                long iterationTimeValue = i * 10000;
+                // although this is fillProgress in the other algorithms, here it is the 
+                // i = 10, % = 0.33
+                float lineLengthPercentage = i / lineLengthUnitsFloat;
+                // i = 10, fp% = ~0.1089
+                float fillProgress = EaseInOutQuad(lineLengthPercentage);
+                // i = 10, zDist = 0.11 * 30 = 3.3
+                int zDistanceUnitsIndex = (int) (fillProgress * lineLengthUnits);
+                long timeValue = (long) (lineLengthPercentage * chargeDurationFloat);
+                // i = 10, fill prevIdx to 3.3 (or zDistanceUnits) with timePercentage.
 
-                float chargeDurationPercentage = i * 0.1f / ChargeDurationSecondsFloat;
-                float fillProgress = EaseInOutQuad(chargeDurationPercentage);
-
-                // set to max
-                bool minimumDifferenceFound = false;
-
-                int startDistUnitsIndex = distUnitsIndex;
-                float prevFillPercentageDifference = 1f;
-                while (distUnitsIndex < lineLengthUnits)
-                {
-                    float lineLengthPercentage = distUnitsIndex / lineLengthUnits;
-                    float lineLengthFillProgressDifferenceAbsolute = Mathf.Abs(lineLengthPercentage - fillProgress);
-
-                    if (lineLengthFillProgressDifferenceAbsolute > prevFillPercentageDifference)
-                    {
-                        minimumDifferenceFound = true;
-                    }
-                    else
-                    {
-                        prevFillPercentageDifference = lineLengthFillProgressDifferenceAbsolute;
-                    }
-
-                    //// Instead of setting here, the values are interpolated below.
-                    //timeRequiredForDistancesPerUnit[distUnitsIndex] = iterationTimeValue;
-
-                    distUnitsIndex++;
-                    // break after iteration, thus indices are exclusive of range of distUnitsIndex
-                    if (minimumDifferenceFound)
-                    {
-                        break;
-                    }
-                }
-
-                long iterationTimeDifference = iterationTimeValue - prevChargeDurationIterationTimeRequired;
-
-                int interpLen = distUnitsIndex - startDistUnitsIndex;
+                int interpLen = zDistanceUnitsIndex - startDistUnitsIndex;
+                float interpLenFloat = (float) interpLen;
+                long timeValueDifference = timeValue - prevChargeDurationIterationTimeRequired;
                 for (int j = 0; j < interpLen; j++)
                 {
-                    long timeRequired = prevChargeDurationIterationTimeRequired + iterationTimeDifference * ((j + 1) / interpLen);
+                    long interpTimeValue = (long)(prevChargeDurationIterationTimeRequired + timeValueDifference * ((j + 1) / interpLenFloat));
+                    int interpIndex = startDistUnitsIndex + j;
+                    timeRequiredForDistancesPerUnit[interpIndex] = interpTimeValue;
 
-                    timeRequiredForDistancesPerUnit[startDistUnitsIndex + j] = timeRequired;
-
-                    if (j == distUnitsIndex - 1)
+                    if (j == interpLen - 1)
                     {
-                        prevChargeDurationIterationTimeRequired = timeRequired;
+                        prevChargeDurationIterationTimeRequired = interpTimeValue;
+                        startDistUnitsIndex += interpLen; 
                     }
                 }
-            }
 
+            }
             // fill the remaining values...
-            if (distUnitsIndex < lineLengthUnits)
+            if (startDistUnitsIndex < lineLengthUnits)
             {
-                long lastValue = distUnitsIndex > 0 ? timeRequiredForDistancesPerUnit[distUnitsIndex - 1] : 0L;
-                for (int i = distUnitsIndex; i < lineLengthUnits; i++)
+                long lastValue = startDistUnitsIndex > 0 ? timeRequiredForDistancesPerUnit[startDistUnitsIndex - 1] : 0L;
+                for (int i = startDistUnitsIndex; i < lineLengthUnits; i++)
                 {
                     timeRequiredForDistancesPerUnit[i] = lastValue;
                 }
@@ -477,6 +453,91 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             return timeRequiredForDistancesPerUnit;
         }
+        //private long[] GenerateTimeRequiredForDistancesPerUnit()
+        //{
+        //    // iterate per 0.1sec
+        //    // get the time / total time
+        //    // fillProgress = convert into eased time
+        //    // since lineLengthPercentage = unitsIndex / totalUnits,
+        //    // index = minimize the difference between fillProgress and lineLengthPercentage
+        //    // fill prevIndex... (index)
+
+        //    int distUnitsIndex = 0;
+        //    int lineLengthUnits = LineLengthUnits;
+        //    float lineLengthUnitsFloat = (float) lineLengthUnits;
+        //    long prevChargeDurationIterationTimeRequired = 0L;
+
+        //    long[] timeRequiredForDistancesPerUnit = new long[lineLengthUnits];
+        //    // iterate based on 0.1 sec interval
+        //    int numChargeDurationIterations = (int)Math.Ceiling(ChargeDurationSecondsFloat * 10);
+        //    for (int i = 0; i < numChargeDurationIterations; i++)
+        //    {
+        //        // divide by 10 then mult by 1000 to convert to millis.
+        //        long iterationTimeValue = i * 100;
+
+        //        float chargeDurationPercentage = i * 0.1f / ChargeDurationSecondsFloat;
+        //        float fillProgress = EaseInOutQuad(chargeDurationPercentage);
+
+        //        // set to max
+        //        bool minimumDifferenceFound = false;
+
+        //        int startDistUnitsIndex = distUnitsIndex;
+        //        float prevFillPercentageDifference = 1f;
+        //        // since the nested loop occurs so frequently, it increments too much... So, this algorithm is abandoned and instead, an Ease Invert is used in another function.
+        //        while (distUnitsIndex < lineLengthUnits)
+        //        {
+        //            float lineLengthPercentage = distUnitsIndex / lineLengthUnitsFloat;
+        //            float lineLengthFillProgressDifferenceAbsolute = Mathf.Abs(lineLengthPercentage - fillProgress);
+
+        //            if (lineLengthFillProgressDifferenceAbsolute > prevFillPercentageDifference)
+        //            {
+        //                minimumDifferenceFound = true;
+        //            }
+        //            else
+        //            {
+        //                prevFillPercentageDifference = lineLengthFillProgressDifferenceAbsolute;
+        //            }
+
+        //            //// Instead of setting here, the values are interpolated below.
+        //            //timeRequiredForDistancesPerUnit[distUnitsIndex] = iterationTimeValue;
+
+        //            distUnitsIndex++;
+        //            // break after iteration, thus indices are exclusive of range of distUnitsIndex
+        //            if (minimumDifferenceFound)
+        //            {
+        //                break;
+        //            }
+        //        }
+
+        //        long iterationTimeDifference = iterationTimeValue - prevChargeDurationIterationTimeRequired;
+
+        //        int interpLen = distUnitsIndex - startDistUnitsIndex;
+        //        float interLenFloat = (float) interpLen;
+        //        for (int j = 0; j < interpLen; j++)
+        //        {
+        //            long timeRequired = (long) (prevChargeDurationIterationTimeRequired + iterationTimeDifference * ((j + 1) / interLenFloat));
+
+        //            timeRequiredForDistancesPerUnit[startDistUnitsIndex + j] = timeRequired;
+
+        //            if (j == interpLen - 1)
+        //            {
+        //                prevChargeDurationIterationTimeRequired = timeRequired;
+        //            }
+        //        }
+        //    }
+
+        //    // fill the remaining values...
+        //    if (distUnitsIndex < lineLengthUnits)
+        //    {
+        //        long lastValue = distUnitsIndex > 0 ? timeRequiredForDistancesPerUnit[distUnitsIndex - 1] : 0L;
+        //        for (int i = distUnitsIndex; i < lineLengthUnits; i++)
+        //        {
+        //            timeRequiredForDistancesPerUnit[i] = lastValue;
+        //        }
+        //    }
+
+        //    return timeRequiredForDistancesPerUnit;
+        //}
 
         private float GetThirdPersonControllerRotation()
         {
