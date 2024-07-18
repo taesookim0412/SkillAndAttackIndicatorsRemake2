@@ -432,8 +432,16 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 {
                     long interpTimeValue = (long)(prevChargeDurationIterationTimeRequired + timeValueDifference * ((j + 1) / interpLenFloat));
                     int interpIndex = startDistUnitsIndex + j;
-                    timeRequiredForDistancesPerUnit[interpIndex] = interpTimeValue;
-
+                    if (interpIndex < lineLengthUnits)
+                    {
+                        timeRequiredForDistancesPerUnit[interpIndex] = interpTimeValue;
+                    }
+                    else
+                    {
+                        // fp error...? let it fill old values...
+                        Debug.LogError("FP error when interp-ing distance times...");
+                        break;
+                    }
                     if (j == interpLen - 1)
                     {
                         prevChargeDurationIterationTimeRequired = interpTimeValue;
