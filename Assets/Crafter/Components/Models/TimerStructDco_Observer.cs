@@ -20,13 +20,6 @@ namespace Assets.Crafter.Components.Models
         public long LastCheckedTime;
         public long RequiredDuration;
 
-        public TimerStructDco_Observer(ObserverUpdateCache observerUpdateCache, long lastCheckedTime, long requiredDuration) : this()
-        {
-            ObserverUpdateCache = observerUpdateCache;
-            LastCheckedTime = lastCheckedTime;
-            RequiredDuration = requiredDuration;
-        }
-
         public TimerStructDco_Observer(long requiredDuration) : this()
         {
             RequiredDuration = requiredDuration;

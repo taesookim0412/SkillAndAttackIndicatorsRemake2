@@ -987,7 +987,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 {
                     continue;
                 }
-                //Debug.Log($"{elapsedTime}, {portalTimes[i].portalDestStartTime}, {portalTimes[i].portalSrcEndTime}");
+                //Debug.Log($"{i}: {elapsedTime}, {portalTimes[i].portalDestStartTime}, {portalDests[i].PortalState}, {portalDests[i].DebugLogRequiredDurations()}. " +
+                //    $"{portalTimes[i].portalSrcEndTime}, {portalSources[i].PortalState}, {portalSources[i].DebugLogRequiredDurations()}.");
 
                 bool pastStartTime = elapsedTime >= portalTimes[i].portalDestStartTime;
                 if (pastStartTime)

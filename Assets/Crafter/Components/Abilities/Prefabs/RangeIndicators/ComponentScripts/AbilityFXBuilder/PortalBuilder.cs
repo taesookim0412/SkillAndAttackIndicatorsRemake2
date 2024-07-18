@@ -55,10 +55,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             PortalScaleDifference = PortalScaleMax - PortalScaleMin;
         }
-        private float GetRequiredDuration()
+        private float GetRequiredDurationMillis()
         {
-            return PortalScaleTimer.RequiredDuration + PlayerOpacityTimer.RequiredDuration + PlayerOpaqueTimer.RequiredDuration +
-                (SkillAndAttackIndicatorSystem.FixedTimestep * PortalStateLength);
+            return (PortalScaleDuration + PlayerOpacityDuration + PlayerOpaqueDuration) * 1000f +
+                (SkillAndAttackIndicatorSystem.FixedTimestep * PortalStateLength * 2f);
         }
         private void ResetRequiredDuration()
         {
@@ -92,6 +92,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         public bool Completed = false;
 
+        //public string DebugLogRequiredDurations()
+        //{
+        //    return $"{PortalScaleTimer.RequiredDuration}, {PlayerOpacityTimer.RequiredDuration}, {PlayerOpaqueTimer.RequiredDuration}";
+        //}
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
             PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed)
         {
@@ -99,8 +103,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             
             if (durationAllowed != null)
             {
-                float requiredDurationMultTimes1000 = (long) durationAllowed / GetRequiredDuration() * 1000f;
-
+                float requiredDurationMultTimes1000 = (long) durationAllowed / GetRequiredDurationMillis() * 1000f;
                 PortalScaleTimer.RequiredDuration = (long)(PortalScaleDuration * requiredDurationMultTimes1000);
                 PlayerOpacityTimer.RequiredDuration = (long)(PlayerOpacityDuration * requiredDurationMultTimes1000);
                 PlayerOpaqueTimer.RequiredDuration = (long)(PlayerOpaqueDuration * requiredDurationMultTimes1000);
@@ -114,6 +117,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     RequiredDurationsModified = false;
                 }
             }
+
+            PortalScaleTimer.ObserverUpdateCache = observerUpdateCache;
+            PlayerOpacityTimer.ObserverUpdateCache = observerUpdateCache;
+            PlayerOpaqueTimer.ObserverUpdateCache = observerUpdateCache;
 
             ObserverUpdateCache = observerUpdateCache;
             PlayerClientData = playerClientData;
@@ -154,7 +161,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     PortalOrb.transform.localScale = Vector3.zero;
                     PortalOrb.EnableParticleSystems();
                     CrimsonAura.EnableParticleSystems();
-                    PortalScaleTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PortalScaleDuration * 1000f));
+                    PortalScaleTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                     PortalState = PortalState.PortalScale;
                     break;
                 case PortalState.PortalScale:
@@ -174,7 +181,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     {
                         PlayerClientData.PlayerComponent.gameObject.SetActive(true);   
                     }
-                    PlayerOpacityTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PlayerOpacityDuration * 1000f));
+                    PlayerOpacityTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                     PortalState = PortalState.PlayerOpaque;
                     break;
                 case PortalState.PlayerOpaque:
@@ -193,7 +200,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                         if (IsTeleportSource || SetPlayerInactive)
                         {
-                            PlayerOpaqueTimer = new TimerStructDco_Observer(ObserverUpdateCache, ObserverUpdateCache.UpdateTickTimeFixedUpdate, (long)(PlayerOpaqueDuration * 1000f));
                             PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                         }
                         PortalOrb.DisableParticleSystems();
@@ -252,7 +258,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             CrimsonAura = null;
         }
     }
-    enum PortalState
+    public enum PortalState
     {
         PortalCreate,
         PortalScale,
