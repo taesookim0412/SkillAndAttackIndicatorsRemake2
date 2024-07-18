@@ -1036,63 +1036,63 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 }
             }
 
-            CrimsonAuraBlack[] crimsonAurasArray = DashParticlesItems.crimsonAuras;
-            PortalOrbPurple[] portalOrbsArray = DashParticlesItems.portalOrbs;
+            //CrimsonAuraBlack[] crimsonAurasArray = DashParticlesItems.crimsonAuras;
+            //PortalOrbPurple[] portalOrbsArray = DashParticlesItems.portalOrbs;
 
-            activePassed = false;
-            for (int i = playerClones.Length - 1; i >= 0; i--)
-            {
-                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
-                float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
+            //activePassed = false;
+            //for (int i = playerClones.Length - 1; i >= 0; i--)
+            //{
+            //    int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
+            //    float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
 
-                (bool fullCloneOpacity, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
+            //    (bool fullCloneOpacity, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
 
-                PlayerClientData playerCloneClientData = playerClones[i];
-                PlayerComponent playerClone = playerCloneClientData.PlayerComponent;
-                if (!activePassed)
-                {
-                    if (fullCloneOpacity)
-                    {
-                        activePassed = true;
-                    }
+            //    PlayerClientData playerCloneClientData = playerClones[i];
+            //    PlayerComponent playerClone = playerCloneClientData.PlayerComponent;
+            //    if (!activePassed)
+            //    {
+            //        if (fullCloneOpacity)
+            //        {
+            //            activePassed = true;
+            //        }
 
-                    if (cloneOpacity > 0.2f)
-                    {
-                        playerClone.SetCloneFXOpacity(cloneOpacity);
-                        if (!playerClone.gameObject.activeSelf)
-                        {
-                            playerClone.gameObject.SetActive(true);
-                        }
-                        if (!playerClone.PlayerComponentCloneItems.AnimationStarted)
-                        {
-                            playerCloneClientData.PlayWalkingState();
-                            playerClone.PlayerComponentCloneItems.AnimationStarted = true;
-                        }
-                    }
+            //        if (cloneOpacity > 0.2f)
+            //        {
+            //            playerClone.SetCloneFXOpacity(cloneOpacity);
+            //            if (!playerClone.gameObject.activeSelf)
+            //            {
+            //                playerClone.gameObject.SetActive(true);
+            //            }
+            //            if (!playerClone.PlayerComponentCloneItems.AnimationStarted)
+            //            {
+            //                playerCloneClientData.PlayWalkingState();
+            //                playerClone.PlayerComponentCloneItems.AnimationStarted = true;
+            //            }
+            //        }
 
-                }
-                else if (!playerClone.PlayerComponentCloneItems.AnimationTimerCompleted)
-                {
-                    if (!playerClone.PlayerComponentCloneItems.AnimationTimerSet)
-                    {
-                        // temp, set based on hardcoded timer instead of motion duration...
-                        playerClone.PlayerComponentCloneItems.AnimationTimer.LastCheckedTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-                        playerClone.PlayerComponentCloneItems.AnimationTimerSet = true;
-                    }
-                    else if (playerClone.PlayerComponentCloneItems.AnimationTimer.IsTimeElapsed_FixedUpdateThread())
-                    {
-                        playerClone.PlayerComponentCloneItems.AnimationTimerCompleted = true;
-                        playerClone.Animator.StopPlayback();
-                        playerClone.gameObject.SetActive(false);
-                    }
-                    else
-                    {
-                        float timerPercentage = playerClone.PlayerComponentCloneItems.AnimationTimer.RemainingDurationPercentage();
-                        playerClone.SetCloneFXOpacity(1f - timerPercentage);
-                        //Debug.Log($"{i}, {1f - timerPercentage}");
-                    }
-                }
-            }
+            //    }
+            //    else if (!playerClone.PlayerComponentCloneItems.AnimationTimerCompleted)
+            //    {
+            //        if (!playerClone.PlayerComponentCloneItems.AnimationTimerSet)
+            //        {
+            //            // temp, set based on hardcoded timer instead of motion duration...
+            //            playerClone.PlayerComponentCloneItems.AnimationTimer.LastCheckedTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+            //            playerClone.PlayerComponentCloneItems.AnimationTimerSet = true;
+            //        }
+            //        else if (playerClone.PlayerComponentCloneItems.AnimationTimer.IsTimeElapsed_FixedUpdateThread())
+            //        {
+            //            playerClone.PlayerComponentCloneItems.AnimationTimerCompleted = true;
+            //            playerClone.Animator.StopPlayback();
+            //            playerClone.gameObject.SetActive(false);
+            //        }
+            //        else
+            //        {
+            //            float timerPercentage = playerClone.PlayerComponentCloneItems.AnimationTimer.RemainingDurationPercentage();
+            //            playerClone.SetCloneFXOpacity(1f - timerPercentage);
+            //            //Debug.Log($"{i}, {1f - timerPercentage}");
+            //        }
+            //    }
+            //}
             
             // set opacity...
         }
