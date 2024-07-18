@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
+namespace Assets.Crafter.Components.Systems.Observers
 {
     public class ObserverUpdateCache
     {

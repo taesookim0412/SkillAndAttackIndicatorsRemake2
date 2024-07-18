@@ -34,7 +34,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Line,
                 AbilityProjectorMaterialType.First,
                 AbilityIndicatorCastType.ShowDuringCast,
-                new AbilityFXType[1] { AbilityFXType.DashParticles });
+                new AbilityIndicatorFXType[1] { AbilityIndicatorFXType.DashParticles });
         }
         public void OnAbility4(InputValue value)
         {

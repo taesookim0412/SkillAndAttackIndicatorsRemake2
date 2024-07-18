@@ -2,6 +2,7 @@
 using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
+using Assets.Crafter.Components.Systems.Observers;
 using System;
 using System.Collections.Generic;
 using System.Linq;

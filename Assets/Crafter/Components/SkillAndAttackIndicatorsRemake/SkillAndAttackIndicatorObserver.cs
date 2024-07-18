@@ -16,6 +16,7 @@ using Random = System.Random;
 using UnityEngine.Rendering;
 using Unity.VisualScripting;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder;
+using Assets.Crafter.Components.Systems.Observers;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
@@ -36,7 +37,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public static readonly int AbilityProjectorTypeNamesLength = AbilityProjectorTypeNames.Length;
         public static readonly string[] AbilityProjectorMaterialTypeNames = Enum.GetNames(typeof(AbilityProjectorMaterialType));
         public static readonly int AbilityProjectorMaterialTypeNamesLength = AbilityProjectorMaterialTypeNames.Length;
-        public static readonly string[] AbilityFXTypeNames = Enum.GetNames(typeof(AbilityFXType));
+        public static readonly string[] AbilityFXTypeNames = Enum.GetNames(typeof(AbilityIndicatorFXType));
         public static readonly int AbilityFXTypeNamesLength = AbilityFXTypeNames.Length;
         public static readonly string[] AbilityFXComponentTypeNames = Enum.GetNames(typeof(AbilityFXComponentType));
         public static readonly int AbilityFXComponentTypeNamesLength = AbilityFXComponentTypeNames.Length;
@@ -67,7 +68,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public readonly AbilityProjectorType AbilityProjectorType;
         public readonly AbilityProjectorMaterialType AbilityProjectorMaterialType;
         public readonly AbilityIndicatorCastType AbilityIndicatorCastType;
-        public readonly AbilityFXType[] AbilityFXTypes;
+        public readonly AbilityIndicatorFXType[] AbilityIndicatorFXTypes;
         public readonly Guid PlayerGuid;
 
         private bool ProjectorSet = false;
@@ -109,14 +110,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         public SkillAndAttackIndicatorObserver(AbilityProjectorType abilityProjectorType,
             AbilityProjectorMaterialType abilityProjectorMaterialType, AbilityIndicatorCastType abilityIndicatorCastType,
-            AbilityFXType[] abilityFXTypes,
+            AbilityIndicatorFXType[] abilityIndicatorFXTypes,
             SkillAndAttackIndicatorObserverProps skillAndAttackIndicatorObserverProps
             )
         {
             AbilityProjectorType = abilityProjectorType;
             AbilityProjectorMaterialType = abilityProjectorMaterialType;
             AbilityIndicatorCastType = abilityIndicatorCastType;
-            AbilityFXTypes = abilityFXTypes;
+            AbilityIndicatorFXTypes = abilityIndicatorFXTypes;
             PlayerGuid = skillAndAttackIndicatorObserverProps.SkillAndAttackIndicatorSystem.PlayerGuid;
 
             Props = skillAndAttackIndicatorObserverProps;
@@ -128,8 +129,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             {
                 if (Props.SkillAndAttackIndicatorSystem.ProjectorInstancePools.TryGetValue(AbilityProjectorType, out var abilityMaterialTypesDict) &&
                     abilityMaterialTypesDict.TryGetValue(AbilityProjectorMaterialType, out ProjectorInstancePool) &&
-                    (AbilityFXTypes == null ||
-                    (Props.SkillAndAttackIndicatorSystem.AbilityFXInstancePools.TryGetValuesAll(AbilityFXTypes, out AbilityFXInstancePools) &&
+                    (AbilityIndicatorFXTypes == null ||
+                    (Props.SkillAndAttackIndicatorSystem.AbilityIndicatorFXInstancePools.TryGetValuesAll(AbilityIndicatorFXTypes, out AbilityFXInstancePools) &&
                     Props.SkillAndAttackIndicatorSystem.PlayerCloneInstancePools.TryGetValue(PlayerGuid, out PlayerCloneInstancePool))))
                 {
                     // 3 texture option indices.
@@ -222,14 +223,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                     TimeRequiredForDistancesPerUnit = GenerateTimeRequiredForDistancesPerUnit();
 
-                    if (AbilityFXTypes != null)
+                    if (AbilityIndicatorFXTypes != null)
                     {
-                        for (int i = 0; i < AbilityFXTypes.Length; i++)
+                        for (int i = 0; i < AbilityIndicatorFXTypes.Length; i++)
                         {
-                            AbilityFXType abilityFXType = AbilityFXTypes[i];
+                            AbilityIndicatorFXType abilityFXType = AbilityIndicatorFXTypes[i];
                             switch (abilityFXType)
                             {
-                                case AbilityFXType.DashParticles:
+                                case AbilityIndicatorFXType.DashParticles:
                                     DashParticlesItems = CreateDashParticlesItems(LineLengthUnits,
                                         terrainProjectorPosition.x, terrainProjectorPosition.z, GetThirdPersonControllerRotation(),
                                         i);
@@ -297,17 +298,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 Vector3 previousProjectorRotation = ProjectorMonoBehaviour.transform.localEulerAngles;
                 ProjectorMonoBehaviour.transform.localEulerAngles = new Vector3(previousProjectorRotation.x, playerRotation, previousProjectorRotation.z);
 
-                if (AbilityFXTypes != null)
+                if (AbilityIndicatorFXTypes != null)
                 {
                     float rotationDifference = playerRotation - PreviousRotationY;
                     if (rotationDifference < -10f || rotationDifference > 10f ||
                         (PreviousTerrainProjectorPosition - terrainProjectorPosition).magnitude > 0.03f)
                     {
-                        foreach (AbilityFXType abilityFXType in AbilityFXTypes)
+                        foreach (AbilityIndicatorFXType abilityFXType in AbilityIndicatorFXTypes)
                         {
                             switch (abilityFXType)
                             {
-                                case AbilityFXType.DashParticles:
+                                case AbilityIndicatorFXType.DashParticles:
                                     UpdateDashParticlesItemsPositions(LineLengthUnits, terrainProjectorPosition.x, terrainProjectorPosition.z, playerRotation,
                                         fillProgress: newFillProgress);
                                     break;
@@ -318,11 +319,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         PreviousRotationY = playerRotation;
                     }
 
-                    foreach (AbilityFXType abilityFXType in AbilityFXTypes)
+                    foreach (AbilityIndicatorFXType abilityFXType in AbilityIndicatorFXTypes)
                     {
                         switch (abilityFXType)
                         {
-                            case AbilityFXType.DashParticles:
+                            case AbilityIndicatorFXType.DashParticles:
                                 UpdateDashParticlesItems(LineLengthUnits, newFillProgress);
                                 break;
                         }
@@ -334,14 +335,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             if (ElapsedTime > ChargeDuration)
             {
                 ProjectorInstancePool.ReturnPooled(ProjectorMonoBehaviour);
-                if (AbilityFXTypes != null)
+                if (AbilityIndicatorFXTypes != null)
                 {
-                    for (int i = 0; i < AbilityFXTypes.Length; i++)
+                    for (int i = 0; i < AbilityIndicatorFXTypes.Length; i++)
                     {
                         PoolBagDco<AbstractAbilityFX>[] abilityFXInstancePool = AbilityFXInstancePools[i];
-                        switch (AbilityFXTypes[i])
+                        switch (AbilityIndicatorFXTypes[i])
                         {
-                            case AbilityFXType.DashParticles:
+                            case AbilityIndicatorFXType.DashParticles:
                                 PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int) DashParticlesFXTypePrefabPools.DashParticles];
                                 PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ArcPath];
                                 PoolBagDco<AbstractAbilityFX> electricTrailRendererPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer];
@@ -1210,7 +1211,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         ShowDuringCast,
         DoubleCast
     }
-    public enum AbilityFXType
+    public enum AbilityIndicatorFXType
     {
         None,
         DashParticles

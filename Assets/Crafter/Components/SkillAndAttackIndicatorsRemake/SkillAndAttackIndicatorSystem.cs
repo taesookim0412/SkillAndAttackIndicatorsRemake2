@@ -1,6 +1,7 @@
 ﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
 using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Player.ComponentScripts;
+using Assets.Crafter.Components.Systems.Observers;
 using StarterAssets;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public PlayerComponent PlayerComponent;
 
         [HideInInspector]
+        public PlayerClientData PlayerClientData;
+        [HideInInspector]
         public Camera Camera;
 
         [HideInInspector]
@@ -52,7 +55,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         [HideInInspector]
         public Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>> ProjectorInstancePools;
         [HideInInspector]
-        public Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>[]> AbilityFXInstancePools;
+        public Dictionary<AbilityIndicatorFXType, PoolBagDco<AbstractAbilityFX>[]> AbilityIndicatorFXInstancePools;
+        [HideInInspector]
+        public Dictionary<AbilityTriggerFXType, PoolBagDco<AbstractAbilityFX>[]> AbilityTriggerFXInstancePools;
         [HideInInspector]
         public Dictionary<Guid, PoolBagDco<PlayerComponent>> PlayerCloneInstancePools;
 
@@ -60,6 +65,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public Guid PlayerGuid = Guid.NewGuid();
         public void Awake()
         {
+            PlayerClientData = new PlayerClientData(PlayerComponent);
             Camera = Camera.main;
         }
         public void OnEnable()
@@ -105,7 +111,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 }
             }
 
-            Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>[]> abilityFXInstancePools = new Dictionary<AbilityFXType, PoolBagDco<AbstractAbilityFX>[]>(
+            Dictionary<AbilityIndicatorFXType, PoolBagDco<AbstractAbilityFX>[]> abilityIndicatorFXInstancePools = new Dictionary<AbilityIndicatorFXType, PoolBagDco<AbstractAbilityFX>[]>(
                     SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
 
             if (abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.DashParticles, out AbstractAbilityFX dashParticlesPrefab) &&
@@ -128,10 +134,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 dashParticlesPoolBag[(int)DashParticlesFXTypePrefabPools.PortalBuilder_Source] = new PoolBagDco<AbstractAbilityFX>(portalBuilderSrcPrefab, 30);
                 dashParticlesPoolBag[(int)DashParticlesFXTypePrefabPools.PortalBuilder_Dest] = new PoolBagDco<AbstractAbilityFX>(portalBuilderDestPrefab, 30);
 
-                abilityFXInstancePools[AbilityFXType.DashParticles] = dashParticlesPoolBag;
+                abilityIndicatorFXInstancePools[AbilityIndicatorFXType.DashParticles] = dashParticlesPoolBag;
             }
 
-            AbilityFXInstancePools = abilityFXInstancePools;
+            AbilityIndicatorFXInstancePools = abilityIndicatorFXInstancePools;
 
             PlayerComponent playerComponentTransparentCloneInstance = PlayerComponent.CreateInactiveTransparentCloneInstance();
 
@@ -190,7 +196,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public void TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType abilityProjectorType,
             AbilityProjectorMaterialType abilityProjectorMaterialType,
             AbilityIndicatorCastType abilityIndicatorCastType,
-            AbilityFXType[] abilityFXTypes)
+            AbilityIndicatorFXType[] abilityFXTypes)
         {
             bool attemptTriggerUpdate;
             switch (abilityIndicatorCastType)

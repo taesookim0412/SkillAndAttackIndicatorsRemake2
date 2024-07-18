@@ -1,5 +1,5 @@
 ﻿using Assets.Crafter.Components.Models;
-using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
+using Assets.Crafter.Components.Systems.Observers;
 using StarterAssets;
 using System;
 using System.Collections.Generic;
