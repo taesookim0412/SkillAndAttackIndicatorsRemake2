@@ -85,6 +85,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private (DashParticles[] dashParticles, PlayerClientData[] playerClones, 
             PortalBuilder[] portalSources,
             PortalBuilder[] portalDestinations,
+            (long portalDestStartTime, long portalSrcEndTime)[] portalTimes,
             ArcPath[] arcPathsFromSky, 
             ShockAura[] shockAuras,
             CrimsonAuraBlack[] crimsonAuras,
@@ -551,6 +552,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private (DashParticles[] dashParticles, PlayerClientData[] playerClones, 
             PortalBuilder[] portalSources,
             PortalBuilder[] portalDestinations,
+            (long portalDestStartTime, long portalSrcEndTime)[] portalTimes,
             ArcPath[] arcPathsFromSky,
             ShockAura[] shockAuras,
             CrimsonAuraBlack[] crimsonAuras,
@@ -568,6 +570,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             PortalBuilder[] portalSources = new PortalBuilder[numPlayerClones];
             PortalBuilder[] portalDests = new PortalBuilder[numPlayerClones];
+
+            (long portalDestStartTime, long portalSrcEndTime)[] portalTimes = new (long portalDestStartTime, long portalSrcEndTime)[numPlayerClones];
 
             ArcPath[] arcPathsFromSky = new ArcPath[numPlayerClones * ArcPathFromSkyPerClone];
             ShockAura[] shockAuras = new ShockAura[numPlayerClones];
@@ -650,15 +654,18 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float arcLocalZStart = -1 * 0.5f * ArcPathZUnitsPerCluster;
             float arcLocalZUnitsPerIndex = ArcPathZUnitsPerCluster / ArcPathFromSkyPerClone;
 
+            
+
             // cached prev values
             int particlesIndex = Math.Clamp(CloneOffsetUnits, 0, lineLengthUnits - 1);
             long prevTimeRequired = timeRequiredForDistancesPerUnit[particlesIndex];
+            long prevTimeRequiredAccum = prevTimeRequired;
 
             for (int i = 0; i < numPlayerClones; i++)
             {
                 // Ensure the index is clamped to avoid approx error...
                 int nextParticlesIndex = Math.Clamp(CloneOffsetUnits + ((i + 1) * UnitsPerClone), 0, lineLengthUnits - 1);
-                long nextTimeRequired = timeRequiredForDistancesPerUnit[nextParticlesIndex];
+                long nextTimeRequired = timeRequiredForDistancesPerUnit[nextParticlesIndex] - prevTimeRequiredAccum;
 
                 Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
                 PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticlesPosition);
@@ -739,8 +746,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 portalDests[i] = portalDest;
 
+                //Debug.Log($"time required at {nextParticlesIndex}: {timeRequiredForDistancesPerUnit[nextParticlesIndex]}");
+                //Debug.Log($"{i}, {prevTimeRequired}, {nextTimeRequired}");
+                portalTimes[i] = (prevTimeRequiredAccum, prevTimeRequiredAccum + nextTimeRequired);
+
                 particlesIndex = nextParticlesIndex;
                 prevTimeRequired = nextTimeRequired;
+                prevTimeRequiredAccum += nextTimeRequired;
             }
 
             // the indices are based on playerClones so the last one will be the src / dest
@@ -760,7 +772,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             ElectricTrailRenderer electricTrailRenderer = (ElectricTrailRenderer) electricTrailRendererInstancePool.InstantiatePooled(dashParticles[0].transform.position);
 
-            return (dashParticles, playerClones, portalSources, portalDests,
+            return (dashParticles, playerClones, portalSources, portalDests, portalTimes,
                 arcPathsFromSky, shockAuras, crimsonAuras, portalOrbs, electricTrailRenderer, 1, -1);
         }
         private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
@@ -956,46 +968,53 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             PortalBuilder[] portalSources = DashParticlesItems.portalSources;
             PortalBuilder[] portalDests = DashParticlesItems.portalDestinations;
-
-            activePassed = false;
+            (long portalDestStartTime, long portalSrcEndTime)[] portalTimes = DashParticlesItems.portalTimes;
+            long elapsedTime = ElapsedTime;
             //if (timer > 1/3 * requiredDurations[0]) {}
             for (int i = 0; i < playerClones.Length; i++)
             {
-                if (!portalDests[i].Completed)
+                if (portalDests[i].Completed && portalSources[i].Completed)
                 {
-                    PortalBuilder portalDest = portalDests[i];
-                    if (!portalDest.Active)
-                    {
-                        portalDest.gameObject.SetActive(true);
-                    }
-                    portalDest.ManualUpdate();
-                    activePassed = true;
+                    continue;
                 }
-                else
+                //Debug.Log($"{elapsedTime}, {portalTimes[i].portalDestStartTime}, {portalTimes[i].portalSrcEndTime}");
+
+                bool pastStartTime = elapsedTime >= portalTimes[i].portalDestStartTime;
+                if (pastStartTime)
                 {
-                    PortalBuilder portalSource = portalSources[i];
-                    if (!portalSource.Completed)
+                    if (elapsedTime <= portalTimes[i].portalSrcEndTime)
                     {
-                        if (!portalSource.Active)
+                        if (!portalDests[i].Completed)
                         {
-                            portalSource.gameObject.SetActive(true);
+                            PortalBuilder portalDest = portalDests[i];
+                            if (!portalDest.Active)
+                            {
+                                portalDest.gameObject.SetActive(true);
+                            }
+                            portalDest.ManualUpdate();
                         }
-                        portalSource.ManualUpdate();
-                        activePassed = true;
+                        else
+                        {
+                            PortalBuilder portalSource = portalSources[i];
+                            if (!portalSource.Completed)
+                            {
+                                if (!portalSource.Active)
+                                {
+                                    portalSource.gameObject.SetActive(true);
+                                }
+                                portalSource.ManualUpdate();
+                            }
+                        }
                     }
-                }
-                if (activePassed)
-                {
-                    if (i > 0)
+                    else
                     {
-                        int prevIdx = i - 1;
-                        if (!portalDests[prevIdx].Completed)
+                        if (!portalDests[i].Completed)
                         {
-                            portalDests[prevIdx].Complete();
+                            portalDests[i].Complete();
                         }
-                        else if (!portalSources[prevIdx].Completed)
+                        if (!portalSources[i].Completed)
                         {
-                            portalSources[prevIdx].Complete();
+                            portalSources[i].Complete();
                         }
                     }
                     break;
