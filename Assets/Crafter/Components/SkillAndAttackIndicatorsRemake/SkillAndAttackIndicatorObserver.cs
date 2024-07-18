@@ -734,7 +734,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 PortalBuilder portalSource = (PortalBuilder)portalBuilderSrcInstancePool.InstantiatePooled(dashParticlesPosition);
                 portalSource.transform.localEulerAngles = yRotationVector;
                 portalSource.gameObject.SetActive(false);
-                portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, (long) (SkillAndAttackIndicatorSystem.ONE_THIRD * nextTimeRequired));
+                long endPortalTimeOffset = (long)(SkillAndAttackIndicatorSystem.ONE_THIRD * nextTimeRequired);
+                portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, endPortalTimeOffset);
 
                 portalSources[i] = portalSource;
 
@@ -742,13 +743,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 PortalBuilder portalDest = (PortalBuilder)portalBuilderDestInstancePool.InstantiatePooled(dashParticlesPosition);
                 portalDest.transform.localEulerAngles = yRotationVector;
                 portalDest.gameObject.SetActive(false);
-                portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, (long) (SkillAndAttackIndicatorSystem.TWO_THIRDS * prevTimeRequired));
+                long startPortalTimeOffset = (long)(SkillAndAttackIndicatorSystem.TWO_THIRDS * prevTimeRequired);
+                portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, startPortalTimeOffset);
 
                 portalDests[i] = portalDest;
 
                 //Debug.Log($"time required at {nextParticlesIndex}: {timeRequiredForDistancesPerUnit[nextParticlesIndex]}");
                 //Debug.Log($"{i}, {prevTimeRequired}, {nextTimeRequired}");
-                portalTimes[i] = (prevTimeRequiredAccum, prevTimeRequiredAccum + nextTimeRequired);
+                portalTimes[i] = (prevTimeRequiredAccum - startPortalTimeOffset, prevTimeRequiredAccum + endPortalTimeOffset);
 
                 particlesIndex = nextParticlesIndex;
                 prevTimeRequired = nextTimeRequired;
@@ -977,7 +979,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 {
                     continue;
                 }
-                //Debug.Log($"{elapsedTime}, {portalTimes[i].portalDestStartTime}, {portalTimes[i].portalSrcEndTime}");
+                Debug.Log($"{elapsedTime}, {portalTimes[i].portalDestStartTime}, {portalTimes[i].portalSrcEndTime}");
 
                 bool pastStartTime = elapsedTime >= portalTimes[i].portalDestStartTime;
                 if (pastStartTime)
@@ -1017,6 +1019,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             portalSources[i].Complete();
                         }
                     }
+                    break;
+                }
+                else
+                {
                     break;
                 }
             }
