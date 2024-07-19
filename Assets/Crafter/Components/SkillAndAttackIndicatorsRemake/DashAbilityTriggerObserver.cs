@@ -61,7 +61,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             PortalBuilderChain = new PortalBuilderChain(portalSource, portalDest, 
                 startTime: 0L, 
-                endTime: portalRequiredDuration,
+                endTime: Timer.RequiredDuration,
                 inverted: false);
         }
 
