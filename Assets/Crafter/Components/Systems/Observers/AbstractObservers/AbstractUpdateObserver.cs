@@ -11,5 +11,7 @@ namespace Assets.Crafter.Components.Systems.Observers.AbstractObservers
         protected AbstractUpdateObserver(P props) : base(props)
         {
         }
+
+        public abstract void OnUpdate();
     }
 }

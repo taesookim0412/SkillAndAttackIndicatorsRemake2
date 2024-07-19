@@ -333,6 +333,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             if (ElapsedTime > ChargeDuration)
             {
+                Props.SkillAndAttackIndicatorSystem.AddDashAbilityTriggerObserver(DashParticlesItems.dashParticles[DashParticlesItems.dashParticles.Length - 1].transform.position);
+
                 ProjectorInstancePool.ReturnPooled(ProjectorMonoBehaviour);
                 if (AbilityIndicatorFXTypes != null)
                 {
@@ -1130,11 +1132,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
     }
 
-    public enum ObserverStatus
-    {
-        Active,
-        Remove
-    }
     public enum PlayerComponentModel
     {
         Starter

@@ -1,4 +1,5 @@
-﻿using Assets.Crafter.Components.Models;
+﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
+using Assets.Crafter.Components.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

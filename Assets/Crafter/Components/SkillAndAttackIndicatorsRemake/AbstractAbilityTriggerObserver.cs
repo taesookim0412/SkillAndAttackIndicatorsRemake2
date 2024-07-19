@@ -20,7 +20,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     }
     public abstract class AbstractAbilityTriggerObserver<P> : AbstractUpdateObserver<P> where P: AbstractAbilityTriggerObserverProps
     {
-        private AbilityTriggerFXType AbilityTriggerFXType;
+        protected readonly AbilityTriggerFXType AbilityTriggerFXType;
 
         private bool TriggerFXSet = false;
         protected PoolBagDco<AbstractAbilityFX>[] AbilityTriggerFXInstancePools;
@@ -31,7 +31,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             AbilityTriggerFXType = abilityTriggerFXType;
         }
 
-        public void OnUpdate()
+        public override void OnUpdate()
         {
             if (!TriggerFXSet)
             {
@@ -57,10 +57,5 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
 
         protected abstract void ActiveUpdate();
-    }
-    public enum AbilityTriggerFXType
-    {
-        None,
-        DashTrigger
     }
 }

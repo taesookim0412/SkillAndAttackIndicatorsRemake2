@@ -33,6 +33,10 @@ namespace Assets.Crafter.Components.Models
         {
             return ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastCheckedTime < RequiredDuration;
         }
+        public long ElapsedTime_FixedUpdateThread()
+        {
+            return ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastCheckedTime;
+        }
         public float RemainingDurationPercentage()
         {
             return (ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastCheckedTime) / (float) RequiredDuration;

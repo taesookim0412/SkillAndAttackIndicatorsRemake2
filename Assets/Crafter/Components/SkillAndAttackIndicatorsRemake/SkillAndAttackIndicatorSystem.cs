@@ -46,11 +46,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public Camera Camera;
 
         [HideInInspector]
-        private ObserverUpdateCache ObserverUpdateProps;
+        private ObserverUpdateProps ObserverUpdateProps;
+        [HideInInspector]
+        private ObserverUpdateCache ObserverUpdateCache;
         [HideInInspector]
         public SkillAndAttackIndicatorObserverProps SkillAndAttackIndicatorObserverProps;
         [HideInInspector]
         public List<SkillAndAttackIndicatorObserver> SkillAndAttackIndicatorObservers = new List<SkillAndAttackIndicatorObserver>();
+        [HideInInspector]
+        public DashAbilityTriggerObserverProps DashAbilityTriggerObserverProps;
+        [HideInInspector]
+        public List<DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>> DashAbilityTriggerObservers = new List<DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>>();
 
         [HideInInspector]
         public Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>> ProjectorInstancePools;
@@ -71,11 +77,16 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public void OnEnable()
         {
             long updateTickTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            ObserverUpdateProps = new ObserverUpdateCache(updateTickTime);
+            ObserverUpdateCache = new ObserverUpdateCache(updateTickTime);
+            ObserverUpdateProps = new ObserverUpdateProps(ObserverUpdateCache);
 
-            SkillAndAttackIndicatorObserverProps = new SkillAndAttackIndicatorObserverProps(this, ObserverUpdateProps);
+            SkillAndAttackIndicatorObserverProps = new SkillAndAttackIndicatorObserverProps(this, ObserverUpdateCache);
 
             SkillAndAttackIndicatorObservers = new List<SkillAndAttackIndicatorObserver>();
+
+            DashAbilityTriggerObserverProps = new DashAbilityTriggerObserverProps(this, ObserverUpdateProps);
+
+            DashAbilityTriggerObservers = new List<DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>>();
 
             Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>> projectorInstancePools = new
                 Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>>(
@@ -139,6 +150,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             AbilityIndicatorFXInstancePools = abilityIndicatorFXInstancePools;
 
+            AbilityTriggerFXInstancePools = InitializeAbilityTriggerFXInstancePools(abilityFXComponentTypeDict);
+
             PlayerComponent playerComponentTransparentCloneInstance = PlayerComponent.CreateInactiveTransparentCloneInstance();
 
             Dictionary<Guid, PoolBagDco<PlayerComponent>> playerCloneInstancePools = new Dictionary<Guid, PoolBagDco<PlayerComponent>>(1)
@@ -148,10 +161,32 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             PlayerCloneInstancePools = playerCloneInstancePools;
         }
+
+        private Dictionary<AbilityTriggerFXType, PoolBagDco<AbstractAbilityFX>[]> InitializeAbilityTriggerFXInstancePools(Dictionary<AbilityFXComponentType, AbstractAbilityFX> abilityFXComponentTypeDict)
+        {
+            Dictionary<AbilityTriggerFXType, PoolBagDco<AbstractAbilityFX>[]> abilityTriggerFXInstancePools = new Dictionary<AbilityTriggerFXType,
+    PoolBagDco<AbstractAbilityFX>[]>(AbilityFXDefinition.AbilityTriggerFXTypeEnumLength);
+            if (abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.CrimsonAuraBlack, out AbstractAbilityFX crimsonAuraDarkPrefab) &&
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalOrbPurple, out AbstractAbilityFX portalOrbPurplePrefab) && 
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalBuilder_Source, out AbstractAbilityFX portalBuilderSrcPrefab) &&
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalBuilder_Dest, out AbstractAbilityFX portalBuilderDestPrefab))
+            {
+                PoolBagDco<AbstractAbilityFX>[] dashTriggerPoolBag = new PoolBagDco<AbstractAbilityFX>[4];
+                dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.CrimsonAuraBlack] = new PoolBagDco<AbstractAbilityFX>(crimsonAuraDarkPrefab, 30);
+                dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PortalOrbPurple] = new PoolBagDco<AbstractAbilityFX>(portalOrbPurplePrefab, 30);
+                dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Source] = new PoolBagDco<AbstractAbilityFX>(portalBuilderSrcPrefab, 30);
+                dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Dest] = new PoolBagDco<AbstractAbilityFX>(portalBuilderDestPrefab, 30);
+
+                abilityTriggerFXInstancePools[AbilityTriggerFXType.DashTrigger] = dashTriggerPoolBag;
+            }
+
+            return abilityTriggerFXInstancePools;
+        }
         public void FixedUpdate()
         {
-            ObserverUpdateProps.Update_FixedUpdate();
+            ObserverUpdateCache.Update_FixedUpdate();
 
+            //TODO: Migrate to AbstractUpdateObserver.
             if (SkillAndAttackIndicatorObservers.Count > 0)
             {
                 bool foundRemove = false;
@@ -169,6 +204,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     SkillAndAttackIndicatorObservers = SkillAndAttackIndicatorObservers.Where(observer => observer.ObserverStatus != ObserverStatus.Remove).ToList();
                 }
             }
+
+            DashAbilityTriggerObservers.UpdateObservers<DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>, DashAbilityTriggerObserverProps>();
+
         }
         /// Copyright
         /// <summary>
@@ -233,6 +271,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 SkillAndAttackIndicatorObservers.Add(skillAndAttackIndicatorObserver);
             }
+        }
+
+        public void AddDashAbilityTriggerObserver(Vector3 targetPosition)
+        {
+            DashAbilityTriggerObserver<DashAbilityTriggerObserverProps> dashAbilityTriggerObserver = new DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>(targetPosition, DashAbilityTriggerObserverProps);
+            DashAbilityTriggerObservers.Add(dashAbilityTriggerObserver);
         }
     }
 }
