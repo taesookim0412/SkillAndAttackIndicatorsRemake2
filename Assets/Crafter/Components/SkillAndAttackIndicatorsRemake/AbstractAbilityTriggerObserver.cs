@@ -23,7 +23,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private AbilityTriggerFXType AbilityTriggerFXType;
 
         private bool TriggerFXSet = false;
-        private PoolBagDco<AbstractAbilityFX>[] AbilityTriggerFXInstancePools;
+        protected PoolBagDco<AbstractAbilityFX>[] AbilityTriggerFXInstancePools;
 
         public AbstractAbilityTriggerObserver(AbilityTriggerFXType abilityTriggerFXType,
             P props) : base(props)
@@ -48,7 +48,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
             else
             {
-                UpdateLoop();
+                ActiveUpdate();
             }
         }
         protected virtual bool TrySetItems()
@@ -56,7 +56,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             return true;
         }
 
-        protected abstract void UpdateLoop();
+        protected abstract void ActiveUpdate();
     }
     public enum AbilityTriggerFXType
     {

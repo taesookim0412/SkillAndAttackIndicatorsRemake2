@@ -17,6 +17,7 @@ using UnityEngine.Rendering;
 using Unity.VisualScripting;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder;
 using Assets.Crafter.Components.Systems.Observers;
+using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder.Chains;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
@@ -83,10 +84,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPLineRegionProjector LineRegionProjectorRef;
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
-        private (DashParticles[] dashParticles, PlayerClientData[] playerClones, 
-            PortalBuilder[] portalSources,
-            PortalBuilder[] portalDestinations,
-            (long portalDestStartTime, long portalSrcEndTime)[] portalTimes,
+        private (DashParticles[] dashParticles, PlayerClientData[] playerClones,
+            PortalBuilderChain[] portalBuilderChains,
             ArcPath[] arcPathsFromSky, 
             ShockAura[] shockAuras,
             CrimsonAuraBlack[] crimsonAuras,
@@ -343,14 +342,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         switch (AbilityIndicatorFXTypes[i])
                         {
                             case AbilityIndicatorFXType.DashParticles:
-                                PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int) DashParticlesFXTypePrefabPools.DashParticles];
-                                PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ArcPath];
-                                PoolBagDco<AbstractAbilityFX> electricTrailRendererPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer];
-                                PoolBagDco<AbstractAbilityFX> shockAuraPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.ShockAura];
-                                PoolBagDco<AbstractAbilityFX> crimsonAuraPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.CrimsonAuraBlack];
-                                PoolBagDco<AbstractAbilityFX> portalOrbPool = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.PortalOrbPurple];
-                                PoolBagDco<AbstractAbilityFX> portalBuilderSources = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.PortalBuilder_Source];
-                                PoolBagDco<AbstractAbilityFX> portalBuilderDests = abilityFXInstancePool[(int)DashParticlesFXTypePrefabPools.PortalBuilder_Dest];
+                                PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int) DashParticlesFXTypeInstancePools.DashParticles];
+                                PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.ArcPath];
+                                PoolBagDco<AbstractAbilityFX> electricTrailRendererPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.ElectricTrailRenderer];
+                                PoolBagDco<AbstractAbilityFX> shockAuraPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.ShockAura];
+                                PoolBagDco<AbstractAbilityFX> crimsonAuraPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.CrimsonAuraBlack];
+                                PoolBagDco<AbstractAbilityFX> portalOrbPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.PortalOrbPurple];
+                                PoolBagDco<AbstractAbilityFX> portalBuilderSources = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Source];
+                                PoolBagDco<AbstractAbilityFX> portalBuilderDests = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Dest];
 
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                                 {
@@ -377,15 +376,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 {
                                     portalOrbPool.ReturnPooled(portalOrb);
                                 }
-                                foreach (PortalBuilder portalBuilderSource in DashParticlesItems.portalSources)
+                                foreach (PortalBuilderChain portalBuilderChain in DashParticlesItems.portalBuilderChains)
                                 {
-                                    portalBuilderSource.ManualDisable();
-                                    portalBuilderSources.ReturnPooled(portalBuilderSource);
-                                }
-                                foreach (PortalBuilder portalBuilderDest in DashParticlesItems.portalDestinations)
-                                {
-                                    portalBuilderDest.ManualDisable();
-                                    portalBuilderDests.ReturnPooled(portalBuilderDest);
+                                    portalBuilderChain.PortalSource.ManualDisable();
+                                    portalBuilderSources.ReturnPooled(portalBuilderChain.PortalSource);
+
+                                    portalBuilderChain.PortalDest.ManualDisable();
+                                    portalBuilderDests.ReturnPooled(portalBuilderChain.PortalDest);
                                 }
 
                                 DashParticlesItems.electricTrailRenderer.ClearAll();
@@ -558,10 +555,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             return 0f;
         }
 
-        private (DashParticles[] dashParticles, PlayerClientData[] playerClones, 
-            PortalBuilder[] portalSources,
-            PortalBuilder[] portalDestinations,
-            (long portalDestStartTime, long portalSrcEndTime)[] portalTimes,
+        private (DashParticles[] dashParticles, PlayerClientData[] playerClones,
+            PortalBuilderChain[] portalBuilderChains,
             ArcPath[] arcPathsFromSky,
             ShockAura[] shockAuras,
             CrimsonAuraBlack[] crimsonAuras,
@@ -577,10 +572,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
             PlayerClientData[] playerClones = new PlayerClientData[numPlayerClones];
 
-            PortalBuilder[] portalSources = new PortalBuilder[numPlayerClones];
-            PortalBuilder[] portalDests = new PortalBuilder[numPlayerClones];
-
-            (long portalDestStartTime, long portalSrcEndTime)[] portalTimes = new (long portalDestStartTime, long portalSrcEndTime)[numPlayerClones];
+            PortalBuilderChain[] portalBuilderChains = new PortalBuilderChain[numPlayerClones];
 
             ArcPath[] arcPathsFromSky = new ArcPath[numPlayerClones * ArcPathFromSkyPerClone];
             ShockAura[] shockAuras = new ShockAura[numPlayerClones];
@@ -598,7 +590,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             PoolBagDco<AbstractAbilityFX>[] dashParticlesTypeFXPools = AbilityFXInstancePools[abilityFXIndex];
 
-            PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.DashParticles];
+            PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.DashParticles];
 
             float previousPositionY = 0f;
             float prevXAnglei0 = 0f;
@@ -651,12 +643,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 prevXAnglei1 = xAngle;
             }
 
-            PoolBagDco<AbstractAbilityFX> arcPathInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ArcPath];
-            PoolBagDco<AbstractAbilityFX> shockAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ShockAura];
-            PoolBagDco<AbstractAbilityFX> crimsonAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.CrimsonAuraBlack];
-            PoolBagDco<AbstractAbilityFX> portalOrbInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.PortalOrbPurple];
-            PoolBagDco<AbstractAbilityFX> portalBuilderSrcInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.PortalBuilder_Source];
-            PoolBagDco<AbstractAbilityFX> portalBuilderDestInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.PortalBuilder_Dest];
+            PoolBagDco<AbstractAbilityFX> arcPathInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ArcPath];
+            PoolBagDco<AbstractAbilityFX> shockAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ShockAura];
+            PoolBagDco<AbstractAbilityFX> crimsonAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.CrimsonAuraBlack];
+            PoolBagDco<AbstractAbilityFX> portalOrbInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.PortalOrbPurple];
+            PoolBagDco<AbstractAbilityFX> portalBuilderSrcInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Source];
+            PoolBagDco<AbstractAbilityFX> portalBuilderDestInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Dest];
 
             long[] timeRequiredForDistancesPerUnit = TimeRequiredForDistancesPerUnit;
 
@@ -746,8 +738,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 long endPortalTimeOffset = (long)(SkillAndAttackIndicatorSystem.ONE_THIRD * nextTimeRequired);
                 portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, endPortalTimeOffset);
 
-                portalSources[i] = portalSource;
-
                 //dest durationAllowed = 2/3 * prevTimeDelay
                 PortalBuilder portalDest = (PortalBuilder)portalBuilderDestInstancePool.InstantiatePooled(dashParticlesPosition);
                 portalDest.transform.localEulerAngles = yRotationVector;
@@ -755,11 +745,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 long startPortalTimeOffset = (long)(SkillAndAttackIndicatorSystem.TWO_THIRDS * prevTimeRequired);
                 portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, startPortalTimeOffset);
 
-                portalDests[i] = portalDest;
-
                 //Debug.Log($"time required at {nextParticlesIndex}: {timeRequiredForDistancesPerUnit[nextParticlesIndex]}");
                 //Debug.Log($"{i}, {prevTimeRequired}, {nextTimeRequired}");
-                portalTimes[i] = (prevTimeRequiredAccum - startPortalTimeOffset, prevTimeRequiredAccum + endPortalTimeOffset);
+                PortalBuilderChain portalBuilderChain = new PortalBuilderChain(portalSource, portalDest,
+                    startTime: prevTimeRequiredAccum - startPortalTimeOffset,
+                    endTime: prevTimeRequiredAccum + endPortalTimeOffset,
+                    inverted: true);
+                portalBuilderChains[i] = portalBuilderChain;
 
                 particlesIndex = nextParticlesIndex;
                 prevTimeRequired = nextTimeRequired;
@@ -779,11 +771,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             //portalDest.gameObject.SetActive(false);
             //portalDests[portalDests.Length - 1] = portalDest;
 
-            PoolBagDco<AbstractAbilityFX> electricTrailRendererInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypePrefabPools.ElectricTrailRenderer];
+            PoolBagDco<AbstractAbilityFX> electricTrailRendererInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ElectricTrailRenderer];
 
             ElectricTrailRenderer electricTrailRenderer = (ElectricTrailRenderer) electricTrailRendererInstancePool.InstantiatePooled(dashParticles[0].transform.position);
 
-            return (dashParticles, playerClones, portalSources, portalDests, portalTimes,
+            return (dashParticles, playerClones, portalBuilderChains,
                 arcPathsFromSky, shockAuras, crimsonAuras, portalOrbs, electricTrailRenderer, 1, -1);
         }
         private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
@@ -849,8 +841,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             PlayerClientData[] playerClonesArray = DashParticlesItems.playerClones;
             ArcPath[] arcPathsFromSkyArray = DashParticlesItems.arcPathsFromSky;
             ShockAura[] shockAurasArray = DashParticlesItems.shockAuras;
-            PortalBuilder[] portalSrcsArray = DashParticlesItems.portalSources;
-            PortalBuilder[] portalDestsArray = DashParticlesItems.portalDestinations;
+            PortalBuilderChain[] portalBuilderChains = DashParticlesItems.portalBuilderChains;
 
             for (int i = 0; i < playerClonesArray.Length; i++)
             {
@@ -877,11 +868,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 shockAuraTransform.position = new Vector3(dashParticlesPosition.x, dashParticlesPosition.y + ShockAuraYOffset, dashParticlesPosition.z);
                 shockAuraTransform.localEulerAngles = yRotationVector;
 
-                Transform portalSrcTransform = portalSrcsArray[i].transform;
+                PortalBuilderChain portalBuilderChain = portalBuilderChains[i];
+                Transform portalSrcTransform = portalBuilderChain.PortalSource.transform;
                 portalSrcTransform.position = dashParticlesPosition;
                 portalSrcTransform.localEulerAngles = yRotationVector;
 
-                Transform portalDestTransform = portalDestsArray[i].transform;
+                Transform portalDestTransform = portalBuilderChain.PortalDest.transform;
                 portalDestTransform.position = dashParticlesPosition;
                 portalDestTransform.localEulerAngles = yRotationVector;
             }
@@ -977,61 +969,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 }
             }
 
-            PortalBuilder[] portalSources = DashParticlesItems.portalSources;
-            PortalBuilder[] portalDests = DashParticlesItems.portalDestinations;
-            (long portalDestStartTime, long portalSrcEndTime)[] portalTimes = DashParticlesItems.portalTimes;
             long elapsedTime = ElapsedTime;
+
+            PortalBuilderChain[] portalBuilderChains = DashParticlesItems.portalBuilderChains;
             //if (timer > 1/3 * requiredDurations[0]) {}
             for (int i = 0; i < playerClones.Length; i++)
             {
-                if (portalDests[i].Completed && portalSources[i].Completed)
-                {
-                    continue;
-                }
-                //Debug.Log($"{i}: {elapsedTime}, {portalTimes[i].portalDestStartTime}, {portalDests[i].PortalState}, {portalDests[i].DebugLogRequiredDurations()}. " +
-                //    $"{portalTimes[i].portalSrcEndTime}, {portalSources[i].PortalState}, {portalSources[i].DebugLogRequiredDurations()}.");
-
-                bool pastStartTime = elapsedTime >= portalTimes[i].portalDestStartTime;
-                if (pastStartTime)
-                {
-                    if (elapsedTime <= portalTimes[i].portalSrcEndTime)
-                    {
-                        if (!portalDests[i].Completed)
-                        {
-                            PortalBuilder portalDest = portalDests[i];
-                            if (!portalDest.Active)
-                            {
-                                portalDest.gameObject.SetActive(true);
-                            }
-                            portalDest.ManualUpdate();
-                        }
-                        else
-                        {
-                            PortalBuilder portalSource = portalSources[i];
-                            if (!portalSource.Completed)
-                            {
-                                if (!portalSource.Active)
-                                {
-                                    portalSource.gameObject.SetActive(true);
-                                }
-                                portalSource.ManualUpdate();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (!portalDests[i].Completed)
-                        {
-                            portalDests[i].Complete();
-                        }
-                        if (!portalSources[i].Completed)
-                        {
-                            portalSources[i].Complete();
-                        }
-                    }
-                    break;
-                }
-                else
+                if (portalBuilderChains[i].UpdatePortals(elapsedTime))
                 {
                     break;
                 }
@@ -1216,7 +1160,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         None,
         DashParticles
     }
-    public enum DashParticlesFXTypePrefabPools
+    public enum DashParticlesFXTypeInstancePools
     {
         DashParticles,
         ArcPath,
