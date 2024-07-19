@@ -15,5 +15,9 @@ namespace Assets.Crafter.Components.Systems.Observers.AbstractObservers
         {
             Props = props;
         }
+        protected void CompleteObserver()
+        {
+            ObserverStatus = ObserverStatus.Remove;
+        }
     }
 }

@@ -378,14 +378,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                 }
                                 foreach (PortalBuilderChain portalBuilderChain in DashParticlesItems.portalBuilderChains)
                                 {
-                                    portalBuilderChain.PortalSource.ManualDisable();
+                                    portalBuilderChain.PortalSource.CleanUpInstance();
                                     portalBuilderSources.ReturnPooled(portalBuilderChain.PortalSource);
 
-                                    portalBuilderChain.PortalDest.ManualDisable();
+                                    portalBuilderChain.PortalDest.CleanUpInstance();
                                     portalBuilderDests.ReturnPooled(portalBuilderChain.PortalDest);
                                 }
 
-                                DashParticlesItems.electricTrailRenderer.ClearAll();
+                                DashParticlesItems.electricTrailRenderer.CleanUpInstance();
                                 electricTrailRendererPool.ReturnPooled(DashParticlesItems.electricTrailRenderer);
                                 break;
                         }

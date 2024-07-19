@@ -1,5 +1,6 @@
 ﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder;
+using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder.Chains;
 using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.Systems.Observers;
@@ -8,7 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using Vector3 = UnityEngine.Vector3;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
@@ -21,62 +21,53 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         {
         }
     }
-    public class DashAbilityTriggerObserver : AbstractAbilityTriggerObserver<DashAbilityTriggerObserverProps>
+    public class DashAbilityTriggerObserver : AbstractAbilityTriggerObserverSimpleTimed_InstanceArray<DashAbilityTriggerObserverProps>
     {
+        private PortalBuilderChain PortalBuilderChain;
+
         private Vector3 TargetPosition;
-
-        private TimerStructDco_Observer Timer;
-
-        private PortalBuilder PortalSource;
-        private PortalBuilder PortalDest;
+        
         public DashAbilityTriggerObserver(
             Vector3 targetPosition,
             AbilityTriggerFXType abilityTriggerFXType,
-            DashAbilityTriggerObserverProps props) : base(abilityTriggerFXType, props)
+            DashAbilityTriggerObserverProps props) : base(
+                requiredDuration: 1000L,
+                abilityTriggerFXType, props)
         {
             TargetPosition = targetPosition;
-            // hardcoded
-            Timer.RequiredDuration = 1000L;
-            Timer.ObserverUpdateCache = props.ObserverUpdateCache;
         }
 
-        protected override bool TrySetItems()
-        {
-            Timer.LastCheckedTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-            CreateItems();
-
-            return true;
-        }
-        private void CreateItems()
+        protected override void PostInstantiateItems(AbstractAbilityFX[] abstractAbilityFXes)
         {
             PlayerClientData playerClientData = Props.SkillAndAttackIndicatorSystem.PlayerClientData;
             Vector3 playerRotation = playerClientData.PlayerComponent.transform.localEulerAngles;
 
-            PoolBagDco<AbstractAbilityFX> crimsonAuraInstancePool = AbilityTriggerFXInstancePools[(int)DashAbilityTriggerTypeInstancePools.CrimsonAuraBlack];
-            CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack)crimsonAuraInstancePool.InstantiatePooled(null);
+            CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.CrimsonAuraBlack];
             crimsonAura.transform.localEulerAngles = playerRotation;
 
-            PoolBagDco<AbstractAbilityFX> portalOrbInstancePool = AbilityTriggerFXInstancePools[(int)DashAbilityTriggerTypeInstancePools.PortalOrbPurple];
-            PortalOrbPurple portalOrb = (PortalOrbPurple)portalOrbInstancePool.InstantiatePooled(null);
+            PortalOrbPurple portalOrb = (PortalOrbPurple)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalOrbPurple];
             portalOrb.transform.localEulerAngles = playerRotation;
 
-            PoolBagDco<AbstractAbilityFX> portalBuilderSrcInstancePool = AbilityTriggerFXInstancePools[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Source];
-            PortalBuilder portalSource = (PortalBuilder)portalBuilderSrcInstancePool.InstantiatePooled(playerClientData.PlayerComponent.transform.position);
+            long portalRequiredDuration = (long)(Timer.RequiredDuration * 0.5f);
+            PortalBuilder portalSource = (PortalBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Source];
+            portalSource.transform.position = TargetPosition;
             portalSource.transform.localEulerAngles = playerRotation;
-            portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, (long)(Timer.RequiredDuration * 0.5f));
-            PortalSource = portalSource;
+            portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, portalRequiredDuration);
 
-            PoolBagDco<AbstractAbilityFX> portalBuilderDestInstancePool = AbilityTriggerFXInstancePools[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Dest];
-            PortalBuilder portalDest = (PortalBuilder)portalBuilderDestInstancePool.InstantiatePooled(TargetPosition);
+            PortalBuilder portalDest = (PortalBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Dest];
+            portalDest.transform.position = TargetPosition;
             portalDest.transform.localEulerAngles = playerRotation;
-            portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, (long)(Timer.RequiredDuration * 0.5f));
-            PortalDest = portalDest;
+            portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, portalRequiredDuration);
 
+            PortalBuilderChain = new PortalBuilderChain(portalSource, portalDest, 
+                startTime: 0L, 
+                endTime: portalRequiredDuration,
+                inverted: false);
         }
 
-        protected override void ActiveUpdate()
+        protected override void TimerConstrainedFixedUpdate()
         {
-            
+            throw new NotImplementedException();
         }
     }
     public enum DashAbilityTriggerTypeInstancePools

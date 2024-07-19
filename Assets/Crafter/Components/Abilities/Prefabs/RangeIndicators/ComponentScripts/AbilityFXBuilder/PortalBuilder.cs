@@ -239,14 +239,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Completed = true;
         }
 
-        public void ManualDisable()
-        {
-            ObserverUpdateCache = null;
-            PlayerClientData = null;
-            PortalOrb = null;
-            CrimsonAura = null;
-        }
-
         public void EditorDestroy()
         {
             ObserverUpdateCache = null;
@@ -254,6 +246,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             GameObject.DestroyImmediate(CrimsonAura.gameObject);
             GameObject.DestroyImmediate(PortalOrb.gameObject);
 
+            PlayerClientData = null;
+            PortalOrb = null;
+            CrimsonAura = null;
+        }
+
+        public override void CleanUpInstance()
+        {
+            ObserverUpdateCache = null;
             PlayerClientData = null;
             PortalOrb = null;
             CrimsonAura = null;

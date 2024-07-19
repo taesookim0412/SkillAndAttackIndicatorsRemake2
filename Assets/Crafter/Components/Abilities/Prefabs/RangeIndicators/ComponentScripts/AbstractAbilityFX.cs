@@ -30,5 +30,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 particleSystem.enableEmission = true;
             }
         }
+
+        public virtual void CleanUpInstance()
+        {
+
+        }
     }
 }

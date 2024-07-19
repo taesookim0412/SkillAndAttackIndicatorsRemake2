@@ -28,5 +28,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             }
             transform.position = worldElectricTrailRendererPositions[worldElectricTrailRendererPositions.Length - 1];
         }
+        public override void CleanUpInstance()
+        {
+            ClearAll();
+        }
+
     }
 }
