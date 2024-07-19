@@ -8,13 +8,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 {
     public class PortalBuilderChain
     {
-        public PortalBuilder PortalSource;
-        public PortalBuilder PortalDest;
+        public readonly PortalBuilder PortalSource;
+        public readonly PortalBuilder PortalDest;
 
-        private long StartTime;
-        private long EndTime;
+        private readonly long StartTime;
+        private readonly long EndTime;
 
-        private bool Inverted;
+        private readonly bool Inverted;
         private bool Completed = false;
 
         public PortalBuilderChain(PortalBuilder portalSource, PortalBuilder portalDest, long startTime, long endTime, bool inverted)
