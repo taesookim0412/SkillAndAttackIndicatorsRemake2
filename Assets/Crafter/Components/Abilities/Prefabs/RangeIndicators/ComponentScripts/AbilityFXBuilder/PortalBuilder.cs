@@ -28,23 +28,24 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public CrimsonAuraBlack CrimsonAura;
 
         [Range(0f, 2f), SerializeField]
-        public float PortalScaleDuration;
+        private float PortalScaleDuration;
         [Range(0f, 2f), SerializeField]
-        public float PlayerOpacityDuration;
+        private float PlayerOpacityDuration;
         [Range(0f, 2f), SerializeField]
-        public float PlayerOpaqueDuration;
+        private float PlayerOpaqueDuration;
         [SerializeField]
-        public Vector3 PortalScaleMin;
+        private Vector3 PortalScaleMin;
         [SerializeField]
-        public Vector3 PortalScaleMax;
+        private Vector3 PortalScaleMax;
         [SerializeField]
-        public Vector3 PortalOrbOffsetPosition;
+        private Vector3 PortalOrbOffsetPosition;
         [SerializeField]
-        public Vector3 CrimsonAuraOffsetPosition;
-        [SerializeField]
-        public bool SetPlayerInactive;
+        private Vector3 CrimsonAuraOffsetPosition;
         [SerializeField]
         public bool IsTeleportSource;
+        [SerializeField]
+        public bool SetPlayerInactive;
+
         // incompatible with onvalidate
         [HideInInspector]
         private float RequiredDurationMult;
@@ -98,7 +99,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         //    return $"{PortalScaleTimer.RequiredDuration}, {PlayerOpacityTimer.RequiredDuration}, {PlayerOpaqueTimer.RequiredDuration}";
         //}
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
-            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed)
+            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed,
+            bool setPlayerInactive)
         {
             InitializeManualAwake();
             
@@ -118,6 +120,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     RequiredDurationsModified = false;
                 }
             }
+
+            SetPlayerInactive = setPlayerInactive;
 
             PortalScaleTimer.ObserverUpdateCache = observerUpdateCache;
             PlayerOpacityTimer.ObserverUpdateCache = observerUpdateCache;
@@ -280,7 +284,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public void OnSceneGUI()
         {
             Initialize();
-
             if (VariablesSet)
             {
                 long previousUpdateTickTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
@@ -302,6 +305,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             if (!VariablesSet)
             {
+                Instance = (PortalBuilder) target;
                 VariablesSet = Instance != null && Instance.PlayerClientData != null && Instance.PortalOrb != null && Instance.CrimsonAura != null;
                 if (VariablesSet)
                 {
@@ -310,6 +314,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             }
             if (!VariablesSet)
             {
+                Instance = (PortalBuilder)target;
                 SkillAndAttackIndicatorSystem instance = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
                 if (instance != null)
                 {
@@ -337,7 +342,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                         SetObserverUpdateCache();
                         Instance.ManualAwake();
-                        Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, null);
+                        Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, null, Instance.SetPlayerInactive);
                         TryAddNonPrefabParticleSystem(Instance.gameObject);
                         VariablesAdded = true;
                         VariablesSet = true;
