@@ -739,7 +739,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 portalSource.gameObject.SetActive(false);
                 long endPortalTimeOffset = (long)(SkillAndAttackIndicatorSystem.ONE_THIRD * nextTimeRequired);
                 portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, endPortalTimeOffset, 
-                    setPlayerInactive: true);
+                    setPlayerInactive: true, isClone: true);
 
                 //dest durationAllowed = 2/3 * prevTimeDelay
                 PortalBuilder portalDest = (PortalBuilder)portalBuilderDestInstancePool.InstantiatePooled(dashParticlesPosition);
@@ -747,7 +747,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 portalDest.gameObject.SetActive(false);
                 long startPortalTimeOffset = (long)(SkillAndAttackIndicatorSystem.TWO_THIRDS * prevTimeRequired);
                 portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, startPortalTimeOffset,
-                    setPlayerInactive: true);
+                    setPlayerInactive: true, isClone: true);
 
                 //Debug.Log($"time required at {nextParticlesIndex}: {timeRequiredForDistancesPerUnit[nextParticlesIndex]}");
                 //Debug.Log($"{i}, {prevTimeRequired}, {nextTimeRequired}");

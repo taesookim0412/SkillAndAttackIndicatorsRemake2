@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
@@ -22,6 +23,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     }
     public class DashAbilityTriggerObserver<P> : AbstractAbilityTriggerObserverSimpleTimed_InstanceArray<P> where P: DashAbilityTriggerObserverProps
     {
+        private PlayerClientData PlayerClientData;
+
         private PortalBuilderChain PortalBuilderChain;
 
         private Vector3 TargetPosition;
@@ -51,14 +54,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             portalSource.transform.position = TargetPosition;
             portalSource.transform.localEulerAngles = playerRotation;
             portalSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, portalRequiredDuration,
-                setPlayerInactive: false);
+                setPlayerInactive: true, isClone: false);
 
             PortalBuilder portalDest = (PortalBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Dest];
             portalDest.transform.position = TargetPosition;
             portalDest.transform.localEulerAngles = playerRotation;
             portalDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, portalRequiredDuration,
-                setPlayerInactive: false);
+                setPlayerInactive: false, isClone: false);
 
+            PlayerClientData = playerClientData;
             PortalBuilderChain = new PortalBuilderChain(portalSource, portalDest, 
                 startTime: 0L, 
                 endTime: (long) (Timer.RequiredDuration * 0.8f),
@@ -68,6 +72,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         protected override void TimerConstrainedFixedUpdate()
         {
             PortalBuilderChain.UpdatePortals(Timer.ElapsedTime_FixedUpdateThread());
+        }
+        protected override void OnObserverCompleted()
+        {
+            GameObject playerGameObject = PlayerClientData.PlayerComponent.gameObject;
+            if (!playerGameObject.activeSelf)
+            {
+                playerGameObject.SetActive(true);
+            }
         }
     }
     public enum DashAbilityTriggerTypeInstancePools

@@ -31,11 +31,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
             else
             {
-                OnTimerExpired();
+                CleanAbilityFXInstances();
+                OnObserverCompleted();
                 CompleteObserver();
             }
         }
         protected abstract void TimerConstrainedFixedUpdate();
-        protected abstract void OnTimerExpired();
+        protected abstract void CleanAbilityFXInstances();
+        protected abstract void OnObserverCompleted();
     }
 }

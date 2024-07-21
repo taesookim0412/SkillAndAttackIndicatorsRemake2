@@ -73,8 +73,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             ResetRequiredDuration();
 
-            PortalOrb.transform.localPosition = PortalOrbOffsetPosition;
-            CrimsonAura.transform.localPosition = CrimsonAuraOffsetPosition;
+            if (PortalOrb != null)
+            {
+                PortalOrb.transform.localPosition = PortalOrbOffsetPosition;
+            }
+            if (CrimsonAura != null)
+            {
+                CrimsonAura.transform.localPosition = CrimsonAuraOffsetPosition;
+            }
 
             ManualAwake();
         }
@@ -100,7 +106,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         //}
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
             PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed,
-            bool setPlayerInactive)
+            bool setPlayerInactive, bool isClone)
         {
             InitializeManualAwake();
             
@@ -131,8 +137,16 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PlayerClientData = playerClientData;
 
             PlayerComponent playerComponent = playerClientData.PlayerComponent;
-            playerComponent.transform.localPosition = Vector3.zero;
-            playerComponent.transform.SetParent(transform, worldPositionStays: false);
+            if (isClone)
+            {
+                playerComponent.transform.localPosition = Vector3.zero;
+                playerComponent.transform.SetParent(transform, worldPositionStays: false);
+            }
+            else
+            {
+                playerComponent.transform.position = transform.position;
+            }
+            
             if (!IsTeleportSource)
             {
                 playerComponent.gameObject.SetActive(false);
@@ -342,7 +356,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                         SetObserverUpdateCache();
                         Instance.ManualAwake();
-                        Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, null, Instance.SetPlayerInactive);
+                        Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, null, Instance.SetPlayerInactive, isClone: true);
                         TryAddNonPrefabParticleSystem(Instance.gameObject);
                         VariablesAdded = true;
                         VariablesSet = true;

@@ -34,7 +34,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         protected abstract void PostInstantiateItems(AbstractAbilityFX[] abstractAbilityFXes);
 
-        protected override void OnTimerExpired()
+        protected override void CleanAbilityFXInstances()
         {
             PoolBagDco<AbstractAbilityFX>[] abilityTriggerFXInstancePools = AbilityTriggerFXInstancePools;
             AbstractAbilityFX[] abilityFXInstances = AbilityFXInstances;
