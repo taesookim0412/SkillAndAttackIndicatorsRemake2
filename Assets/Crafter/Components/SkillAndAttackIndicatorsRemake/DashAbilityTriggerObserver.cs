@@ -51,7 +51,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             long portalRequiredDuration = (long)(Timer.RequiredDuration * 0.4f);
             PortalBuilder portalSource = (PortalBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Source];
-            portalSource.transform.position = TargetPosition;
+            portalSource.transform.position = playerClientData.PlayerComponent.transform.position;
             portalSource.transform.localEulerAngles = playerRotation;
             portalSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, portalRequiredDuration,
                 setPlayerInactive: true, isClone: false);

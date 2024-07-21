@@ -797,7 +797,7 @@ PrefabInstance:
       addedObject: {fileID: 1191814143}
     - targetCorrespondingSourceObject: {fileID: 3399474011523981524, guid: a5df7e5bfadfcb3419a7c3d8419390e8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1191814144}
+      addedObject: {fileID: 1191814147}
   m_SourcePrefab: {fileID: 100100000, guid: a5df7e5bfadfcb3419a7c3d8419390e8, type: 3}
 --- !u!1 &1191814141 stripped
 GameObject:
@@ -881,7 +881,7 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
---- !u!198 &1191814144
+--- !u!198 &1191814147
 ParticleSystem:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -22714,6 +22714,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PortalBuilder_Source
       objectReference: {fileID: 0}
+    - target: {fileID: 1118924376042665594, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1928750961117584146, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.977506
@@ -22768,6 +22772,12 @@ PrefabInstance:
     - {fileID: 6427931767109356447, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
     - {fileID: 3744519816277003171, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
     - {fileID: 7505636497614929260, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
+    - {fileID: 3572526065259808730, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
+    - {fileID: 2772946639003154127, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
+    - {fileID: 5549851234233567216, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
+    - {fileID: 444602890813505380, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
+    - {fileID: 5412302794330642586, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
+    - {fileID: 5605036200407706751, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1118924376042665594, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
@@ -22775,7 +22785,7 @@ PrefabInstance:
       addedObject: {fileID: 5255527646761035937}
     - targetCorrespondingSourceObject: {fileID: 1118924376042665594, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5255527646761035938}
+      addedObject: {fileID: 5255527646761035941}
   m_SourcePrefab: {fileID: 100100000, guid: 58c7014219b12cd4d9735ed0958441b1, type: 3}
 --- !u!1 &5255527646761035934 stripped
 GameObject:
@@ -22859,7 +22869,7 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
---- !u!198 &5255527646761035938
+--- !u!198 &5255527646761035941
 ParticleSystem:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

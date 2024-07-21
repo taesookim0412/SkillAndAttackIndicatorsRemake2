@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder
@@ -45,6 +46,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public bool IsTeleportSource;
         [SerializeField]
         public bool SetPlayerInactive;
+        [HideInInspector]
+        private bool IsClone;
 
         // incompatible with onvalidate
         [HideInInspector]
@@ -142,24 +145,19 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 playerComponent.transform.localPosition = Vector3.zero;
                 playerComponent.transform.SetParent(transform, worldPositionStays: false);
             }
-            else
-            {
-                playerComponent.transform.position = transform.position;
-            }
-            
+
+            IsClone = isClone;
+
+
             if (!IsTeleportSource)
             {
                 playerComponent.gameObject.SetActive(false);
             }
 
             PortalOrb = portalOrb;
-            portalOrb.transform.localPosition = PortalOrbOffsetPosition;
-            portalOrb.transform.SetParent(transform, worldPositionStays: false);
             portalOrb.DisableParticleSystems();
             
             CrimsonAura = crimsonAura;
-            crimsonAura.transform.localPosition = CrimsonAuraOffsetPosition;
-            crimsonAura.transform.SetParent(transform, worldPositionStays: false);
             crimsonAura.DisableParticleSystems();
             
             PortalState = PortalState.PortalCreate;
@@ -177,9 +175,17 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 case PortalState.PortalCreate:
                     Active = true;
-                    PortalOrb.transform.localScale = Vector3.zero;
+                    Transform portalOrbTransform = PortalOrb.transform;
+                    portalOrbTransform.localPosition = PortalOrbOffsetPosition;
+                    portalOrbTransform.SetParent(transform, worldPositionStays: false);
+                    portalOrbTransform.localScale = Vector3.zero;
                     PortalOrb.EnableParticleSystems();
+
+                    Transform crimsonAuraTransform = CrimsonAura.transform;
+                    crimsonAuraTransform.localPosition = CrimsonAuraOffsetPosition;
+                    crimsonAuraTransform.SetParent(transform, worldPositionStays: false);
                     CrimsonAura.EnableParticleSystems();
+
                     PortalScaleTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                     PortalState = PortalState.PortalScale;
                     break;
@@ -198,7 +204,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 case PortalState.PlayerCreate:
                     if (!IsTeleportSource)
                     {
-                        PlayerClientData.PlayerComponent.gameObject.SetActive(true);   
+                        PlayerClientData.PlayerComponent.gameObject.SetActive(true);
+                        if (!IsClone)
+                        {
+                            PlayerClientData.PlayerComponent.transform.position = transform.position;
+                        }
                     }
                     PlayerOpacityTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                     PortalState = PortalState.PlayerOpaque;
@@ -326,7 +336,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     ObserverUpdateCache = Instance.ObserverUpdateCache;
                 }
             }
-            if (!VariablesSet)
+            if (!VariablesSet && PrefabStageUtility.GetCurrentPrefabStage() == null)
             {
                 Instance = (PortalBuilder)target;
                 SkillAndAttackIndicatorSystem instance = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
@@ -357,7 +367,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         SetObserverUpdateCache();
                         Instance.ManualAwake();
                         Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, null, Instance.SetPlayerInactive, isClone: true);
-                        TryAddNonPrefabParticleSystem(Instance.gameObject);
+                        TryAddParticleSystem(Instance.gameObject);
                         VariablesAdded = true;
                         VariablesSet = true;
                     }

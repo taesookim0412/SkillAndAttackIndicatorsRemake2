@@ -24,9 +24,9 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             ObserverUpdateCache.Update_FixedUpdate();
         }
 
-        protected void TryAddNonPrefabParticleSystem(GameObject instance)
+        protected void TryAddParticleSystem(GameObject instance)
         {
-            if (PrefabStageUtility.GetCurrentPrefabStage() == null && instance.GetComponent<ParticleSystem>() == null)
+            if (instance.GetComponent<ParticleSystem>() == null)
             {
                 ParticleSystem particleSystem = instance.AddComponent<ParticleSystem>();
                 ParticleSystem.EmissionModule emissionModule = particleSystem.emission;
