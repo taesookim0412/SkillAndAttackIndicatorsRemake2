@@ -126,24 +126,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
 
             if (abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.DashParticles, out AbstractAbilityFX dashParticlesPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ArcPath, out AbstractAbilityFX arcPathPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ElectricTrailRenderer, out AbstractAbilityFX electricTrailRendererPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ShockAura, out AbstractAbilityFX shockAuraPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.CrimsonAuraBlack, out AbstractAbilityFX crimsonAuraDarkPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalOrbPurple, out AbstractAbilityFX portalOrbPurplePrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalBuilder_Source, out AbstractAbilityFX portalBuilderSrcPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalBuilder_Dest, out AbstractAbilityFX portalBuilderDestPrefab)
-                )
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ElectricTrailRenderer, out AbstractAbilityFX electricTrailRendererPrefab))
             {
                 PoolBagDco<AbstractAbilityFX>[] dashParticlesPoolBag = new PoolBagDco<AbstractAbilityFX>[8];
                 dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.DashParticles] = new PoolBagDco<AbstractAbilityFX>(dashParticlesPrefab, 30);
-                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.ArcPath] = new PoolBagDco<AbstractAbilityFX>(arcPathPrefab, 30);
                 dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.ElectricTrailRenderer] = new PoolBagDco<AbstractAbilityFX>(electricTrailRendererPrefab, 30);
-                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.ShockAura] = new PoolBagDco<AbstractAbilityFX>(shockAuraPrefab, 30);
-                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.CrimsonAuraBlack] = new PoolBagDco<AbstractAbilityFX>(crimsonAuraDarkPrefab, 30);
-                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.PortalOrbPurple] = new PoolBagDco<AbstractAbilityFX>(portalOrbPurplePrefab, 30);
-                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Source] = new PoolBagDco<AbstractAbilityFX>(portalBuilderSrcPrefab, 30);
-                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Dest] = new PoolBagDco<AbstractAbilityFX>(portalBuilderDestPrefab, 30);
 
                 abilityIndicatorFXInstancePools[AbilityIndicatorFXType.DashParticles] = dashParticlesPoolBag;
             }

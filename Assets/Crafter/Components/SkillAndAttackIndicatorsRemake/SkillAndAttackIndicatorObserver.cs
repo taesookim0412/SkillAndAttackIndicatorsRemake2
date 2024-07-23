@@ -52,15 +52,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         // ... hardcoded
         private static readonly int LineLengthUnits = 20;
         // Also used for adding ArcPathFromCloneOffset
-        private static readonly int CloneOffsetUnits = 2;
-        private static readonly int UnitsPerClone = 5;
-        private static readonly int ArcPathFromSkyPerClone = 1;
-        private static readonly float ArcPathFromSkyPerCloneFloat = (float)ArcPathFromSkyPerClone;
-        private static readonly float ArcPathFromSkyRadius = 0.5f;
-        private static readonly float ArcPathZUnitsPerCluster = 1f;
-        private static readonly float ShockAuraYOffset = 0.7f;
+        private static readonly int PortalSpotOffsetUnits = 2;
+        private static readonly int UnitsPerPortalSpot = 5;
         private static readonly float TrailRendererYOffset = 0.7f;
-        
+
 
         private SkillAndAttackIndicatorObserverProps Props;
 
@@ -84,13 +79,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPLineRegionProjector LineRegionProjectorRef;
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
-        private (DashParticles[] dashParticles, PlayerClientData[] playerClones,
-            PortalBuilderChain[] portalBuilderChains,
-            ArcPath[] arcPathsFromSky, 
-            ShockAura[] shockAuras,
-            CrimsonAuraBlack[] crimsonAuras,
-            PortalOrbPurple[] portalOrbs,
-            ElectricTrailRenderer electricTrailRenderer,
+        private (DashParticles[] dashParticles, ElectricTrailRenderer electricTrailRenderer,
+            bool[] portalSpotsPassed,
             int numElectricTrailRendererPositions,
             int lastArcPathsIndex) DashParticlesItems;
 
@@ -345,46 +335,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         {
                             case AbilityIndicatorFXType.DashParticles:
                                 PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int) DashParticlesFXTypeInstancePools.DashParticles];
-                                PoolBagDco<AbstractAbilityFX> arcPathPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.ArcPath];
                                 PoolBagDco<AbstractAbilityFX> electricTrailRendererPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.ElectricTrailRenderer];
-                                PoolBagDco<AbstractAbilityFX> shockAuraPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.ShockAura];
-                                PoolBagDco<AbstractAbilityFX> crimsonAuraPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.CrimsonAuraBlack];
-                                PoolBagDco<AbstractAbilityFX> portalOrbPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.PortalOrbPurple];
-                                PoolBagDco<AbstractAbilityFX> portalBuilderSources = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Source];
-                                PoolBagDco<AbstractAbilityFX> portalBuilderDests = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Dest];
 
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                                 {
                                     dashParticlesPool.ReturnPooled(dashParticles);
-                                }
-                                foreach (PlayerClientData playerClientData in DashParticlesItems.playerClones)
-                                {
-                                    playerClientData.PlayerComponent.Animator.StopPlayback();
-                                    PlayerCloneInstancePool.ReturnPooled(playerClientData.PlayerComponent);
-                                }
-                                foreach (ArcPath arcPath in DashParticlesItems.arcPathsFromSky)
-                                {
-                                    arcPathPool.ReturnPooled(arcPath);
-                                }
-                                foreach (ShockAura shockAura in DashParticlesItems.shockAuras)
-                                {
-                                    shockAuraPool.ReturnPooled(shockAura);
-                                }
-                                foreach (CrimsonAuraBlack crimsonAura in DashParticlesItems.crimsonAuras)
-                                {
-                                    crimsonAuraPool.ReturnPooled(crimsonAura);
-                                }
-                                foreach (PortalOrbPurple portalOrb in DashParticlesItems.portalOrbs)
-                                {
-                                    portalOrbPool.ReturnPooled(portalOrb);
-                                }
-                                foreach (PortalBuilderChain portalBuilderChain in DashParticlesItems.portalBuilderChains)
-                                {
-                                    portalBuilderChain.PortalSource.CleanUpInstance();
-                                    portalBuilderSources.ReturnPooled(portalBuilderChain.PortalSource);
-
-                                    portalBuilderChain.PortalDest.CleanUpInstance();
-                                    portalBuilderDests.ReturnPooled(portalBuilderChain.PortalDest);
                                 }
 
                                 DashParticlesItems.electricTrailRenderer.CleanUpInstance();
@@ -557,30 +512,18 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             return 0f;
         }
 
-        private (DashParticles[] dashParticles, PlayerClientData[] playerClones,
-            PortalBuilderChain[] portalBuilderChains,
-            ArcPath[] arcPathsFromSky,
-            ShockAura[] shockAuras,
-            CrimsonAuraBlack[] crimsonAuras,
-            PortalOrbPurple[] portalOrbs,
+        private (DashParticles[] dashParticles,
             ElectricTrailRenderer electricTrailRenderer,
+            bool[] portalSpotsPassed,
             int numElectricTrailRendererPositions,
             int lastArcPathsIndex) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
             float yRotation, int abilityFXIndex)
         {
-            int numPlayerClones = (int)Math.Floor((lineLengthUnits - CloneOffsetUnits) / (float)UnitsPerClone);
+            int numPortalSpots = (int)Math.Floor((lineLengthUnits - PortalSpotOffsetUnits) / (float)UnitsPerPortalSpot);
 
             DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
-            PlayerClientData[] playerClones = new PlayerClientData[numPlayerClones];
-
-            PortalBuilderChain[] portalBuilderChains = new PortalBuilderChain[numPlayerClones];
-
-            ArcPath[] arcPathsFromSky = new ArcPath[numPlayerClones * ArcPathFromSkyPerClone];
-            ShockAura[] shockAuras = new ShockAura[numPlayerClones];
-
-            CrimsonAuraBlack[] crimsonAuras = new CrimsonAuraBlack[numPlayerClones];
-            PortalOrbPurple[] portalOrbs = new PortalOrbPurple[numPlayerClones];
+            bool[] portalSpotsPassed = new bool[numPortalSpots];
 
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
@@ -645,142 +588,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 prevXAnglei1 = xAngle;
             }
 
-            PoolBagDco<AbstractAbilityFX> arcPathInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ArcPath];
-            PoolBagDco<AbstractAbilityFX> shockAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ShockAura];
-            PoolBagDco<AbstractAbilityFX> crimsonAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.CrimsonAuraBlack];
-            PoolBagDco<AbstractAbilityFX> portalOrbInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.PortalOrbPurple];
-            PoolBagDco<AbstractAbilityFX> portalBuilderSrcInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Source];
-            PoolBagDco<AbstractAbilityFX> portalBuilderDestInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Dest];
-
-            long[] timeRequiredForDistancesPerUnit = TimeRequiredForDistancesPerUnit;
-
-            float arcLocalZStart = -1 * 0.5f * ArcPathZUnitsPerCluster;
-            float arcLocalZUnitsPerIndex = ArcPathZUnitsPerCluster / ArcPathFromSkyPerClone;
-
-            
-
-            // cached prev values
-            int particlesIndex = Math.Clamp(CloneOffsetUnits, 0, lineLengthUnits - 1);
-            long prevTimeRequired = timeRequiredForDistancesPerUnit[particlesIndex];
-            long prevTimeRequiredAccum = prevTimeRequired;
-
-            for (int i = 0; i < numPlayerClones; i++)
-            {
-                // Ensure the index is clamped to avoid approx error...
-                int nextParticlesIndex = Math.Clamp(CloneOffsetUnits + ((i + 1) * UnitsPerClone), 0, lineLengthUnits - 1);
-                long nextTimeRequired = timeRequiredForDistancesPerUnit[nextParticlesIndex] - prevTimeRequiredAccum;
-
-                Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
-                PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticlesPosition);
-
-                playerComponentClone.gameObject.transform.localEulerAngles = yRotationVector;
-                playerComponentClone.OnCloneFXInit(Props.ObserverUpdateCache);
-                playerComponentClone.gameObject.SetActive(false);
-                PlayerClientData playerClientData = new PlayerClientData(playerComponentClone);
-                playerClones[i] = playerClientData;
-
-                for (int j = 0; j < ArcPathFromSkyPerClone; j++)
-                {
-                    //int quadrant = (int) (j / ArcPathFromSkyPerCloneFloat * 4f);
-
-                    //int rangeStart = quadrant * 90 + 25;
-                    //int rangeEnd = (quadrant + 1) * 90 - 25;
-
-                    //int randomRotationY = Random.Next(rangeStart, rangeEnd);
-
-                    //float localPositionX = (float)Math.Sin(randomRotationY * Mathf.Deg2Rad) * ArcPathFromSkyRadius;
-                    //float localPositionZ = (float)Math.Cos(randomRotationY * Mathf.Deg2Rad) * ArcPathFromSkyRadius;
-
-                    //float rotatedLocalPositionX = localPositionZ * sinYAngle + localPositionX * cosYAngle;
-                    //float rotatedLocalPositionZ = localPositionZ * cosYAngle - localPositionX * sinYAngle;
-
-                    //ArcPath_Small_Floating arcPath = (ArcPath_Small_Floating)arcPathSmallFloatingInstancePool.InstantiatePooled(new Vector3(dashParticlesPosition.x + rotatedLocalPositionX,
-                    //    dashParticlesPosition.y,
-                    //    dashParticlesPosition.z + rotatedLocalPositionZ));
-
-                    //arcPath.transform.localEulerAngles = new Vector3(-15f, randomRotationY + yRotation, 0f);
-                    //arcPath.gameObject.SetActive(false);
-
-                    //arcPath.SetLocalPositionFields(
-                    //    localPositionX: localPositionX,
-                    //    localPositionZ: localPositionZ,
-                    //    localRotationY: randomRotationY);
-                    ArcPath arcPath = (ArcPath)arcPathInstancePool.InstantiatePooled(dashParticlesPosition);
-                    arcPath.transform.localEulerAngles = yRotationVector;
-                    arcPath.gameObject.SetActive(false);
-
-                    //float yStartOffset = Random.Next(-250, -239) * 0.01f;
-                    //float yEndOffset = Random.Next(20, 51) * 0.1f;
-                    //arcPath.SetOffsetFX(yStartOffset, yEndOffset);
-
-                    arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j] = arcPath;
-                }
-
-                ShockAura shockAura = (ShockAura)shockAuraInstancePool.InstantiatePooled(new Vector3(dashParticlesPosition.x,
-                    dashParticlesPosition.y + ShockAuraYOffset, dashParticlesPosition.z));
-                shockAura.transform.localEulerAngles = yRotationVector;
-                shockAura.gameObject.SetActive(false);
-
-                shockAuras[i] = shockAura;
-
-                CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack) crimsonAuraInstancePool.InstantiatePooled(null);
-                // emit is changed instead of using active.
-
-                crimsonAuras[i] = crimsonAura;
-
-                PortalOrbPurple portalOrb = (PortalOrbPurple)portalOrbInstancePool.InstantiatePooled(null);
-                // emit is changed instead of using active.
-
-                portalOrbs[i] = portalOrb;
-
-                //src durationAllowed =  1/3 * nextTimeDelay
-                PortalBuilder portalSource = (PortalBuilder)portalBuilderSrcInstancePool.InstantiatePooled(dashParticlesPosition);
-                portalSource.transform.localEulerAngles = yRotationVector;
-                portalSource.gameObject.SetActive(false);
-                long endPortalTimeOffset = (long)(SkillAndAttackIndicatorSystem.ONE_THIRD * nextTimeRequired);
-                portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, endPortalTimeOffset, 
-                    setPlayerInactive: true, isClone: true);
-
-                //dest durationAllowed = 2/3 * prevTimeDelay
-                PortalBuilder portalDest = (PortalBuilder)portalBuilderDestInstancePool.InstantiatePooled(dashParticlesPosition);
-                portalDest.transform.localEulerAngles = yRotationVector;
-                portalDest.gameObject.SetActive(false);
-                long startPortalTimeOffset = (long)(SkillAndAttackIndicatorSystem.TWO_THIRDS * prevTimeRequired);
-                portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, startPortalTimeOffset,
-                    setPlayerInactive: true, isClone: true);
-
-                //Debug.Log($"time required at {nextParticlesIndex}: {timeRequiredForDistancesPerUnit[nextParticlesIndex]}");
-                //Debug.Log($"{i}, {prevTimeRequired}, {nextTimeRequired}");
-                PortalBuilderChain portalBuilderChain = new PortalBuilderChain(portalSource, portalDest,
-                    startTime: prevTimeRequiredAccum - startPortalTimeOffset,
-                    endTime: prevTimeRequiredAccum + endPortalTimeOffset,
-                    inverted: true);
-                portalBuilderChains[i] = portalBuilderChain;
-
-                particlesIndex = nextParticlesIndex;
-                prevTimeRequired = nextTimeRequired;
-                prevTimeRequiredAccum += nextTimeRequired;
-            }
-
-            // the indices are based on playerClones so the last one will be the src / dest
-            // must be initialized 
-            // The head and tail of the dash is ignored right now.
-            //PortalBuilder portalSrc = (PortalBuilder)portalBuilderSrcInstancePool.InstantiatePooled(dashParticles[0].transform.position);
-            //portalSrc.transform.localEulerAngles = yRotationVector;
-            //portalSrc.gameObject.SetActive(false);
-            //portalSources[portalSources.Length - 1] = portalSrc;
-
-            //PortalBuilder portalDest = (PortalBuilder)portalBuilderDestInstancePool.InstantiatePooled(dashParticles[dashParticles.Length - 1].transform.position);
-            //portalDest.transform.localEulerAngles = yRotationVector;
-            //portalDest.gameObject.SetActive(false);
-            //portalDests[portalDests.Length - 1] = portalDest;
-
             PoolBagDco<AbstractAbilityFX> electricTrailRendererInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ElectricTrailRenderer];
 
             ElectricTrailRenderer electricTrailRenderer = (ElectricTrailRenderer) electricTrailRendererInstancePool.InstantiatePooled(dashParticles[0].transform.position);
 
-            return (dashParticles, playerClones, portalBuilderChains,
-                arcPathsFromSky, shockAuras, crimsonAuras, portalOrbs, electricTrailRenderer, 1, -1);
+            return (dashParticles, electricTrailRenderer, portalSpotsPassed, 1, -1);
         }
         private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
             float startPositionX, float startPositionZ,
@@ -842,53 +654,16 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 prevXAnglei1 = xAngle;
             }
 
-            PlayerClientData[] playerClonesArray = DashParticlesItems.playerClones;
-            ArcPath[] arcPathsFromSkyArray = DashParticlesItems.arcPathsFromSky;
-            ShockAura[] shockAurasArray = DashParticlesItems.shockAuras;
-            PortalBuilderChain[] portalBuilderChains = DashParticlesItems.portalBuilderChains;
 
-            for (int i = 0; i < playerClonesArray.Length; i++)
-            {
-                // Ensure the index is clamped to avoid approx error...
-                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
-
-                Transform playerCloneTransform = playerClonesArray[i].PlayerComponent.transform;
-
-                Vector3 dashParticlesPosition = dashParticlesArray[particlesIndex].transform.position;
-                playerCloneTransform.position = dashParticlesPosition;
-                playerCloneTransform.localEulerAngles = yRotationVector;
-
-                for (int j = 0; j < ArcPathFromSkyPerClone; j++)
-                {
-                    ArcPath arcPath = DashParticlesItems.arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j];
-
-                    Transform arcPathsTransform = arcPathsFromSkyArray[(i * ArcPathFromSkyPerClone) + j].transform;
-
-                    arcPathsTransform.position = dashParticlesPosition;
-                    arcPathsTransform.localEulerAngles = yRotationVector;
-                }
-
-                Transform shockAuraTransform = shockAurasArray[i].transform;
-                shockAuraTransform.position = new Vector3(dashParticlesPosition.x, dashParticlesPosition.y + ShockAuraYOffset, dashParticlesPosition.z);
-                shockAuraTransform.localEulerAngles = yRotationVector;
-
-                PortalBuilderChain portalBuilderChain = portalBuilderChains[i];
-                Transform portalSrcTransform = portalBuilderChain.PortalSource.transform;
-                portalSrcTransform.position = dashParticlesPosition;
-                portalSrcTransform.localEulerAngles = yRotationVector;
-
-                Transform portalDestTransform = portalBuilderChain.PortalDest.transform;
-                portalDestTransform.position = dashParticlesPosition;
-                portalDestTransform.localEulerAngles = yRotationVector;
-            }
 
             Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
             worldElectricTrailRendererPositions[0] = dashParticlesArray[0].transform.position;
             
             for (int i = 1; i < worldElectricTrailRendererPositions.Length; i++)
             {
-                Vector3 playerClonePosition = playerClonesArray[i - 1].PlayerComponent.transform.position;
-                worldElectricTrailRendererPositions[i] = new Vector3(playerClonePosition.x, playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
+                int portalSpotIndex = Math.Clamp(PortalSpotOffsetUnits + ((i - 1) * UnitsPerPortalSpot), 0, lineLengthUnits - 1);
+                Vector3 dashParticlePosition = dashParticlesArray[portalSpotIndex].transform.position;
+                worldElectricTrailRendererPositions[i] = new Vector3(dashParticlePosition.x, dashParticlePosition.y + TrailRendererYOffset, dashParticlePosition.z);
             }
 
             DashParticlesItems.electricTrailRenderer.OverwritePositions(worldElectricTrailRendererPositions);
@@ -929,35 +704,25 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
             activePassed = false;
-            PlayerClientData[] playerClones = DashParticlesItems.playerClones;
-            ArcPath[] arcPathsFromSky = DashParticlesItems.arcPathsFromSky;
-            ShockAura[] shockAurasArray = DashParticlesItems.shockAuras;
-            for (int i = playerClones.Length - 1; i >= 0; i--)
+            bool[] portalSpotsPassed = DashParticlesItems.portalSpotsPassed;
+            for (int i = portalSpotsPassed.Length - 1; i >= 0; i--)
             {
-                int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
+                int particlesIndex = Math.Clamp(PortalSpotOffsetUnits + (i * UnitsPerPortalSpot), 0, lineLengthUnits - 1);
                 float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
 
                 (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, lineLengthPercentage);
 
-                ArcPath arcPath = arcPathsFromSky[i * ArcPathFromSkyPerClone];
-
-                if (arcPath.gameObject.activeSelf != active)
+                if (active && !portalSpotsPassed[i])
                 {
-                    arcPath.gameObject.SetActive(active);
-                    shockAurasArray[i].gameObject.SetActive(active);
-                    for (int j = 1; j < ArcPathFromSkyPerClone; j++)
+                    if (DashParticlesItems.lastArcPathsIndex < i)
                     {
-                        arcPath = arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j];
-                        arcPath.gameObject.SetActive(active);
-                    }
-                    if (active && DashParticlesItems.lastArcPathsIndex < i)
-                    {
-                        Vector3 playerClonePosition = playerClones[i].PlayerComponent.transform.position;
-                        DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(playerClonePosition.x,
-                            playerClonePosition.y + TrailRendererYOffset, playerClonePosition.z);
+                        Vector3 portalSpotPosition = dashParticlesArray[particlesIndex].transform.position;
+                        DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(portalSpotPosition.x,
+                            portalSpotPosition.y + TrailRendererYOffset, portalSpotPosition.z);
                         DashParticlesItems.numElectricTrailRendererPositions = i + 2;
                         DashParticlesItems.lastArcPathsIndex = i;
                     }
+                    portalSpotsPassed[i] = true;
                 }
 
                 if (!activePassed)
@@ -973,17 +738,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 }
             }
 
-            long elapsedTime = ElapsedTime;
+            //long elapsedTime = ElapsedTime;
 
-            PortalBuilderChain[] portalBuilderChains = DashParticlesItems.portalBuilderChains;
-            //if (timer > 1/3 * requiredDurations[0]) {}
-            for (int i = 0; i < playerClones.Length; i++)
-            {
-                if (portalBuilderChains[i].UpdatePortals(elapsedTime))
-                {
-                    break;
-                }
-            }
+            //PortalBuilderChain[] portalBuilderChains = DashParticlesItems.portalBuilderChains;
+            ////if (timer > 1/3 * requiredDurations[0]) {}
+            //for (int i = 0; i < playerClones.Length; i++)
+            //{
+            //    if (portalBuilderChains[i].UpdatePortals(elapsedTime))
+            //    {
+            //        break;
+            //    }
+            //}
 
             //CrimsonAuraBlack[] crimsonAurasArray = DashParticlesItems.crimsonAuras;
             //PortalOrbPurple[] portalOrbsArray = DashParticlesItems.portalOrbs;
@@ -1132,6 +897,166 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         {
             throw new NotImplementedException();
         }
+
+        // Removed Portal/Clone/Arc/ShockAura/CrimsonAura code
+        //private static readonly int ArcPathFromSkyPerClone = 1;
+        //private static readonly float ArcPathFromSkyPerCloneFloat = (float)ArcPathFromSkyPerClone;
+        //private static readonly float ArcPathFromSkyRadius = 0.5f;
+        //private static readonly float ArcPathZUnitsPerCluster = 1f;
+        //private static readonly float ShockAuraYOffset = 0.7f;
+        //PoolBagDco<AbstractAbilityFX> arcPathInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ArcPath];
+        //PoolBagDco<AbstractAbilityFX> shockAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ShockAura];
+        //PoolBagDco<AbstractAbilityFX> crimsonAuraInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.CrimsonAuraBlack];
+        //PoolBagDco<AbstractAbilityFX> portalOrbInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.PortalOrbPurple];
+        //PoolBagDco<AbstractAbilityFX> portalBuilderSrcInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Source];
+        //PoolBagDco<AbstractAbilityFX> portalBuilderDestInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.PortalBuilder_Dest];
+
+        //long[] timeRequiredForDistancesPerUnit = TimeRequiredForDistancesPerUnit;
+
+        //float arcLocalZStart = -1 * 0.5f * ArcPathZUnitsPerCluster;
+        //float arcLocalZUnitsPerIndex = ArcPathZUnitsPerCluster / ArcPathFromSkyPerClone;
+        //// cached prev values
+        //int particlesIndex = Math.Clamp(CloneOffsetUnits, 0, lineLengthUnits - 1);
+        //long prevTimeRequired = timeRequiredForDistancesPerUnit[particlesIndex];
+        //long prevTimeRequiredAccum = prevTimeRequired;
+
+        //for (int i = 0; i < numPlayerClones; i++)
+        //{
+        //    // Ensure the index is clamped to avoid approx error...
+        //    int nextParticlesIndex = Math.Clamp(CloneOffsetUnits + ((i + 1) * UnitsPerClone), 0, lineLengthUnits - 1);
+        //    long nextTimeRequired = timeRequiredForDistancesPerUnit[nextParticlesIndex] - prevTimeRequiredAccum;
+
+        //    Vector3 dashParticlesPosition = dashParticles[particlesIndex].transform.position;
+        //    PlayerComponent playerComponentClone = PlayerCloneInstancePool.InstantiatePooled(dashParticlesPosition);
+
+        //    playerComponentClone.gameObject.transform.localEulerAngles = yRotationVector;
+        //    playerComponentClone.OnCloneFXInit(Props.ObserverUpdateCache);
+        //    playerComponentClone.gameObject.SetActive(false);
+        //    PlayerClientData playerClientData = new PlayerClientData(playerComponentClone);
+        //    playerClones[i] = playerClientData;
+
+        //    for (int j = 0; j < ArcPathFromSkyPerClone; j++)
+        //    {
+        //        //int quadrant = (int) (j / ArcPathFromSkyPerCloneFloat * 4f);
+
+        //        //int rangeStart = quadrant * 90 + 25;
+        //        //int rangeEnd = (quadrant + 1) * 90 - 25;
+
+        //        //int randomRotationY = Random.Next(rangeStart, rangeEnd);
+
+        //        //float localPositionX = (float)Math.Sin(randomRotationY * Mathf.Deg2Rad) * ArcPathFromSkyRadius;
+        //        //float localPositionZ = (float)Math.Cos(randomRotationY * Mathf.Deg2Rad) * ArcPathFromSkyRadius;
+
+        //        //float rotatedLocalPositionX = localPositionZ * sinYAngle + localPositionX * cosYAngle;
+        //        //float rotatedLocalPositionZ = localPositionZ * cosYAngle - localPositionX * sinYAngle;
+
+        //        //ArcPath_Small_Floating arcPath = (ArcPath_Small_Floating)arcPathSmallFloatingInstancePool.InstantiatePooled(new Vector3(dashParticlesPosition.x + rotatedLocalPositionX,
+        //        //    dashParticlesPosition.y,
+        //        //    dashParticlesPosition.z + rotatedLocalPositionZ));
+
+        //        //arcPath.transform.localEulerAngles = new Vector3(-15f, randomRotationY + yRotation, 0f);
+        //        //arcPath.gameObject.SetActive(false);
+
+        //        //arcPath.SetLocalPositionFields(
+        //        //    localPositionX: localPositionX,
+        //        //    localPositionZ: localPositionZ,
+        //        //    localRotationY: randomRotationY);
+        //        ArcPath arcPath = (ArcPath)arcPathInstancePool.InstantiatePooled(dashParticlesPosition);
+        //        arcPath.transform.localEulerAngles = yRotationVector;
+        //        arcPath.gameObject.SetActive(false);
+
+        //        //float yStartOffset = Random.Next(-250, -239) * 0.01f;
+        //        //float yEndOffset = Random.Next(20, 51) * 0.1f;
+        //        //arcPath.SetOffsetFX(yStartOffset, yEndOffset);
+
+        //        arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j] = arcPath;
+        //    }
+
+        //    ShockAura shockAura = (ShockAura)shockAuraInstancePool.InstantiatePooled(new Vector3(dashParticlesPosition.x,
+        //        dashParticlesPosition.y + ShockAuraYOffset, dashParticlesPosition.z));
+        //    shockAura.transform.localEulerAngles = yRotationVector;
+        //    shockAura.gameObject.SetActive(false);
+
+        //    shockAuras[i] = shockAura;
+
+        //    CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack) crimsonAuraInstancePool.InstantiatePooled(null);
+        //    // emit is changed instead of using active.
+
+        //    crimsonAuras[i] = crimsonAura;
+
+        //    PortalOrbPurple portalOrb = (PortalOrbPurple)portalOrbInstancePool.InstantiatePooled(null);
+        //    // emit is changed instead of using active.
+
+        //    portalOrbs[i] = portalOrb;
+
+        //    //src durationAllowed =  1/3 * nextTimeDelay
+        //    PortalBuilder portalSource = (PortalBuilder)portalBuilderSrcInstancePool.InstantiatePooled(dashParticlesPosition);
+        //    portalSource.transform.localEulerAngles = yRotationVector;
+        //    portalSource.gameObject.SetActive(false);
+        //    long endPortalTimeOffset = (long)(SkillAndAttackIndicatorSystem.ONE_THIRD * nextTimeRequired);
+        //    portalSource.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, endPortalTimeOffset, 
+        //        setPlayerInactive: true, isClone: true);
+
+        //    //dest durationAllowed = 2/3 * prevTimeDelay
+        //    PortalBuilder portalDest = (PortalBuilder)portalBuilderDestInstancePool.InstantiatePooled(dashParticlesPosition);
+        //    portalDest.transform.localEulerAngles = yRotationVector;
+        //    portalDest.gameObject.SetActive(false);
+        //    long startPortalTimeOffset = (long)(SkillAndAttackIndicatorSystem.TWO_THIRDS * prevTimeRequired);
+        //    portalDest.Initialize(Props.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, startPortalTimeOffset,
+        //        setPlayerInactive: true, isClone: true);
+
+        //    //Debug.Log($"time required at {nextParticlesIndex}: {timeRequiredForDistancesPerUnit[nextParticlesIndex]}");
+        //    //Debug.Log($"{i}, {prevTimeRequired}, {nextTimeRequired}");
+        //    PortalBuilderChain portalBuilderChain = new PortalBuilderChain(portalSource, portalDest,
+        //        startTime: prevTimeRequiredAccum - startPortalTimeOffset,
+        //        endTime: prevTimeRequiredAccum + endPortalTimeOffset,
+        //        inverted: true);
+        //    portalBuilderChains[i] = portalBuilderChain;
+
+        //    particlesIndex = nextParticlesIndex;
+        //    prevTimeRequired = nextTimeRequired;
+        //    prevTimeRequiredAccum += nextTimeRequired;
+        //}
+        //UpdatePos:
+        //PlayerClientData[] playerClonesArray = DashParticlesItems.playerClones;
+        //ArcPath[] arcPathsFromSkyArray = DashParticlesItems.arcPathsFromSky;
+        //ShockAura[] shockAurasArray = DashParticlesItems.shockAuras;
+        //PortalBuilderChain[] portalBuilderChains = DashParticlesItems.portalBuilderChains;
+
+        //for (int i = 0; i < playerClonesArray.Length; i++)
+        //{
+        //    // Ensure the index is clamped to avoid approx error...
+        //    int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
+
+        //    Transform playerCloneTransform = playerClonesArray[i].PlayerComponent.transform;
+
+        //    Vector3 dashParticlesPosition = dashParticlesArray[particlesIndex].transform.position;
+        //    playerCloneTransform.position = dashParticlesPosition;
+        //    playerCloneTransform.localEulerAngles = yRotationVector;
+
+        //    for (int j = 0; j < ArcPathFromSkyPerClone; j++)
+        //    {
+        //        ArcPath arcPath = DashParticlesItems.arcPathsFromSky[(i * ArcPathFromSkyPerClone) + j];
+
+        //        Transform arcPathsTransform = arcPathsFromSkyArray[(i * ArcPathFromSkyPerClone) + j].transform;
+
+        //        arcPathsTransform.position = dashParticlesPosition;
+        //        arcPathsTransform.localEulerAngles = yRotationVector;
+        //    }
+
+        //    Transform shockAuraTransform = shockAurasArray[i].transform;
+        //    shockAuraTransform.position = new Vector3(dashParticlesPosition.x, dashParticlesPosition.y + ShockAuraYOffset, dashParticlesPosition.z);
+        //    shockAuraTransform.localEulerAngles = yRotationVector;
+
+        //    PortalBuilderChain portalBuilderChain = portalBuilderChains[i];
+        //    Transform portalSrcTransform = portalBuilderChain.PortalSource.transform;
+        //    portalSrcTransform.position = dashParticlesPosition;
+        //    portalSrcTransform.localEulerAngles = yRotationVector;
+
+        //    Transform portalDestTransform = portalBuilderChain.PortalDest.transform;
+        //    portalDestTransform.position = dashParticlesPosition;
+        //    portalDestTransform.localEulerAngles = yRotationVector;
+        //}
     }
 
     public enum PlayerComponentModel
@@ -1162,13 +1087,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     public enum DashParticlesFXTypeInstancePools
     {
         DashParticles,
-        ArcPath,
-        ElectricTrailRenderer,
-        ShockAura,
-        CrimsonAuraBlack,
-        PortalOrbPurple,
-        PortalBuilder_Source,
-        PortalBuilder_Dest
+        ElectricTrailRenderer
     }
     public enum AbilityFXComponentType
     {
