@@ -898,6 +898,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             throw new NotImplementedException();
         }
 
+
         // Removed Portal/Clone/Arc/ShockAura/CrimsonAura code
         //private static readonly int ArcPathFromSkyPerClone = 1;
         //private static readonly float ArcPathFromSkyPerCloneFloat = (float)ArcPathFromSkyPerClone;

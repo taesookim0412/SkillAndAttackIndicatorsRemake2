@@ -165,7 +165,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Active = false;
             Completed = false;
         }
-        public void ManualUpdate()
+        public override void ManualUpdate()
         {
             if (Completed)
             {
@@ -267,7 +267,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Completed = true;
         }
 
-        public void EditorDestroy()
+        public override void EditorDestroy()
         {
             ObserverUpdateCache = null;
             GameObject.DestroyImmediate(PlayerClientData.PlayerComponent.gameObject);
@@ -297,91 +297,66 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     }
 
     [CustomEditor(typeof(PortalBuilder))]
-    public class PortalBuilderEditor : AbstractEditor
+    public class PortalBuilderEditor : AbstractEditor<PortalBuilder>
     {
-        [HideInInspector]
-        private PortalBuilder Instance;
+        protected override bool OnInitialize()
+        {
+            Instance = (PortalBuilder)target;
+            SkillAndAttackIndicatorSystem instance = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
+            if (instance != null)
+            {
+                PlayerComponent playerComponentPrefab = instance.PlayerComponent;
 
-        private bool VariablesSet = false;
-        private bool VariablesAdded = false;
-        private bool SkipDestroy = false;
-        public void OnSceneGUI()
-        {
-            Initialize();
-            if (VariablesSet)
-            {
-                long previousUpdateTickTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-                ObserverUpdateCache.Update_FixedUpdate();
-                Instance.ManualUpdate();
-            }
-        }
-        public void OnDisable()
-        {
-            if (!SkipDestroy && VariablesAdded)
-            {
-                Instance.EditorDestroy();
-                VariablesSet = false;
-                VariablesAdded = false;
-            }
-        }
+                string portalOrbPurpleType = AbilityFXComponentType.PortalOrbPurple.ToString();
+                PortalOrbPurple portalOrbPrefab = (PortalOrbPurple)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == portalOrbPurpleType);
 
-        private void Initialize()
-        {
-            if (!VariablesSet)
-            {
-                Instance = (PortalBuilder) target;
-                VariablesSet = Instance != null && Instance.PlayerClientData != null && Instance.PortalOrb != null && Instance.CrimsonAura != null;
-                if (VariablesSet)
+                string crimsonAuraBlackType = AbilityFXComponentType.CrimsonAuraBlack.ToString();
+                CrimsonAuraBlack crimsonAuraPrefab = (CrimsonAuraBlack)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == crimsonAuraBlackType);
+
+                if (playerComponentPrefab != null && portalOrbPrefab != null && crimsonAuraPrefab != null)
                 {
-                    ObserverUpdateCache = Instance.ObserverUpdateCache;
-                }
-            }
-            if (!VariablesSet && PrefabStageUtility.GetCurrentPrefabStage() == null)
-            {
-                Instance = (PortalBuilder)target;
-                SkillAndAttackIndicatorSystem instance = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
-                if (instance != null)
-                {
-                    PlayerComponent playerComponentPrefab = instance.PlayerComponent;
-
-                    string portalOrbPurpleType = AbilityFXComponentType.PortalOrbPurple.ToString();
-                    PortalOrbPurple portalOrbPrefab = (PortalOrbPurple)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == portalOrbPurpleType);
-
-                    string crimsonAuraBlackType = AbilityFXComponentType.CrimsonAuraBlack.ToString();
-                    CrimsonAuraBlack crimsonAuraPrefab = (CrimsonAuraBlack)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == crimsonAuraBlackType);
-
-                    if (playerComponentPrefab != null && portalOrbPrefab != null && crimsonAuraPrefab != null)
+                    PlayerComponent playerComponent = playerComponentPrefab.CreateInactiveTransparentCloneInstance();
+                    playerComponent.transform.SetParent(Instance.transform, false);
+                    if (Instance.IsTeleportSource)
                     {
-                        PlayerComponent playerComponent = playerComponentPrefab.CreateInactiveTransparentCloneInstance();
-                        playerComponent.transform.SetParent(Instance.transform, false);
-                        if (Instance.IsTeleportSource)
-                        {
-                            playerComponent.gameObject.SetActive(true);
-                        }
-                        PlayerClientData playerClientData = new PlayerClientData(playerComponent);
-
-                        PortalOrbPurple portalOrb = GameObject.Instantiate(portalOrbPrefab, Instance.transform);
-
-                        CrimsonAuraBlack crimsonAura = GameObject.Instantiate(crimsonAuraPrefab, Instance.transform);
-
-                        SetObserverUpdateCache();
-                        Instance.ManualAwake();
-                        Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, null, Instance.SetPlayerInactive, isClone: true);
-                        TryAddParticleSystem(Instance.gameObject);
-                        VariablesAdded = true;
-                        VariablesSet = true;
+                        playerComponent.gameObject.SetActive(true);
                     }
-                    else
-                    {
-                        Debug.LogError("Couldn't find FX.");
-                    }
+                    PlayerClientData playerClientData = new PlayerClientData(playerComponent);
+
+                    PortalOrbPurple portalOrb = GameObject.Instantiate(portalOrbPrefab, Instance.transform);
+
+                    CrimsonAuraBlack crimsonAura = GameObject.Instantiate(crimsonAuraPrefab, Instance.transform);
+
+                    SetObserverUpdateCache();
+                    Instance.ManualAwake();
+                    Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, null, Instance.SetPlayerInactive, isClone: true);
+                    TryAddParticleSystem(Instance.gameObject);
+                    return true;
                 }
                 else
                 {
-                    Debug.LogError("System null");
+                    Debug.LogError("Couldn't find FX.");
                 }
             }
+            else
+            {
+                Debug.LogError("System null");
+            }
+            return false;
         }
+        //private void Initialize()
+        //{
+        //    //if (!VariablesSet)
+        //    //{
+        //    //    Instance = (PortalBuilder) target;
+        //    //    VariablesSet = Instance != null && Instance.PlayerClientData != null && Instance.PortalOrb != null && Instance.CrimsonAura != null;
+        //    //    if (VariablesSet)
+        //    //    {
+        //    //        ObserverUpdateCache = Instance.ObserverUpdateCache;
+        //    //    }
+        //    //}
+
+        //}
 
         public override void OnInspectorGUI()
         {

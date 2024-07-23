@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1037233697265344, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1960382934384514, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: m_Name
       value: PortalOrbPurple
@@ -54,15 +58,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4567084883476558, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4567084883476558, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4567084883476558, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4759250515502598, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: m_LocalScale.x
@@ -162,7 +166,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 198766972565189360, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: InitialModule.startColor.maxColor.b
-      value: 0.023060799
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 198766972565189360, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: InitialModule.startColor.maxColor.g
@@ -170,7 +174,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 198766972565189360, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: InitialModule.startColor.maxColor.r
-      value: 0.006473204
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 198766972565189360, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: EmissionModule.m_Bursts.Array.data[1].time
@@ -178,7 +182,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 198766972565189360, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: EmissionModule.m_Bursts.Array.data[0].cycleCount
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 198766972565189360, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: EmissionModule.m_Bursts.Array.data[1].cycleCount
@@ -312,6 +316,10 @@ PrefabInstance:
       propertyPath: m_Materials.Array.size
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 199878772038140450, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 806eabd477214d44285b21ca45b8f354, type: 2}
     - target: {fileID: 199884533966714028, guid: f06da6411a4b5cf49b36b1f079d5d555, type: 3}
       propertyPath: m_Materials.Array.size
       value: 1

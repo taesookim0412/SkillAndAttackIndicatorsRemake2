@@ -1,4 +1,5 @@
-﻿using Assets.Crafter.Components.Systems.Observers;
+﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
+using Assets.Crafter.Components.Systems.Observers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,45 @@ using UnityEngine;
 
 namespace Assets.Crafter.Components.Editors.ComponentScripts
 {
-    public abstract class AbstractEditor : Editor
+    public abstract class AbstractEditor<T> : Editor where T: AbstractAbilityFXBuilder
     {
+        protected T Instance;
         protected ObserverUpdateCache ObserverUpdateCache;
+        protected bool VariablesSet;
+        protected bool VariablesAdded;
+        protected bool SkipDestroy = false;
 
+        protected void Initialize()
+        {
+            if (!VariablesSet && PrefabStageUtility.GetCurrentPrefabStage() == null)
+            {
+                if (OnInitialize())
+                {
+                    VariablesSet = true;
+                    VariablesAdded = true;
+                }
+            }
+        }
+        protected abstract bool OnInitialize();
+        public void OnDisable()
+        {
+            if (!SkipDestroy && VariablesAdded)
+            {
+                Instance.EditorDestroy();
+                VariablesSet = false;
+                VariablesAdded = false;
+            }
+        }
+        public void OnSceneGUI()
+        {
+            Initialize();
+            if (VariablesSet)
+            {
+                long previousUpdateTickTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                ObserverUpdateCache.Update_FixedUpdate();
+                Instance.ManualUpdate();
+            }
+        }
         protected void SetObserverUpdateCache()
         {
             long newTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
