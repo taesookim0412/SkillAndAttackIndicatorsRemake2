@@ -299,38 +299,37 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(PortalBuilder))]
     public class PortalBuilderEditor : AbstractEditor<PortalBuilder>
     {
-        protected override bool OnInitialize()
+        protected override bool OnInitialize(PortalBuilder instance)
         {
-            Instance = (PortalBuilder)target;
-            SkillAndAttackIndicatorSystem instance = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
-            if (instance != null)
+            SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
+            if (system != null)
             {
-                PlayerComponent playerComponentPrefab = instance.PlayerComponent;
+                PlayerComponent playerComponentPrefab = system.PlayerComponent;
 
                 string portalOrbPurpleType = AbilityFXComponentType.PortalOrbPurple.ToString();
-                PortalOrbPurple portalOrbPrefab = (PortalOrbPurple)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == portalOrbPurpleType);
+                PortalOrbPurple portalOrbPrefab = (PortalOrbPurple)system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == portalOrbPurpleType);
 
                 string crimsonAuraBlackType = AbilityFXComponentType.CrimsonAuraBlack.ToString();
-                CrimsonAuraBlack crimsonAuraPrefab = (CrimsonAuraBlack)instance.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == crimsonAuraBlackType);
+                CrimsonAuraBlack crimsonAuraPrefab = (CrimsonAuraBlack)system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == crimsonAuraBlackType);
 
                 if (playerComponentPrefab != null && portalOrbPrefab != null && crimsonAuraPrefab != null)
                 {
                     PlayerComponent playerComponent = playerComponentPrefab.CreateInactiveTransparentCloneInstance();
-                    playerComponent.transform.SetParent(Instance.transform, false);
-                    if (Instance.IsTeleportSource)
+                    playerComponent.transform.SetParent(instance.transform, false);
+                    if (instance.IsTeleportSource)
                     {
                         playerComponent.gameObject.SetActive(true);
                     }
                     PlayerClientData playerClientData = new PlayerClientData(playerComponent);
 
-                    PortalOrbPurple portalOrb = GameObject.Instantiate(portalOrbPrefab, Instance.transform);
+                    PortalOrbPurple portalOrb = GameObject.Instantiate(portalOrbPrefab, instance.transform);
 
-                    CrimsonAuraBlack crimsonAura = GameObject.Instantiate(crimsonAuraPrefab, Instance.transform);
+                    CrimsonAuraBlack crimsonAura = GameObject.Instantiate(crimsonAuraPrefab, instance.transform);
 
                     SetObserverUpdateCache();
-                    Instance.ManualAwake();
-                    Instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, null, Instance.SetPlayerInactive, isClone: true);
-                    TryAddParticleSystem(Instance.gameObject);
+                    instance.ManualAwake();
+                    instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, null, instance.SetPlayerInactive, isClone: true);
+                    TryAddParticleSystem(instance.gameObject);
                     return true;
                 }
                 else
@@ -361,11 +360,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            Instance = (PortalBuilder)target;
-
-            Undo.RecordObject(Instance, "Editor State");
-
-            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
             EditorGUI.BeginChangeCheck();
             PlayerComponent playerComponent = (PlayerComponent) EditorGUILayout.ObjectField("PlayerComponent", Instance.PlayerClientData != null ? Instance.PlayerClientData.PlayerComponent : null, typeof(PlayerComponent), true);
@@ -379,7 +373,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 GameObject.DestroyImmediate(particleSystem);
             }
 
-            SkipDestroy = GUILayout.Toggle(SkipDestroy, "SkipDestroy");
         }
     }
 }

@@ -1,36 +1,46 @@
 ﻿using Assets.Crafter.Components.Editors.ComponentScripts;
+using Assets.Crafter.Components.Systems.Observers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEngine;
 
 namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder
 {
     public class TrailMoverBuilder_XPerZ : AbstractAbilityFXBuilder
     {
+        [HideInInspector]
         private float[] LocalXPositionsPerZUnit;
         public override void ManualAwake()
         {
-            InitializeLocalXPositionsPerZUnit(20);
         }
 
-        private static float[] InitializeLocalXPositionsPerZUnit(int lineLengthUnits)
+        public void Initialize(ObserverUpdateCache observerUpdateCache, int lineLength)
         {
-            // 0, 1, -1, 0, 1, -1
-            // i:0, (i % 2) ==0,
-            // i:1, (i % 2) == 1,
-            // i:2, (i % 2) == 0
-            float[] xPositions = new float[lineLengthUnits];
+            InitializeManualAwake();
 
-            int numIterations = (int) Math.Floor(lineLengthUnits / 3f);
+            LocalXPositionsPerZUnit = InitializeLocalXPositionsPerZUnit(lineLength);
+        }
 
-            for (int i = 0; i < numIterations; i++)
+        private static float[] InitializeLocalXPositionsPerZUnit(int lineLength)
+        {
+            float[] xPositions = new float[lineLength];
+
+            int numIterations = (int) Math.Floor(lineLength / 3f);
+
+            for (int i = 0; i < lineLength; i++)
             {
-                xPositions[i] = 0f;
-                xPositions[i + 1] = 1f;
-                xPositions[i + 2] = -1f;
+                int xPos = i % 3;
+
+                if (xPos > 1)
+                {
+                    xPos = -1;
+                }
+
+                xPositions[i] = xPos;    
             }
 
             return xPositions;
@@ -48,12 +58,18 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     }
 
     [CustomEditor(typeof(TrailMoverBuilder_XPerZ))]
-    public class TrailMoverBuilder_XPerZEditor: AbstractEditor<TrailMoverBuilder_XPerZ>
+    public class TrailMoverBuilder_XPerZEditor : AbstractEditor<TrailMoverBuilder_XPerZ>
     {
-        protected override bool OnInitialize()
+        protected override bool OnInitialize(TrailMoverBuilder_XPerZ instance)
         {
-            Instance = (TrailMoverBuilder_XPerZ)target;
+            SetObserverUpdateCache();
+            instance.Initialize(ObserverUpdateCache, 20);
             return true;
+        }
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+
         }
     }
 }

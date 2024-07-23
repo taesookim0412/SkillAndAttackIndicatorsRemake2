@@ -1,4 +1,5 @@
 ﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
+using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder;
 using Assets.Crafter.Components.Systems.Observers;
 using System;
 using System.Collections.Generic;
@@ -19,18 +20,31 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
         protected bool VariablesAdded;
         protected bool SkipDestroy = false;
 
-        protected void Initialize()
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+            Instance = (T)target;
+
+            Undo.RecordObject(Instance, "Editor State");
+
+            EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+
+            SkipDestroy = GUILayout.Toggle(SkipDestroy, "SkipDestroy");
+        }
+            protected void Initialize()
         {
             if (!VariablesSet && PrefabStageUtility.GetCurrentPrefabStage() == null)
             {
-                if (OnInitialize())
+                T instance = (T)target;
+                Instance = instance;
+                if (OnInitialize(instance))
                 {
                     VariablesSet = true;
                     VariablesAdded = true;
                 }
             }
         }
-        protected abstract bool OnInitialize();
+        protected abstract bool OnInitialize(T instance);
         public void OnDisable()
         {
             if (!SkipDestroy && VariablesAdded)
