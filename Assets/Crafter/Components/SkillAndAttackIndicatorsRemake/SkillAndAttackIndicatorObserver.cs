@@ -210,7 +210,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             return;
                     }
 
-                    TimeRequiredForDistancesPerUnit = GenerateTimeRequiredForDistancesPerUnit();
+                    TimeRequiredForDistancesPerUnit = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
 
                     if (AbilityIndicatorFXTypes != null)
                     {
@@ -261,14 +261,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                             if (chargeDurationPercentage > PreviousChargeDurationFloatPercentage)
                             {
-                                newFillProgress = EaseInOutQuad(chargeDurationPercentage);
+                                newFillProgress = EffectsUtil.EaseInOutQuad(chargeDurationPercentage);
                                 LineRegionProjectorRef.FillProgress = newFillProgress;
                                 LineRegionProjectorRef.UpdateProjectors();
                                 PreviousChargeDurationFloatPercentage = chargeDurationPercentage;
                             }
                             else
                             {
-                                newFillProgress = EaseInOutQuad(PreviousChargeDurationFloatPercentage);
+                                newFillProgress = EffectsUtil.EaseInOutQuad(PreviousChargeDurationFloatPercentage);
                             }
                         }
                         break;
@@ -354,69 +354,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
 
 
-        private long[] GenerateTimeRequiredForDistancesPerUnit()
-        {
-            // iterate the distances
-            // find the fillPercentage
-            // invert the fillPercentage into time
-            int lineLengthUnits = LineLengthUnits;
-            float lineLengthUnitsFloat = (float) lineLengthUnits;
-
-            float chargeDurationFloat = (float) ChargeDuration;
-
-            int startDistUnitsIndex = 0;
-            long prevChargeDurationIterationTimeRequired = 0L;
-
-            long[] timeRequiredForDistancesPerUnit = new long[lineLengthUnits];
-            for (int i = 0; i < lineLengthUnits; i++)
-            {
-                // although this is fillProgress in the other algorithms, here it is the 
-                // i = 10, % = 0.33
-                float lineLengthPercentage = i / lineLengthUnitsFloat;
-                // i = 10, fp% = ~0.1089
-                float fillProgress = EaseInOutQuad(lineLengthPercentage);
-                // i = 10, zDist = 0.11 * 30 = 3.3
-                int zDistanceUnitsIndex = (int) (fillProgress * lineLengthUnits);
-                long timeValue = (long) (lineLengthPercentage * chargeDurationFloat);
-                // i = 10, fill prevIdx to 3.3 (or zDistanceUnits) with timePercentage.
-
-                int interpLen = zDistanceUnitsIndex - startDistUnitsIndex;
-                float interpLenFloat = (float) interpLen;
-                long timeValueDifference = timeValue - prevChargeDurationIterationTimeRequired;
-                for (int j = 0; j < interpLen; j++)
-                {
-                    long interpTimeValue = (long)(prevChargeDurationIterationTimeRequired + timeValueDifference * ((j + 1) / interpLenFloat));
-                    int interpIndex = startDistUnitsIndex + j;
-                    if (interpIndex < lineLengthUnits)
-                    {
-                        timeRequiredForDistancesPerUnit[interpIndex] = interpTimeValue;
-                    }
-                    else
-                    {
-                        // fp error...? let it fill old values...
-                        Debug.LogError("FP error when interp-ing distance times...");
-                        break;
-                    }
-                    if (j == interpLen - 1)
-                    {
-                        prevChargeDurationIterationTimeRequired = interpTimeValue;
-                        startDistUnitsIndex += interpLen; 
-                    }
-                }
-
-            }
-            // fill the remaining values...
-            if (startDistUnitsIndex < lineLengthUnits)
-            {
-                long lastValue = startDistUnitsIndex > 0 ? timeRequiredForDistancesPerUnit[startDistUnitsIndex - 1] : 0L;
-                for (int i = startDistUnitsIndex; i < lineLengthUnits; i++)
-                {
-                    timeRequiredForDistancesPerUnit[i] = lastValue;
-                }
-            }
-
-            return timeRequiredForDistancesPerUnit;
-        }
         //private long[] GenerateTimeRequiredForDistancesPerUnit()
         //{
         //    // iterate per 0.1sec
@@ -872,10 +809,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         //    return percentage < 0.5f ? (float)Math.Pow(2, 20 * percentage - 10) / 2 :
         //        (2 - (float)Math.Pow(2, -20 * percentage + 10)) / 2;
         //}
-        private float EaseInOutQuad(float percentage)
-        {
-            return percentage * percentage;
-        }
+        
         private Vector3 GetTerrainProjectorPosition()
         {
             if (Props.SkillAndAttackIndicatorSystem.PlayerComponent != null)

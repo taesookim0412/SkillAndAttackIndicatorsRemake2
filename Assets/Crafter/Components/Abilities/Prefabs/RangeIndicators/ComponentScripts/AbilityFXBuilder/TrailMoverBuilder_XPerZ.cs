@@ -25,6 +25,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         public Vector3[] WorldPositionsPerZUnit;
         [HideInInspector]
+        private float[] TimeRequiredIncrementalVelocityMult;
+        [HideInInspector]
+        private long TimeElapsedForPositionIndex;
+        [HideInInspector]
         public int PositionIndex;
         
         public override void ManualAwake()
@@ -34,6 +38,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public void Initialize(ObserverUpdateCache observerUpdateCache,
             ElectricTrail electricTrail,
             int lineLength,
+            long[] timeRequiredForZDistances,
             SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem,
             float startPositionX, float startPositionZ, float yRotation)
         {
@@ -51,7 +56,29 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             WorldPositionsPerZUnit = InitializeWorldPositionsPerZUnit(skillAndAttackIndicatorSystem,
                 startPositionX, startPositionZ, yRotation);
 
+            float[] timeRequiredIncrementalVelocityMult = new float[timeRequiredForZDistances.Length];
+            long prevAccumTimeRequiredForZDistance = timeRequiredForZDistances[0];
+
+            for (int i = 1; i < timeRequiredForZDistances.Length; i++)
+            {
+                long timeRequiredAccum = timeRequiredForZDistances[i];
+                long timeRequiredDifference = timeRequiredAccum - prevAccumTimeRequiredForZDistance;
+                if (timeRequiredDifference > 0L)
+                {
+                    timeRequiredIncrementalVelocityMult[i] = 1000f / timeRequiredDifference;
+                }
+                else
+                {
+                    timeRequiredIncrementalVelocityMult[i] = 0f;
+                }
+
+                prevAccumTimeRequiredForZDistance = timeRequiredAccum;
+            }
+
+            TimeRequiredIncrementalVelocityMult = timeRequiredIncrementalVelocityMult;
+
             PositionIndex = 0;
+            TimeElapsedForPositionIndex = 0L;
         }
         protected Vector3[] InitializeWorldPositionsPerZUnit(SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem,
             float startPositionX,
@@ -75,7 +102,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 float worldPositionX = startPositionX + rotatedLocalPositionX;
                 float worldPositionZ = startPositionZ + rotatedLocalPositionZ;
 
-                worldPositions[i] = new Vector3(worldPositionX, skillAndAttackIndicatorSystem.GetTerrainHeight(worldPositionX, worldPositionZ) + TrailRendererYOffset, worldPositionZ);
+                Vector3 worldPosition = new Vector3(worldPositionX, skillAndAttackIndicatorSystem.GetTerrainHeight(worldPositionX, worldPositionZ) + TrailRendererYOffset, worldPositionZ);
+
+                worldPositions[i] = worldPosition;
             }
 
             return worldPositions;
@@ -109,25 +138,24 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             if (zUnitsIndex < LineLength)
             {
                 int positionIndex = PositionIndex;
-                if (positionIndex < LineLength)
+                if (positionIndex < zUnitsIndex)
                 {
-                    if (positionIndex < zUnitsIndex)
-                    {
-                        transform.position = WorldPositionsPerZUnit[positionIndex];
+                    //Debug.Log((WorldPositionsPerZUnit[positionIndex].worldPosition - transform.position).magnitude);
+                    //transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
 
-                        PositionIndex = zUnitsIndex;
-                    }
-                    else
-                    {
-                        //TODO: Interp between PositionIndex and next zUnitsIndex with timeRequiredForDistances and Time.fixedDeltaTime.
-                        
-                    }
+                    PositionIndex = zUnitsIndex;
                 }
-                else
-                {
-                    PositionIndex = LineLength;
-                }
-                
+                //TODO: Interp between PositionIndex and next zUnitsIndex with timeRequiredForDistances and Time.fixedDeltaTime.
+                float dt = Time.fixedDeltaTime * TimeRequiredIncrementalVelocityMult[positionIndex];
+                Vector3 distanceFromPrevvdt = (WorldPositionsPerZUnit[positionIndex] - transform.position) * dt;
+                //Vector3 distanceFromPrevvdt = (WorldPositionsPerZUnit[positionIndex].distanceFromPrev) * dt;
+                Vector3 currentPosition = transform.position;
+                transform.position = currentPosition + distanceFromPrevvdt;
+                //Debug.Log($"{WorldPositionsPerZUnit[positionIndex].distanceFromPrev}, {dt}, {TimeRequiredVelocityMult[positionIndex]}");
+            }
+            else
+            {
+                PositionIndex = LineLength;
             }
             
 
@@ -137,6 +165,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(TrailMoverBuilder_XPerZ))]
     public class TrailMoverBuilder_XPerZEditor : AbstractEditor<TrailMoverBuilder_XPerZ>
     {
+        private static readonly int LineLengthUnits = 20;
+        private static readonly long ChargeDuration = 5000L;
+        private static readonly float ChargeDurationFloat = (float)ChargeDuration;
+
+        private long StartTime;
+        private long LastUpdateTime;
         protected override bool OnInitialize(TrailMoverBuilder_XPerZ instance)
         {
             SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
@@ -151,9 +185,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 {
                     ElectricTrail electricTrail = GameObject.Instantiate(electricTrailPrefab, instance.transform);
                     Vector3 position = instance.transform.position;
-                    instance.Initialize(ObserverUpdateCache, electricTrail, 20, system,
+                    long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
+                    instance.Initialize(ObserverUpdateCache, electricTrail, LineLengthUnits, timeRequiredForZDistances, system,
                         position.x, position.z, 0f);
                     TryAddParticleSystem(instance.gameObject);
+                    StartTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                     return true;
                 }
             }
@@ -166,18 +202,20 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         protected override void ManualUpdate()
         {
-            float fillProgress = (ObserverUpdateCache.UpdateTickTimeFixedUpdate % 5000L) / 5000f;
+            Time.fixedDeltaTime = (ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastUpdateTime) / 1000f;
+            float chargeDurationPercentage = (ObserverUpdateCache.UpdateTickTimeFixedUpdate - StartTime) / ChargeDurationFloat;
+            float fillProgress = EffectsUtil.EaseInOutQuad(chargeDurationPercentage);
             Instance.ManualUpdate(fillProgress);
-            if (Instance.PositionIndex == Instance.LineLength)
-            {
-                Instance.transform.position = Instance.WorldPositionsPerZUnit[0];
-            }
+
+            LastUpdateTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
         }
 
         protected override void EditorDestroy()
         {
+            StartTime = default;
             GameObject.DestroyImmediate(Instance.ElectricTrail.gameObject);
             Instance.ElectricTrail = null;
+            Instance.transform.position = Instance.WorldPositionsPerZUnit[0];
         }
     }
 }

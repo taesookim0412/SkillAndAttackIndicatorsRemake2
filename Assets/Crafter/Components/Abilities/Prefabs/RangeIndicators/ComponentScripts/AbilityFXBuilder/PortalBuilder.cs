@@ -354,12 +354,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PortalOrbPurple portalOrbPurple = (PortalOrbPurple) EditorGUILayout.ObjectField("PortalOrb", Instance.PortalOrb, typeof(PortalOrbPurple), true);
             CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack) EditorGUILayout.ObjectField("CrimsonAura", Instance.CrimsonAura, typeof(CrimsonAuraBlack), true);
 
-            bool restartButton = GUILayout.Button("Restart");
-            if (EditorGUI.EndChangeCheck() || restartButton) {
-                OnDisable();
-                ParticleSystem particleSystem = Instance.GetComponent<ParticleSystem>();
-                GameObject.DestroyImmediate(particleSystem);
-            }
 
         }
 

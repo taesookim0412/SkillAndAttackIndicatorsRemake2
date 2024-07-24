@@ -289,7 +289,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             DashAbilityTriggerObserver<DashAbilityTriggerObserverProps> dashAbilityTriggerObserver = new DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>(targetPosition, DashAbilityTriggerObserverProps);
             DashAbilityTriggerObservers.Add(dashAbilityTriggerObserver);
         }
-
         public static bool IsValueOvershot(int direction, float maxValue, float currentValue)
         {
             if (direction > 0)

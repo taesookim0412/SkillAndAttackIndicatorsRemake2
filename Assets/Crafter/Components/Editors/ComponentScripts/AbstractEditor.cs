@@ -31,6 +31,13 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
             SkipDestroy = GUILayout.Toggle(SkipDestroy, "SkipDestroy");
+
+            if (GUILayout.Button("Restart"))
+            {
+                OnDisable();
+                ParticleSystem particleSystem = Instance.GetComponent<ParticleSystem>();
+                GameObject.DestroyImmediate(particleSystem);
+            }
         }
         protected void Initialize()
         {

@@ -128,8 +128,8 @@ GameObject:
   m_Component:
   - component: {fileID: 245832944}
   - component: {fileID: 245832943}
-  - component: {fileID: 245832942}
   - component: {fileID: 245832941}
+  - component: {fileID: 245832945}
   m_Layer: 0
   m_Name: TrailMoverBuilder_XPerZ
   m_TagString: Untagged
@@ -214,7 +214,80 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
---- !u!198 &245832942
+--- !u!114 &245832943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245832940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 017c16d2bb7b35543876bdafa2d2a190, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  VisualEffect: {fileID: 0}
+  ParticleSystems: []
+  LocalXPositionsPerZUnit:
+  - 0
+  - 1
+  - -1
+  - 0
+  - 1
+  - -1
+  - 0
+  - 1
+  - -1
+  - 0
+  - 1
+  - -1
+  - 0
+  - 1
+  - -1
+  - 0
+  - 1
+  - -1
+  - 0
+  - 1
+  LineLength: 20
+  WorldPositionsPerZUnit:
+  - {x: 3, y: 0.09429091, z: 0}
+  - {x: 4, y: 0.14310378, z: 1}
+  - {x: 2, y: 0.42216796, z: 2}
+  - {x: 3, y: 0.41388243, z: 3}
+  - {x: 4, y: 0.37854308, z: 4}
+  - {x: 2, y: 0.6414406, z: 5}
+  - {x: 3, y: 0.5481598, z: 6}
+  - {x: 4, y: 0.49325103, z: 7}
+  - {x: 2, y: 0.81925505, z: 8}
+  - {x: 3, y: 0.65984267, z: 9}
+  - {x: 4, y: 0.5451042, z: 10}
+  - {x: 2, y: 0.77671355, z: 11}
+  - {x: 3, y: 0.60998076, z: 12}
+  - {x: 4, y: 0.4427101, z: 13}
+  - {x: 2, y: 0.7898361, z: 14}
+  - {x: 3, y: 0.576194, z: 15}
+  - {x: 4, y: 0.33980864, z: 16}
+  - {x: 2, y: 0.66795653, z: 17}
+  - {x: 3, y: 0.44628447, z: 18}
+  - {x: 4, y: 0.21675414, z: 19}
+  PositionIndex: 20
+--- !u!4 &245832944
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245832940}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3, y: 0.09429091, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!198 &245832945
 ParticleSystem:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4937,79 +5010,6 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
---- !u!114 &245832943
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 245832940}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 017c16d2bb7b35543876bdafa2d2a190, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  VisualEffect: {fileID: 0}
-  ParticleSystems: []
-  LocalXPositionsPerZUnit:
-  - 0
-  - 1
-  - -1
-  - 0
-  - 1
-  - -1
-  - 0
-  - 1
-  - -1
-  - 0
-  - 1
-  - -1
-  - 0
-  - 1
-  - -1
-  - 0
-  - 1
-  - -1
-  - 0
-  - 1
-  LineLength: 20
-  WorldPositionsPerZUnit:
-  - {x: 3, y: 0.44628447, z: 18}
-  - {x: 4, y: 0.21675414, z: 19}
-  - {x: 2, y: 0.4588501, z: 20}
-  - {x: 3, y: 0.23173064, z: 21}
-  - {x: 4, y: 0.04087752, z: 22}
-  - {x: 2, y: 0.16411132, z: 23}
-  - {x: 3, y: 0.08345336, z: 24}
-  - {x: 4, y: -0.08906251, z: 25}
-  - {x: 2, y: 0.099417865, z: 26}
-  - {x: 3, y: -0.05961305, z: 27}
-  - {x: 4, y: -0.2248047, z: 28}
-  - {x: 2, y: 0.015006244, z: 29}
-  - {x: 3, y: -0.2625664, z: 30}
-  - {x: 4, y: -0.49824983, z: 31}
-  - {x: 2, y: -0.28220063, z: 32}
-  - {x: 3, y: -0.5230301, z: 33}
-  - {x: 4, y: -0.81921464, z: 34}
-  - {x: 2, y: -0.59654313, z: 35}
-  - {x: 3, y: -0.89697343, z: 36}
-  - {x: 4, y: -1.1613052, z: 37}
-  PositionIndex: 19
---- !u!4 &245832944
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 245832940}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3, y: -0.89697343, z: 36}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &326298110 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8765186184910134212, guid: daf0dbfa7cde07f438125d2be882428a, type: 3}
