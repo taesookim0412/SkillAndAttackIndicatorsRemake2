@@ -15,7 +15,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public class SkillAndAttackIndicatorSystem : MonoBehaviour
     {
+
         // these are static due to cross-assembly when migrated.
+        public static readonly float FLOAT_TOLERANCE = 0.0001f;
+        public static readonly float FLOAT_TOLERANCE_NEGATIVE = -0.0001f;
         public static readonly long FixedTimestep = 20L;
         public static readonly float ONE_THIRD = 1 / 3f;
         public static readonly float TWO_THIRDS = 2 / 3f;
@@ -196,6 +199,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         }
         /// Copyright
+        /// Note: Now it's slightly off from the position map.
         /// <summary>
         /// This assumes worldX and worldZ are clamped between local terrain axis 0 and axis.size - 1.
         /// </summary>
@@ -210,14 +214,34 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 TerrainSize = Terrain.terrainData.size;
                 TerrainValuesCached = true;
             }
-            float terrainSizeZ = TerrainSize.z;
-
-            // add 1f to match accurate position map.
-            float correctedInterpolatedHeightLocalZ = Math.Clamp(worldZ - TerrainStart.z + 1f, 0f, terrainSizeZ);
 
             return TerrainStart.y + Terrain.terrainData.GetInterpolatedHeight((worldX - TerrainStart.x) / TerrainSize.x,
-                correctedInterpolatedHeightLocalZ / terrainSizeZ);
+                (worldZ - TerrainStart.z) / TerrainSize.z);
         }
+        /// Copyright
+        /// Note: It's wrong.
+        /// <summary>
+        /// This assumes worldX and worldZ are clamped between local terrain axis 0 and axis.size - 1.
+        /// </summary>
+        /// <param name="worldX"></param>
+        /// <param name="worldZ"></param>
+        /// <returns></returns>
+        //public float GetTerrainHeight(float worldX, float worldZ)
+        //{
+        //    if (!TerrainValuesCached)
+        //    {
+        //        TerrainStart = Terrain.GetPosition();
+        //        TerrainSize = Terrain.terrainData.size;
+        //        TerrainValuesCached = true;
+        //    }
+        //    float terrainSizeZ = TerrainSize.z;
+
+        //    // add 1f to match accurate position map.
+        //    float correctedInterpolatedHeightLocalZ = Math.Clamp(worldZ - TerrainStart.z + 1f, 0f, terrainSizeZ);
+
+        //    return TerrainStart.y + Terrain.terrainData.GetInterpolatedHeight((worldX - TerrainStart.x) / TerrainSize.x,
+        //        correctedInterpolatedHeightLocalZ / terrainSizeZ);
+        //}
         public void TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType abilityProjectorType,
             AbilityProjectorMaterialType abilityProjectorMaterialType,
             AbilityIndicatorCastType abilityIndicatorCastType,
@@ -264,6 +288,22 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         {
             DashAbilityTriggerObserver<DashAbilityTriggerObserverProps> dashAbilityTriggerObserver = new DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>(targetPosition, DashAbilityTriggerObserverProps);
             DashAbilityTriggerObservers.Add(dashAbilityTriggerObserver);
+        }
+
+        public static bool IsValueOvershot(int direction, float maxValue, float currentValue)
+        {
+            if (direction > 0)
+            {
+                return currentValue > maxValue + FLOAT_TOLERANCE;
+            }
+            else if (direction < 0)
+            {
+                return currentValue < maxValue - FLOAT_TOLERANCE;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

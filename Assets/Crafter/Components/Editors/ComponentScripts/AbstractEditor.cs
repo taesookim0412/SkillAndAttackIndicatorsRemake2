@@ -1,5 +1,6 @@
 ﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder;
+using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using Assets.Crafter.Components.Systems.Observers;
 using System;
 using System.Collections.Generic;
@@ -31,7 +32,7 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
 
             SkipDestroy = GUILayout.Toggle(SkipDestroy, "SkipDestroy");
         }
-            protected void Initialize()
+        protected void Initialize()
         {
             if (!VariablesSet && PrefabStageUtility.GetCurrentPrefabStage() == null)
             {
@@ -45,11 +46,13 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             }
         }
         protected abstract bool OnInitialize(T instance);
+        protected abstract void ManualUpdate();
+        protected abstract void EditorDestroy();
         public void OnDisable()
         {
             if (!SkipDestroy && VariablesAdded)
             {
-                Instance.EditorDestroy();
+                EditorDestroy();
                 VariablesSet = false;
                 VariablesAdded = false;
             }
@@ -59,19 +62,14 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             Initialize();
             if (VariablesSet)
             {
-                long previousUpdateTickTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                 ObserverUpdateCache.Update_FixedUpdate();
-                Instance.ManualUpdate();
+                ManualUpdate();
             }
         }
         protected void SetObserverUpdateCache()
         {
             long newTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             ObserverUpdateCache = new ObserverUpdateCache(newTime);
-        }
-        protected void UpdateObserverUpdateCache_FixedUpdate()
-        {
-            ObserverUpdateCache.Update_FixedUpdate();
         }
 
         protected void TryAddParticleSystem(GameObject instance)

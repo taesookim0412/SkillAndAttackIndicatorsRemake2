@@ -165,7 +165,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Active = false;
             Completed = false;
         }
-        public override void ManualUpdate()
+        public void ManualUpdate()
         {
             if (Completed)
             {
@@ -267,18 +267,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Completed = true;
         }
 
-        public override void EditorDestroy()
-        {
-            ObserverUpdateCache = null;
-            GameObject.DestroyImmediate(PlayerClientData.PlayerComponent.gameObject);
-            GameObject.DestroyImmediate(CrimsonAura.gameObject);
-            GameObject.DestroyImmediate(PortalOrb.gameObject);
-
-            PlayerClientData = null;
-            PortalOrb = null;
-            CrimsonAura = null;
-        }
-
         public override void CleanUpInstance()
         {
             ObserverUpdateCache = null;
@@ -373,6 +361,23 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 GameObject.DestroyImmediate(particleSystem);
             }
 
+        }
+
+        protected override void ManualUpdate()
+        {
+            Instance.ManualUpdate();
+        }
+
+        protected override void EditorDestroy()
+        {
+            Instance.ObserverUpdateCache = null;
+            GameObject.DestroyImmediate(Instance.PlayerClientData.PlayerComponent.gameObject);
+            GameObject.DestroyImmediate(Instance.CrimsonAura.gameObject);
+            GameObject.DestroyImmediate(Instance.PortalOrb.gameObject);
+
+            Instance.PlayerClientData = null;
+            Instance.PortalOrb = null;
+            Instance.CrimsonAura = null;
         }
     }
 }

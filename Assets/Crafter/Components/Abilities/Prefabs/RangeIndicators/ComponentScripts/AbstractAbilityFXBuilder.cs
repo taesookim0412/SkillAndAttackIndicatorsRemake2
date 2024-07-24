@@ -18,8 +18,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             }
         }
         public abstract void ManualAwake();
-        public abstract void ManualUpdate();
-        public abstract void EditorDestroy();
         
     }
 }
