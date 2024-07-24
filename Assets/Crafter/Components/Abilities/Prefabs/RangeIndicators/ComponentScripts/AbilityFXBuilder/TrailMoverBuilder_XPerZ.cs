@@ -23,7 +23,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         public int LineLength;
         [HideInInspector]
-        public Vector3[] WorldPositionsPerZUnit;
+        public (Vector3 worldPosition, Vector3 distanceFromPrev)[] WorldPositionsPerZUnit;
         [HideInInspector]
         private float[] TimeRequiredIncrementalVelocityMult;
         [HideInInspector]
@@ -80,7 +80,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PositionIndex = 0;
             TimeElapsedForPositionIndex = 0L;
         }
-        protected Vector3[] InitializeWorldPositionsPerZUnit(SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem,
+        protected (Vector3 worldPosition, Vector3 distanceFromPrev)[] InitializeWorldPositionsPerZUnit(SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem,
             float startPositionX,
             float startPositionZ,
             float yRotation)
@@ -90,9 +90,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
 
-            Vector3[] worldPositions = new Vector3[localXPositionsPerZUnit.Length];
+            (Vector3 worldPosition, Vector3 distanceFromPrev)[] worldPositionsTuple = new (Vector3 worldPosition, Vector3 distanceFromPrev)[localXPositionsPerZUnit.Length];
 
-            for (int i = 0; i < localXPositionsPerZUnit.Length; i++)
+            Vector3 prevWorldPosition = new Vector3(startPositionX, skillAndAttackIndicatorSystem.GetTerrainHeight(startPositionX, startPositionZ), startPositionZ);
+
+            worldPositionsTuple[0].worldPosition = prevWorldPosition;
+            worldPositionsTuple[0].distanceFromPrev = Vector3.zero;
+
+            for (int i = 1; i < localXPositionsPerZUnit.Length; i++)
             {
                 float localPositionX = localXPositionsPerZUnit[i];
 
@@ -104,10 +109,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                 Vector3 worldPosition = new Vector3(worldPositionX, skillAndAttackIndicatorSystem.GetTerrainHeight(worldPositionX, worldPositionZ) + TrailRendererYOffset, worldPositionZ);
 
-                worldPositions[i] = worldPosition;
+                worldPositionsTuple[i] = (worldPosition, distanceFromPrev: worldPosition - prevWorldPosition);
+
+                prevWorldPosition = worldPosition;
             }
 
-            return worldPositions;
+            return worldPositionsTuple;
         }
 
         private float[] InitializeLocalXPositionsPerZUnit(int lineLength)
@@ -140,17 +147,17 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 int positionIndex = PositionIndex;
                 if (positionIndex < zUnitsIndex)
                 {
-                    //Debug.Log((WorldPositionsPerZUnit[positionIndex].worldPosition - transform.position).magnitude);
-                    //transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
+                    //Debug.Log($"{WorldPositionsPerZUnit[positionIndex]}, {transform.position}, {(WorldPositionsPerZUnit[positionIndex].worldPosition - transform.position).magnitude}");
+                    transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
 
                     PositionIndex = zUnitsIndex;
+                    positionIndex = zUnitsIndex;
                 }
                 //TODO: Interp between PositionIndex and next zUnitsIndex with timeRequiredForDistances and Time.fixedDeltaTime.
                 float dt = Time.fixedDeltaTime * TimeRequiredIncrementalVelocityMult[positionIndex];
-                Vector3 distanceFromPrevvdt = (WorldPositionsPerZUnit[positionIndex] - transform.position) * dt;
-                //Vector3 distanceFromPrevvdt = (WorldPositionsPerZUnit[positionIndex].distanceFromPrev) * dt;
-                Vector3 currentPosition = transform.position;
-                transform.position = currentPosition + distanceFromPrevvdt;
+                //Vector3 distanceFromPrevvdt = (WorldPositionsPerZUnit[positionIndex] - transform.position) * dt;
+                Vector3 distanceFromPrevvdt = (WorldPositionsPerZUnit[positionIndex].distanceFromPrev) * dt;
+                transform.position = transform.position + distanceFromPrevvdt;
                 //Debug.Log($"{WorldPositionsPerZUnit[positionIndex].distanceFromPrev}, {dt}, {TimeRequiredVelocityMult[positionIndex]}");
             }
             else
@@ -215,7 +222,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             StartTime = default;
             GameObject.DestroyImmediate(Instance.ElectricTrail.gameObject);
             Instance.ElectricTrail = null;
-            Instance.transform.position = Instance.WorldPositionsPerZUnit[0];
+            Instance.transform.position = Instance.WorldPositionsPerZUnit[0].worldPosition;
         }
     }
 }
