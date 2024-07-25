@@ -152,8 +152,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             float[] xPositions = new float[lineLength];
 
-            int numIterations = (int) Math.Floor(lineLength / 3f);
-
             xPositions[0] = 0f;
 
             for (int i = 1; i < lineLength; i++)
@@ -211,15 +209,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         
                         Vector3 currentPosition = transform.position;
 
-                        float sinYAngle = SinYAngle;
-                        float cosYAngle = CosYAngle;
-
                         float newLocalX;
                         float newLocalZ = LocalPosition.z + dt;
                         if (newLocalZ < positionIndex)
                         {
                             //float zDecimals = zUnits - positionIndex;
-
+                            float sinYAngle = SinYAngle;
+                            float cosYAngle = CosYAngle;
                             //Vector3 originalVelocity = WorldPositionsPerZUnit[positionIndex].distanceFromPrev;
 
                             float localXFromPrev = WorldPositionsPerZUnit[positionIndex].localXPosFromPrev;
@@ -230,33 +226,20 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             //newLocalX = LocalPosition.x + localXFromPrev * dt;
 
                             float currXValue = LocalXPositionsPerZUnit[positionIndex];
-                            int xDirection = localXFromPrev >= 1 ? 1 : -1;
 
-                            float worldPositionX;
-                            float worldPositionZ;
-                            if (!SkillAndAttackIndicatorSystem.IsValueOvershot(xDirection,
-                                maxValue: currXValue, 
-                                currentValue: newLocalX))
-                            {
-                                float rotatedLocalPositionX = newLocalZ * sinYAngle + newLocalX * cosYAngle;
-                                float rotatedLocalPositionZ = newLocalZ * cosYAngle - newLocalX * sinYAngle;
+                            float rotatedLocalPositionX = newLocalZ * sinYAngle + newLocalX * cosYAngle;
+                            //float rotatedLocalPositionZ = newLocalZ * cosYAngle - newLocalX * sinYAngle;
 
-                                worldPositionX = StartPosition.x + rotatedLocalPositionX;
-                                worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
-                            }
-                            else
-                            {
-                                float rotatedLocalPositionX = newLocalZ * sinYAngle + currXValue * cosYAngle;
-                                float rotatedLocalPositionZ = newLocalZ * cosYAngle - currXValue * sinYAngle;
+                            float worldPositionX = StartPosition.x + rotatedLocalPositionX;
+                            //float worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
 
-                                worldPositionX = StartPosition.x + rotatedLocalPositionX;
-                                worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
-                            }
+                            Vector3 distanceFromPrev = WorldPositionsPerZUnit[positionIndex].distanceFromPrev;
+                            float newWorldY = currentPosition.y + distanceFromPrev.y * dt;
+                            float newWorldZ = currentPosition.z + distanceFromPrev.z * dt;
 
-                            float newWorldY = currentPosition.y + WorldPositionsPerZUnit[positionIndex].distanceFromPrev.y * dt;
 
                             transform.position = new Vector3(worldPositionX, 
-                                newWorldY, worldPositionZ);
+                                newWorldY, newWorldZ);
                         }
                         else
                         {
