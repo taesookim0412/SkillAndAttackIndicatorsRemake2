@@ -27,6 +27,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         private float[] TimeRequiredIncrementalVelocityMult;
         [HideInInspector]
+        private Vector3 LocalPosition;
+        [HideInInspector]
         private long TimeElapsedForPositionIndex;
         [HideInInspector]
         public int PositionIndex;
@@ -77,6 +79,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             TimeRequiredIncrementalVelocityMult = timeRequiredIncrementalVelocityMult;
 
+            LocalPosition = Vector3.zero;
             PositionIndex = 0;
             TimeElapsedForPositionIndex = 0L;
         }
@@ -142,30 +145,47 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             float zUnits = fillProgress * LineLength;
             int zUnitsIndex = (int)zUnits;
-            if (zUnitsIndex < LineLength)
+            if (zUnitsIndex > 0)
             {
-                int positionIndex = PositionIndex;
-                if (positionIndex < zUnitsIndex)
+                if (zUnitsIndex < LineLength)
                 {
-                    //Debug.Log($"{WorldPositionsPerZUnit[positionIndex]}, {transform.position}, {(WorldPositionsPerZUnit[positionIndex].worldPosition - transform.position).magnitude}");
-                    transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
+                    int positionIndex = PositionIndex;
+                    if (positionIndex < zUnitsIndex)
+                    {
+                        //Debug.Log($"{WorldPositionsPerZUnit[positionIndex]}, {transform.position}, {(WorldPositionsPerZUnit[positionIndex].worldPosition - transform.position).magnitude}");
+                        transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
 
-                    PositionIndex = zUnitsIndex;
-                    positionIndex = zUnitsIndex;
+                        PositionIndex = zUnitsIndex;
+                        positionIndex = zUnitsIndex;
+                    }
+                    //TODO: Interp between PositionIndex and next zUnitsIndex with timeRequiredForDistances and Time.fixedDeltaTime.
+                    float dt = Time.fixedDeltaTime * TimeRequiredIncrementalVelocityMult[positionIndex];
+                    //Vector3 distanceFromPrevvdt = (WorldPositionsPerZUnit[positionIndex] - transform.position) * dt;
+
+                    float newLocalX = LocalPosition.x + (LocalXPositionsPerZUnit[positionIndex] - LocalXPositionsPerZUnit[positionIndex - 1]) * dt;
+                    float newLocalZ = LocalPosition.z + dt;
+                    if (newLocalZ > positionIndex)
+                    {
+                        newLocalX = LocalXPositionsPerZUnit[positionIndex];
+                        newLocalZ = positionIndex;
+
+                        transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
+                    }
+                    else
+                    {
+                        Vector3 distanceFromPrevvdt = (WorldPositionsPerZUnit[positionIndex].distanceFromPrev) * dt;
+                        transform.position = transform.position + distanceFromPrevvdt;
+                    }
+                    
+                    LocalPosition.x = newLocalX;
+                    LocalPosition.z = newLocalZ;
+                    //Debug.Log($"{WorldPositionsPerZUnit[positionIndex].distanceFromPrev}, {dt}, {TimeRequiredVelocityMult[positionIndex]}");
                 }
-                //TODO: Interp between PositionIndex and next zUnitsIndex with timeRequiredForDistances and Time.fixedDeltaTime.
-                float dt = Time.fixedDeltaTime * TimeRequiredIncrementalVelocityMult[positionIndex];
-                //Vector3 distanceFromPrevvdt = (WorldPositionsPerZUnit[positionIndex] - transform.position) * dt;
-                Vector3 distanceFromPrevvdt = (WorldPositionsPerZUnit[positionIndex].distanceFromPrev) * dt;
-                transform.position = transform.position + distanceFromPrevvdt;
-                //Debug.Log($"{WorldPositionsPerZUnit[positionIndex].distanceFromPrev}, {dt}, {TimeRequiredVelocityMult[positionIndex]}");
+                else
+                {
+                    PositionIndex = LineLength;
+                }
             }
-            else
-            {
-                PositionIndex = LineLength;
-            }
-            
-
         }
     }
 
