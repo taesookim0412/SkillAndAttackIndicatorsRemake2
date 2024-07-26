@@ -15,7 +15,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     {
         private static readonly float TrailRendererYOffset = 0.7f;
         // lower delay mult = velocity mult lower = trail moves slower.
-        private static readonly float TimeRequiredVelocityDelayMult = 0.8f;
+        private static readonly float TimeRequiredVelocityDelayMult = 0.96f;
 
         [NonSerialized]
         public ElectricTrail ElectricTrail;
@@ -36,6 +36,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private long TimeElapsedForPositionIndex;
         [HideInInspector]
         public int PositionIndex;
+        [HideInInspector]
+        private int PositionIndexDistanceAttempt;
         [HideInInspector]
         private float ElapsedPositionIndexDeltaTime;
         [HideInInspector]
@@ -78,8 +80,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             long prevAccumTimeRequiredForZDistance = timeRequiredForZDistances[0];
 
-            float timeRequiredVelocityDelayMult = TimeRequiredVelocityDelayMult;
-
             float oneSecMillisMultByTimeRequiredDelay = 1000f * TimeRequiredVelocityDelayMult;
             float timeRequiredVelocityMultDivByMillis = TimeRequiredVelocityDelayMult / 1000f;
             for (int i = 1; i < timeRequiredForZDistances.Length; i++)
@@ -106,6 +106,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             TimeElapsedForPositionIndex = 0L; 
             PositionIndex = 0;
+            PositionIndexDistanceAttempt = 0;
             ElapsedPositionIndexDeltaTime = 0f;
             StartPosition = transform.position;
             CosYAngle = cosYAngle;
@@ -183,22 +184,49 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 if (zUnitsIndex < LineLength)
                 {
+                    Vector3 localPosition = LocalPosition;
                     int positionIndex = PositionIndex;
-                    if (positionIndex < zUnitsIndex)
+                    float fixedDeltaTime = Time.fixedDeltaTime;
+                    float fixedDeltaTimeIncrement = fixedDeltaTime * 0.1f;
+                    float sinYAngle = SinYAngle;
+                    float cosYAngle = CosYAngle;
+
+                    //if (PositionIndexDistanceAttempt > 5)
+                    //{
+                    //    Debug.Log(PositionIndexDistanceAttempt);
+                    //}
+                    
+                    if (positionIndex < zUnitsIndex && (Mathf.Abs(localPosition.z - positionIndex) < 0.02f || PositionIndexDistanceAttempt++ > 10))
                     {
                         //Debug.Log($"{WorldPositionsPerZUnit[positionIndex]}, {transform.position}, {(WorldPositionsPerZUnit[positionIndex].worldPosition - transform.position).magnitude}");
+                        //TODO1: interp from pos to worldPos with closest dt multiple.
                         //transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
+                        float newLocalX = PositionUtil.CalculateClosestMultipleOrClamp(localPosition.x, LocalXPositionsPerZUnit[positionIndex], fixedDeltaTimeIncrement);
+                        float newLocalZ = PositionUtil.CalculateClosestMultipleOrClamp(localPosition.z, positionIndex, fixedDeltaTimeIncrement);
 
-                        PositionIndex = zUnitsIndex;
-                        positionIndex = zUnitsIndex;
+                        localPosition.x = newLocalX;
+                        localPosition.z = newLocalZ;
+
+                        float rotatedLocalPositionX = newLocalZ * sinYAngle + newLocalX * cosYAngle;
+                        float rotatedLocalPositionZ = newLocalZ * cosYAngle - newLocalX * sinYAngle;
+
+                        float worldPositionX = StartPosition.x + rotatedLocalPositionX;
+                        float worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
+
+                        transform.position = new Vector3(worldPositionX, WorldPositionsPerZUnit[positionIndex].worldPosition.y, worldPositionZ);
+
+                        LocalPosition = localPosition;
+
+                        PositionIndex = ++positionIndex;
 
                         ElapsedPositionIndexDeltaTime = 0f;
+                        PositionIndexDistanceAttempt = 0;
                     }
 
-                    if (LocalPosition.z < positionIndex)
+                    if (localPosition.z < positionIndex)
                     {
                         float indexTimeRequiredSec = TimeRequiredIncrementalSec[positionIndex];
-                        float elapsedPositionIndexDeltaTime = ElapsedPositionIndexDeltaTime + Time.fixedDeltaTime;
+                        float elapsedPositionIndexDeltaTime = ElapsedPositionIndexDeltaTime + fixedDeltaTime;
                         float positionIndexDeltaTimePercentage;
                         if (indexTimeRequiredSec > SkillAndAttackIndicatorSystem.FLOAT_TOLERANCE)
                         {
@@ -211,51 +239,56 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         
                         ElapsedPositionIndexDeltaTime = elapsedPositionIndexDeltaTime;
 
-                        float dt = Time.fixedDeltaTime * TimeRequiredIncrementalVelocityMult[positionIndex];
+                        float dt = fixedDeltaTime * TimeRequiredIncrementalVelocityMult[positionIndex];
                         
                         Vector3 currentPosition = transform.position;
 
                         float newLocalX;
-                        float newLocalZ = LocalPosition.z + dt;
+                        float maxNewLocalZ = localPosition.z + dt;
+                        float newLocalZ = PositionUtil.CalculateClosestMultipleOrClamp(localPosition.z, maxNewLocalZ, fixedDeltaTimeIncrement);
                         if (newLocalZ < positionIndex)
                         {
                             //float zDecimals = zUnits - positionIndex;
-                            float sinYAngle = SinYAngle;
-                            float cosYAngle = CosYAngle;
                             //Vector3 originalVelocity = WorldPositionsPerZUnit[positionIndex].distanceFromPrev;
 
                             float localXFromPrev = WorldPositionsPerZUnit[positionIndex].localXPosFromPrev;
 
                             //newLocalX = LocalPosition.x + localXFromPrev * (EffectsUtil.EaseInOutQuad(zDecimals) * dt * 2f);
-                            newLocalX = LocalXPositionsPerZUnit[positionIndex - 1] + localXFromPrev * EffectsUtil.EaseInOutQuad(positionIndexDeltaTimePercentage);
+                            //TODO1: interp from pos to worldPos with closest dt multiple.
+                            float maxNewLocalX = LocalXPositionsPerZUnit[positionIndex - 1] + localXFromPrev * EffectsUtil.EaseInOutQuad(positionIndexDeltaTimePercentage);
+                            // This might skip some localX iterations.
+                            newLocalX = PositionUtil.CalculateClosestMultipleOrClamp(localPosition.x, maxNewLocalX, fixedDeltaTimeIncrement);
+
                             //Debug.Log($"{elapsedPositionIndexDeltaTime}, {newLocalX}");
                             //newLocalX = LocalPosition.x + localXFromPrev * dt;
 
-                            float currXValue = LocalXPositionsPerZUnit[positionIndex];
-
                             float rotatedLocalPositionX = newLocalZ * sinYAngle + newLocalX * cosYAngle;
-                            //float rotatedLocalPositionZ = newLocalZ * cosYAngle - newLocalX * sinYAngle;
+                            float rotatedLocalPositionZ = newLocalZ * cosYAngle - newLocalX * sinYAngle;
 
                             float worldPositionX = StartPosition.x + rotatedLocalPositionX;
-                            //float worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
+                            float worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
 
                             Vector3 distanceFromPrev = WorldPositionsPerZUnit[positionIndex].distanceFromPrev;
                             float newWorldY = currentPosition.y + distanceFromPrev.y * dt;
-                            float newWorldZ = currentPosition.z + distanceFromPrev.z * dt;
-
+                            //float newWorldZ = currentPosition.z + distanceFromPrev.z * dt;
 
                             transform.position = new Vector3(worldPositionX, 
-                                newWorldY, newWorldZ);
-                        }
-                        else
-                        {
-                            newLocalX = LocalXPositionsPerZUnit[positionIndex];
-                            newLocalZ = positionIndex;
-                            transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
-                        }
+                                newWorldY, worldPositionZ);
 
-                        LocalPosition.x = newLocalX;
-                        LocalPosition.z = newLocalZ;
+                            localPosition.x = newLocalX;
+                            localPosition.z = newLocalZ;
+                            LocalPosition = localPosition;
+                        }
+                        //else
+                        //{
+                        //    newLocalX = LocalXPositionsPerZUnit[positionIndex];
+                        //    newLocalZ = positionIndex;
+                        //    //TODO1: interp from pos to worldPos with closest dt multiple.
+                        //    transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
+                        //}
+                        //localPosition.x = newLocalX;
+                        //localPosition.z = newLocalZ;
+                        //LocalPosition = localPosition;
                     }
                     
                     //Debug.Log($"{WorldPositionsPerZUnit[positionIndex].distanceFromPrev}, {dt}, {TimeRequiredVelocityMult[positionIndex]}");
