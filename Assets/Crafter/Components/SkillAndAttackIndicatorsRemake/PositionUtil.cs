@@ -4,6 +4,8 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
@@ -41,6 +43,106 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 return maxValue - (remainder * positiveMultiple);
             }
 
+        }
+        public static int MoveTrailPosition(int positionIndex, float deltaTime, float localPositionX,
+            float localPositionZ, out float newLocalPositionX, out float newLocalPositionZ,
+            float[] timeRequiredIncrementalSec, float[] timeRequiredIncrementalVelocityMult,
+            (Vector3 worldPosition, Vector3 distanceFromPrev, float localXPosFromPrev)[] worldPositionsPerZUnit,
+            float[] localXPositionsPerZUnit,
+            ref float elapsedPositionIndexDeltaTimeRef, float worldPositionY, out float newWorldPositionY)
+        {
+            int i;
+            bool addDeltaTime = false;
+            float deltaTimeAddRequired = 0f;
+            for (i = positionIndex; i < timeRequiredIncrementalSec.Length; i++)
+            {
+                if (addDeltaTime)
+                {
+                    deltaTime += deltaTimeAddRequired;
+                    addDeltaTime = false;
+                }
+
+                float indexTimeRequiredSec = timeRequiredIncrementalSec[i];
+
+                // set elapsedPositionIndexDeltaTime and set remainder delta times.
+                float elapsedPositionIndexDeltaTime = elapsedPositionIndexDeltaTimeRef;
+                if (elapsedPositionIndexDeltaTime + deltaTime >= indexTimeRequiredSec)
+                {
+                    float remainingDeltaTime = indexTimeRequiredSec - elapsedPositionIndexDeltaTime;
+
+                    addDeltaTime = true;
+                    deltaTimeAddRequired = deltaTimeAddRequired - remainingDeltaTime;
+
+                    deltaTime = remainingDeltaTime;
+                    elapsedPositionIndexDeltaTime = indexTimeRequiredSec;
+
+                }
+                else
+                {
+                    elapsedPositionIndexDeltaTime += deltaTime;
+                }
+
+                float positionIndexDeltaTimePercentage;
+                if (indexTimeRequiredSec > SkillAndAttackIndicatorSystem.FLOAT_TOLERANCE)
+                {
+                    positionIndexDeltaTimePercentage = Mathf.Clamp01(elapsedPositionIndexDeltaTime / indexTimeRequiredSec);
+                }
+                else
+                {
+                    positionIndexDeltaTimePercentage = 1f;
+                }
+
+                if (i != timeRequiredIncrementalSec.Length - 1 && addDeltaTime)
+                {
+                    elapsedPositionIndexDeltaTime = 0f;
+                }
+
+                elapsedPositionIndexDeltaTimeRef = elapsedPositionIndexDeltaTime;
+
+                float dt = deltaTime * timeRequiredIncrementalVelocityMult[i];
+
+                float newLocalX;
+                float maxNewLocalZ = localPositionZ + dt;
+                float newLocalZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, maxNewLocalZ, deltaTime);
+
+                //Debug.Log($"{localPosition.z},{maxNewLocalZ}, {fixedDeltaTimeIncrement}, {newLocalZ}");
+                //float zDecimals = zUnits - positionIndex;
+                //Vector3 originalVelocity = WorldPositionsPerZUnit[i].distanceFromPrev;
+
+                float localXFromPrev = worldPositionsPerZUnit[i].localXPosFromPrev;
+
+                //newLocalX = LocalPosition.x + localXFromPrev * (EffectsUtil.EaseInOutQuad(zDecimals) * dt * 2f);
+                //TODO1: interp from pos to worldPos with closest dt multiple.
+                float maxNewLocalX;
+                if (i > 0)
+                {
+                    maxNewLocalX = localXPositionsPerZUnit[i - 1] + localXFromPrev * EffectsUtil.EaseInOutQuad(positionIndexDeltaTimePercentage);
+                }
+                else
+                {
+                    maxNewLocalX = localXPositionsPerZUnit[i];
+                }
+                
+                // This might skip some localX iterations.
+                newLocalX = PositionUtil.CalculateClosestMultipleOrClamp(localPositionX, maxNewLocalX, deltaTime);
+
+                // this could be improved.
+                worldPositionY += worldPositionsPerZUnit[i].distanceFromPrev.y * dt;
+                //Debug.Log($"{elapsedPositionIndexDeltaTime}, {newLocalX}");
+                //newLocalX = LocalPosition.x + localXFromPrev * dt;
+
+                localPositionX = newLocalX;
+                localPositionZ = newLocalZ;
+                
+                if (!addDeltaTime)
+                {
+                    break;
+                }
+            }
+            newLocalPositionX = localPositionX;
+            newLocalPositionZ = localPositionZ;
+            newWorldPositionY = worldPositionY;
+            return i;
         }
     }
 }
