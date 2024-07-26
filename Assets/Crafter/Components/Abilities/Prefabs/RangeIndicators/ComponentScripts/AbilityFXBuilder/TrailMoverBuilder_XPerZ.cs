@@ -14,6 +14,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class TrailMoverBuilder_XPerZ : AbstractAbilityFXBuilder
     {
         private static readonly float TrailRendererYOffset = 0.7f;
+        // lower delay mult = velocity mult lower = trail moves slower.
+        private static readonly float TimeRequiredVelocityDelayMult = 0.8f;
 
         [NonSerialized]
         public ElectricTrail ElectricTrail;
@@ -76,19 +78,23 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             long prevAccumTimeRequiredForZDistance = timeRequiredForZDistances[0];
 
+            float timeRequiredVelocityDelayMult = TimeRequiredVelocityDelayMult;
+
+            float oneSecMillisMultByTimeRequiredDelay = 1000f * TimeRequiredVelocityDelayMult;
+            float timeRequiredVelocityMultDivByMillis = TimeRequiredVelocityDelayMult / 1000f;
             for (int i = 1; i < timeRequiredForZDistances.Length; i++)
             {
                 long timeRequiredAccum = timeRequiredForZDistances[i];
                 long timeRequiredDifference = timeRequiredAccum - prevAccumTimeRequiredForZDistance;
                 if (timeRequiredDifference > 0L)
                 {
-                    timeRequiredIncrementalVelocityMult[i] = 1000f / timeRequiredDifference;
+                    timeRequiredIncrementalVelocityMult[i] = oneSecMillisMultByTimeRequiredDelay / timeRequiredDifference;
                 }
                 else
                 {
                     timeRequiredIncrementalVelocityMult[i] = 0f;
                 }
-                timeRequiredIncrementalSec[i] = timeRequiredDifference / 1000f;
+                timeRequiredIncrementalSec[i] = timeRequiredDifference * timeRequiredVelocityMultDivByMillis;
 
                 prevAccumTimeRequiredForZDistance = timeRequiredAccum;
             }
