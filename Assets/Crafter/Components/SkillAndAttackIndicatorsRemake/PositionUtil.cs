@@ -75,8 +75,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     addDeltaTime = true;
                     deltaTimeAddRequired = deltaTime - remainingDeltaTime;
                     //Debug.Log(deltaTimeAddRequired)
-
-                    deltaTime -= remainingDeltaTime;
+                    
+                    // No need to subtract from deltatime, the values are clamped anyways, 
+                    // and it responds better with ClosestMultipleOrClamp.
+                    // deltaTime = remainingDeltaTime.
                     //Debug.Log($"{deltaTimeAddRequired}, {deltaTime}, {remainingDeltaTime}");
                     elapsedPositionIndexDeltaTime = indexTimeRequiredSec;
 
