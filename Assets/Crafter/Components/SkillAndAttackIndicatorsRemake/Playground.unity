@@ -250,27 +250,6 @@ MonoBehaviour:
   - 0
   - 1
   LineLength: 20
-  WorldPositionsPerZUnit:
-  - {x: 3, y: 0.09429091, z: 0}
-  - {x: 4, y: 0.14310378, z: 1}
-  - {x: 2, y: 0.42216796, z: 2}
-  - {x: 3, y: 0.41388243, z: 3}
-  - {x: 4, y: 0.37854308, z: 4}
-  - {x: 2, y: 0.6414406, z: 5}
-  - {x: 3, y: 0.5481598, z: 6}
-  - {x: 4, y: 0.49325103, z: 7}
-  - {x: 2, y: 0.81925505, z: 8}
-  - {x: 3, y: 0.65984267, z: 9}
-  - {x: 4, y: 0.5451042, z: 10}
-  - {x: 2, y: 0.77671355, z: 11}
-  - {x: 3, y: 0.60998076, z: 12}
-  - {x: 4, y: 0.4427101, z: 13}
-  - {x: 2, y: 0.7898361, z: 14}
-  - {x: 3, y: 0.576194, z: 15}
-  - {x: 4, y: 0.33980864, z: 16}
-  - {x: 2, y: 0.66795653, z: 17}
-  - {x: 3, y: 0.44628447, z: 18}
-  - {x: 4, y: 0.21675414, z: 19}
   PositionIndex: 20
 --- !u!4 &245832944
 Transform:
@@ -281,7 +260,7 @@ Transform:
   m_GameObject: {fileID: 245832940}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3, y: 0.09429091, z: 0}
+  m_LocalPosition: {x: 4.9979916, y: 0.028701007, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

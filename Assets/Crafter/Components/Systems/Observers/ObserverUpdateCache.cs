@@ -9,6 +9,7 @@ namespace Assets.Crafter.Components.Systems.Observers
     public class ObserverUpdateCache
     {
         public long UpdateTickTimeFixedUpdate;
+        public float UpdateTickTimeFixedUpdateDeltaTimeSec;
 
         public ObserverUpdateCache(long newTime)
         {
@@ -17,7 +18,10 @@ namespace Assets.Crafter.Components.Systems.Observers
 
         public void Update_FixedUpdate()
         {
-            UpdateTickTimeFixedUpdate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            long newTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            UpdateTickTimeFixedUpdateDeltaTimeSec = (newTime - UpdateTickTimeFixedUpdate) * 0.001f;
+            UpdateTickTimeFixedUpdate = newTime;
+            
         }
     }
 }

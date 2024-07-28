@@ -59,6 +59,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 if (addDeltaTime)
                 {
                     deltaTime += deltaTimeAddRequired;
+                    deltaTimeAddRequired = 0f;
                     addDeltaTime = false;
                 }
 
@@ -66,15 +67,20 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 // set elapsedPositionIndexDeltaTime and set remainder delta times.
                 float elapsedPositionIndexDeltaTime = elapsedPositionIndexDeltaTimeRef;
+                //Debug.Log($"{elapsedPositionIndexDeltaTime}, {elapsedPositionIndexDeltaTime + deltaTime}, {indexTimeRequiredSec}");
                 if (elapsedPositionIndexDeltaTime + deltaTime >= indexTimeRequiredSec)
                 {
                     float remainingDeltaTime = indexTimeRequiredSec - elapsedPositionIndexDeltaTime;
 
                     addDeltaTime = true;
-                    deltaTimeAddRequired = deltaTimeAddRequired - remainingDeltaTime;
+                    deltaTimeAddRequired = deltaTime - remainingDeltaTime;
+                    //Debug.Log(deltaTimeAddRequired)
 
-                    deltaTime = remainingDeltaTime;
+                    deltaTime -= remainingDeltaTime;
+                    //Debug.Log($"{deltaTimeAddRequired}, {deltaTime}, {remainingDeltaTime}");
                     elapsedPositionIndexDeltaTime = indexTimeRequiredSec;
+
+                    //Debug.Log(remainingDeltaTime);
 
                 }
                 else
@@ -92,9 +98,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     positionIndexDeltaTimePercentage = 1f;
                 }
 
-                if (i != timeRequiredIncrementalSec.Length - 1 && addDeltaTime)
+                if (addDeltaTime && i != timeRequiredIncrementalSec.Length - 1)
                 {
                     elapsedPositionIndexDeltaTime = 0f;
+                }
+
+                if (elapsedPositionIndexDeltaTime < SkillAndAttackIndicatorSystem.FLOAT_TOLERANCE && i > 0)
+                {
+                    localPositionX = PositionUtil.CalculateClosestMultipleOrClamp(localPositionX, localXPositionsPerZUnit[i - 1], deltaTime);
+                    localPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, (float)i - 1, deltaTime);
                 }
 
                 elapsedPositionIndexDeltaTimeRef = elapsedPositionIndexDeltaTime;
@@ -137,6 +149,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 if (!addDeltaTime)
                 {
                     break;
+                }
+                else
+                {
+                    deltaTime = 0f;
                 }
             }
             newLocalPositionX = localPositionX;

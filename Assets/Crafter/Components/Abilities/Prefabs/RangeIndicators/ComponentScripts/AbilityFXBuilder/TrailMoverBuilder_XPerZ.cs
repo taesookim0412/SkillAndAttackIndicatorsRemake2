@@ -18,6 +18,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private static readonly float TimeRequiredVelocityDelayMult = 1f;
 
         [NonSerialized]
+        private ObserverUpdateCache ObserverUpdateCache;
+        [NonSerialized]
         public ElectricTrail ElectricTrail;
 
         [HideInInspector]
@@ -58,6 +60,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float sinYAngle)
         {
             InitializeManualAwake();
+
+            ObserverUpdateCache = observerUpdateCache;
 
             electricTrail.transform.localPosition = Vector3.zero;
             ElectricTrail = electricTrail;
@@ -183,8 +187,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 {
                     Vector3 localPosition = LocalPosition;
                     int positionIndex = PositionIndex;
-                    float fixedDeltaTime = Time.fixedDeltaTime;
-                    
+                    float fixedDeltaTime = ObserverUpdateCache.UpdateTickTimeFixedUpdateDeltaTimeSec;
+
                     float sinYAngle = SinYAngle;
                     float cosYAngle = CosYAngle;
 
@@ -213,15 +217,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                     //    ElapsedPositionIndexDeltaTime = 0f;
                     //}
-
-                    Debug.Log($"{localPosition.z}, {positionIndex}");
+                    //Debug.Log($"{localPosition.z}, {positionIndex}");
                     if (positionIndex < LineLength)
                     {
                         PositionIndex = PositionUtil.MoveTrailPosition(positionIndex, fixedDeltaTime, localPosition.x, localPosition.z,
                             out float newLocalPositionX, out float newLocalPositionZ, TimeRequiredIncrementalSec,
                             TimeRequiredIncrementalVelocityMult, WorldPositionsPerZUnit, LocalXPositionsPerZUnit,
                             ref ElapsedPositionIndexDeltaTime, transform.position.y, out float newWorldPositionY);
-
 
                         float rotatedLocalPositionX = newLocalPositionZ * sinYAngle + newLocalPositionX * cosYAngle;
                         float rotatedLocalPositionZ = newLocalPositionZ * cosYAngle - newLocalPositionX * sinYAngle;
