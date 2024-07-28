@@ -18,11 +18,18 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         /// <param name="maxValue"></param>
         /// <param name="positiveMultiple">Must be positive, dt is always positive.</param>
         /// <returns></returns>
-        public static float CalculateClosestMultipleOrClamp(float value, float maxValue, float positiveMultiple)
+        public static float CalculateClosestMultipleOrClamp(float value, float maxValue, float positiveMultiple, bool useMax)
         {
             if (positiveMultiple < SkillAndAttackIndicatorSystem.FLOAT_TOLERANCE)
             {
-                return value;
+                if (!useMax)
+                {
+                    return value;
+                }
+                else
+                {
+                    return maxValue;
+                }
             }
             float difference = maxValue - value;
 
@@ -54,6 +61,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             int i;
             bool addDeltaTime = false;
             float deltaTimeAddRequired = 0f;
+
             for (i = positionIndex; i < timeRequiredIncrementalSec.Length; i++)
             {
                 if (addDeltaTime)
@@ -67,6 +75,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 // set elapsedPositionIndexDeltaTime and set remainder delta times.
                 float elapsedPositionIndexDeltaTime = elapsedPositionIndexDeltaTimeRef;
+                bool useMax;
                 //Debug.Log($"{elapsedPositionIndexDeltaTime}, {elapsedPositionIndexDeltaTime + deltaTime}, {indexTimeRequiredSec}");
                 if (elapsedPositionIndexDeltaTime + deltaTime >= indexTimeRequiredSec)
                 {
@@ -83,11 +92,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     elapsedPositionIndexDeltaTime = indexTimeRequiredSec;
 
                     //Debug.Log(remainingDeltaTime);
+                    useMax = true;
 
                 }
                 else
                 {
                     elapsedPositionIndexDeltaTime += deltaTime;
+                    useMax = false;
                 }
 
                 float positionIndexDeltaTimePercentage;
@@ -105,10 +116,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     elapsedPositionIndexDeltaTime = 0f;
                 }
 
+                
+
                 if (elapsedPositionIndexDeltaTime < SkillAndAttackIndicatorSystem.FLOAT_TOLERANCE && i > 0)
                 {
-                    localPositionX = PositionUtil.CalculateClosestMultipleOrClamp(localPositionX, localXPositionsPerZUnit[i - 1], deltaTime);
-                    localPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, (float)i - 1, deltaTime);
+                    localPositionX = PositionUtil.CalculateClosestMultipleOrClamp(localPositionX, localXPositionsPerZUnit[i - 1], deltaTime, useMax);
+                    localPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, (float)i - 1, deltaTime, useMax);
                 }
 
                 elapsedPositionIndexDeltaTimeRef = elapsedPositionIndexDeltaTime;
@@ -117,7 +130,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 float newLocalX;
                 float maxNewLocalZ = localPositionZ + dt;
-                float newLocalZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, maxNewLocalZ, deltaTime);
+                float newLocalZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, maxNewLocalZ, deltaTime, useMax);
 
                 //Debug.Log($"{localPosition.z},{maxNewLocalZ}, {fixedDeltaTimeIncrement}, {newLocalZ}");
                 //float zDecimals = zUnits - positionIndex;
@@ -138,7 +151,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 }
                 
                 // This might skip some localX iterations.
-                newLocalX = PositionUtil.CalculateClosestMultipleOrClamp(localPositionX, maxNewLocalX, deltaTime);
+                newLocalX = PositionUtil.CalculateClosestMultipleOrClamp(localPositionX, maxNewLocalX, deltaTime, useMax);
 
                 // this could be improved.
                 worldPositionY += worldPositionsPerZUnit[i].distanceFromPrev.y * dt;
