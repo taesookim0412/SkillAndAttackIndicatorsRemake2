@@ -23,21 +23,16 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         private Vector3 EndPosition;
         [HideInInspector]
-        private Vector3 CurrentEndPosition;
+        private Vector3 MovementRotation;
         [HideInInspector]
         private float TimeRequiredSec;
+        [HideInInspector]
+        private float TimeRequiredSecReciprocal;
 
-
-        [HideInInspector]
-        private bool EndPositionUpdateRequested;
-        [HideInInspector]
-        private Vector3 Rotation;
-        [HideInInspector]
-        private RotatingCoordinateVector3Angles RotationAngles;
-        [HideInInspector]
-        private Vector3 LocalPosition;
         [HideInInspector]
         private float ElapsedTimeSec;
+        [HideInInspector]
+        private Vector3 RotatingAnglesForwardVector;
 
         public override void ManualAwake()
         {
@@ -45,7 +40,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         public void Initialize(ObserverUpdateCache observerUpdateCache,
             ElectricTrail electricTrail,
-            Vector3 startPosition, Vector3 endPosition, float timeRequiredSec)
+            Vector3 startPosition, Vector3 endPosition, 
+            Vector3 startRotation,
+            float timeRequiredSec)
         {
             base.Initialize(observerUpdateCache);
 
@@ -54,43 +51,74 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             StartPosition = startPosition;
             EndPosition = endPosition;
-            CurrentEndPosition = endPosition;
+            MovementRotation = startRotation;
+
             TimeRequiredSec = timeRequiredSec;
+            TimeRequiredSecReciprocal = 1 / timeRequiredSec;
 
-            Vector3 rotation = Vector3Util.LookRotationPitchYaw(endPosition - startPosition);
-            RotationAngles = new RotatingCoordinateVector3Angles(rotation);
-
-            Rotation = rotation;
-            LocalPosition = new Vector3(0f, 0f, 0f);
             ElapsedTimeSec = 0f;
+            RotatingAnglesForwardVector = Vector3.forward;
         }
 
         public void ManualUpdate()
         {
             float elapsedTimeSec = ElapsedTimeSec;
+            float elapsedDeltaTime = ObserverUpdateCache.UpdateTickTimeFixedUpdateDeltaTimeSec;
             if (elapsedTimeSec < TimeRequiredSec)
             {
-                Vector3 localPosition = LocalPosition;
+                Vector3 currentPosition = transform.position;
                 Vector3 endPosition = EndPosition;
-                RotatingCoordinateVector3Angles rotationAngles = RotationAngles;
 
-                if (EndPositionUpdateRequested)
+                float distance = (endPosition - currentPosition).magnitude;
+
+                if (distance > 0.05f)
                 {
-                    Vector3 rotation = Rotation;
-                    float endPositionsDistance = (endPosition - CurrentEndPosition).magnitude;
-                    if (endPositionsDistance > 0.03f)
+                    Vector3 movementRotation = MovementRotation;
+                    Vector3 rotatingAnglesForwardVector = RotatingAnglesForwardVector;
+                    Vector3 rotation = Vector3Util.LookRotationPitchYaw(endPosition - currentPosition);
+
+                    float timeElapsedPercentage = elapsedTimeSec * TimeRequiredSecReciprocal;
+                    float easeTimePercentage = EffectsUtil.EaseInOutQuad(timeElapsedPercentage);
+
+                    float rotationXDifference = rotation.x - movementRotation.x;
+                    float rotationYDifference = rotation.y - movementRotation.y;
+
+                    bool useNewRotationX = rotationXDifference < -3f || rotationXDifference > 3f;
+                    bool useNewRotationY = rotationYDifference < -3f || rotationYDifference > 3f;
+                    if (useNewRotationX || useNewRotationY)
                     {
-                        rotation = Vector3Util.LookRotationPitchYaw(endPosition - StartPosition);
-                        RotationAngles.SetRotationVector(rotation);
-                        Rotation = rotation;
+                        if (useNewRotationX)
+                        {
+                            movementRotation.x = movementRotation.x + rotationXDifference * easeTimePercentage;
+                        }
+                        if (useNewRotationY)
+                        {
+                            movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
+                        }
+                        RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(movementRotation);
+                        rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward();
+                        Debug.Log(movementRotation);
+
+                        RotatingAnglesForwardVector = rotatingAnglesForwardVector;
+                        // chances are both x and y need to change so its better to set all at once.
+                        MovementRotation = movementRotation;
                     }
-                    CurrentEndPosition = endPosition;
-                    EndPositionUpdateRequested = false;
+
+                    float targetVelocity = distance * TimeRequiredSecReciprocal * 5f;
+                    float dtxTargetVelocity = elapsedDeltaTime * targetVelocity;
+                    //float dtxTargetVelocity = elapsedDeltaTime;
+
+                    float newPositionX = PositionUtil.CalculateClosestMultipleOrClamp(currentPosition.x, currentPosition.x + rotatingAnglesForwardVector.x * dtxTargetVelocity, elapsedDeltaTime);
+                    float newPositionY = PositionUtil.CalculateClosestMultipleOrClamp(currentPosition.y, currentPosition.y + rotatingAnglesForwardVector.y * dtxTargetVelocity, elapsedDeltaTime);
+                    float newPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(currentPosition.z, currentPosition.z + rotatingAnglesForwardVector.z * dtxTargetVelocity, elapsedDeltaTime);
+
+                    transform.position = new Vector3(newPositionX, newPositionY, newPositionZ);
+                    Debug.Log(distance);
                 }
-
-                float elapsedDeltaTime = ObserverUpdateCache.UpdateTickTimeFixedUpdateDeltaTimeSec;
-
+                
             }
+
+            ElapsedTimeSec += elapsedDeltaTime;
         }
     }
 
@@ -98,6 +126,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class TrailMoverBuilder_TargetPosEditor : AbstractEditor<TrailMoverBuilder_TargetPos>
     {
         private Vector3 StartPosition;
+        private Vector3 StartRotation = new Vector3(-45f, 0f, 0f);
         private Vector3 LocalEndPosition = new Vector3(1f, 2f, 1f);
         private float TimeRequiredSec = 3f;
 
@@ -120,9 +149,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     Vector3 position = instance.transform.position;
                     Vector3 endPosition = position + LocalEndPosition;
 
-                    instance.Initialize(ObserverUpdateCache, electricTrail, position, endPosition, TimeRequiredSec);
-                    TryAddParticleSystem(instance.gameObject);
+                    instance.Initialize(ObserverUpdateCache, electricTrail, position, endPosition,
+                        StartRotation,
+                        TimeRequiredSec);
                     StartPosition = position;
+                    TryAddParticleSystem(instance.gameObject);
                     StartTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                     return true;
                 }

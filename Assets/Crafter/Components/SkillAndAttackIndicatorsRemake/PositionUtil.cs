@@ -19,7 +19,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         /// <param name="maxValue"></param>
         /// <param name="positiveMultiple">Must be positive, dt is always positive.</param>
         /// <returns></returns>
-        public static float CalculateClosestMultipleOrClamp(float value, float maxValue, float positiveMultiple, bool useMaxWhenDtSmall)
+        public static float CalculateClosestMultipleOrClamp(float value, float maxValue, float positiveMultiple, bool useMaxWhenDtSmall = false)
         {
             if (positiveMultiple < PartialMathUtil.FLOAT_TOLERANCE)
             {
