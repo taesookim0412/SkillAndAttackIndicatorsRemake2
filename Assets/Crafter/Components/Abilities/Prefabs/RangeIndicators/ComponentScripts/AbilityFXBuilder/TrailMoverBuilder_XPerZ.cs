@@ -33,8 +33,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         private Vector3 LocalPosition;
         [HideInInspector]
-        private long TimeElapsedForPositionIndex;
-        [HideInInspector]
         public int PositionIndex;
         [HideInInspector]
         private float ElapsedPositionIndexDeltaTime;
@@ -102,7 +100,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             LocalPosition = new Vector3(0f, 0f, 0f);
 
-            TimeElapsedForPositionIndex = 0L; 
             PositionIndex = 0;
             ElapsedPositionIndexDeltaTime = 0f;
             StartPosition = transform.position;
@@ -313,8 +310,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         protected override void ManualUpdate()
         {
-            Time.fixedDeltaTime = (ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastUpdateTime) / 1000f;
-            WarnFixedUpdateTimeChanged();
             float chargeDurationPercentage = (ObserverUpdateCache.UpdateTickTimeFixedUpdate - StartTime) / ChargeDurationFloat;
             float fillProgress = EffectsUtil.EaseInOutQuad(chargeDurationPercentage);
             Instance.ManualUpdate(fillProgress);

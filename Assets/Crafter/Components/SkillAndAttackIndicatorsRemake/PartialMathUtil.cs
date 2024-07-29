@@ -8,6 +8,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public static class PartialMathUtil
     {
+        public const float FLOAT_TOLERANCE = 0.0001f;
+        public const float FLOAT_TOLERANCE_NEGATIVE = -0.0001f;
         public const float PI = 3.14159274F;
         public const float Deg2Rad = PI / 180f;
         public const float Rad2Deg = 57.29578f;

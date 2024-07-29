@@ -21,7 +21,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         /// <returns></returns>
         public static float CalculateClosestMultipleOrClamp(float value, float maxValue, float positiveMultiple, bool useMaxWhenDtSmall)
         {
-            if (positiveMultiple < SkillAndAttackIndicatorSystem.FLOAT_TOLERANCE)
+            if (positiveMultiple < PartialMathUtil.FLOAT_TOLERANCE)
             {
                 if (!useMaxWhenDtSmall)
                 {
@@ -65,22 +65,29 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             for (i = positionIndex; i < timeRequiredIncrementalSec.Length; i++)
             {
+                float elapsedPositionIndexDeltaTime = elapsedPositionIndexDeltaTimeRef;
                 if (addDeltaTime)
                 {
                     deltaTime += deltaTimeAddRequired;
                     deltaTimeAddRequired = 0f;
+                    elapsedPositionIndexDeltaTime = 0f;
                     addDeltaTime = false;
+                }
+
+                if (elapsedPositionIndexDeltaTime < PartialMathUtil.FLOAT_TOLERANCE && i > 0)
+                {
+                    localPositionX = PositionUtil.CalculateClosestMultipleOrClamp(localPositionX, localXPositionsPerZUnit[i - 1], deltaTime, useMaxWhenDtSmall: true);
+                    localPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, (float)(i - 1), deltaTime, useMaxWhenDtSmall: true);
                 }
 
                 float indexTimeRequiredSec = timeRequiredIncrementalSec[i];
 
-                // set elapsedPositionIndexDeltaTime and set remainder delta times.
-                float elapsedPositionIndexDeltaTime = elapsedPositionIndexDeltaTimeRef;
+                float calculationElapsedPositionIndexDeltaTime = elapsedPositionIndexDeltaTime;
                 bool useMaxWhenDtSmall;
                 //Debug.Log($"{elapsedPositionIndexDeltaTime}, {elapsedPositionIndexDeltaTime + deltaTime}, {indexTimeRequiredSec}");
-                if (elapsedPositionIndexDeltaTime + deltaTime >= indexTimeRequiredSec)
+                if (calculationElapsedPositionIndexDeltaTime + deltaTime >= indexTimeRequiredSec)
                 {
-                    float remainingDeltaTime = indexTimeRequiredSec - elapsedPositionIndexDeltaTime;
+                    float remainingDeltaTime = indexTimeRequiredSec - calculationElapsedPositionIndexDeltaTime;
 
                     addDeltaTime = true;
                     deltaTimeAddRequired = deltaTime - remainingDeltaTime;
@@ -90,7 +97,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     // and it responds better with ClosestMultipleOrClamp.
                     // deltaTime = remainingDeltaTime.
                     //Debug.Log($"{deltaTimeAddRequired}, {deltaTime}, {remainingDeltaTime}");
-                    elapsedPositionIndexDeltaTime = indexTimeRequiredSec;
+                    calculationElapsedPositionIndexDeltaTime = indexTimeRequiredSec;
 
                     //Debug.Log($"{deltaTimeAddRequired}, {indexTimeRequiredSec}");
                     useMaxWhenDtSmall = true;
@@ -98,35 +105,35 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 }
                 else
                 {
-                    elapsedPositionIndexDeltaTime += deltaTime;
+                    calculationElapsedPositionIndexDeltaTime += deltaTime;
                     useMaxWhenDtSmall = false;
                 }
 
                 float positionIndexDeltaTimePercentage;
-                if (indexTimeRequiredSec > SkillAndAttackIndicatorSystem.FLOAT_TOLERANCE)
+                if (indexTimeRequiredSec > PartialMathUtil.FLOAT_TOLERANCE)
                 {
-                    positionIndexDeltaTimePercentage = Mathf.Clamp01(elapsedPositionIndexDeltaTime / indexTimeRequiredSec);
+                    positionIndexDeltaTimePercentage = Mathf.Clamp01(calculationElapsedPositionIndexDeltaTime / indexTimeRequiredSec);
                 }
                 else
                 {
                     positionIndexDeltaTimePercentage = 1f;
                 }
 
-                if (addDeltaTime && i != timeRequiredIncrementalSec.Length - 1)
+                // if passed then reset elapsed time for next index.
+                if (addDeltaTime)
                 {
                     elapsedPositionIndexDeltaTime = 0f;
                 }
-
-                
-
-                if (elapsedPositionIndexDeltaTime < SkillAndAttackIndicatorSystem.FLOAT_TOLERANCE && i > 0)
+                else
                 {
-                    localPositionX = PositionUtil.CalculateClosestMultipleOrClamp(localPositionX, localXPositionsPerZUnit[i - 1], deltaTime, useMaxWhenDtSmall);
-                    localPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, (float)(i - 1), deltaTime, useMaxWhenDtSmall);
+                    elapsedPositionIndexDeltaTime = calculationElapsedPositionIndexDeltaTime;
                 }
-
+                
                 elapsedPositionIndexDeltaTimeRef = elapsedPositionIndexDeltaTime;
 
+                // Warning: timeRequiredIncrementalVelocityMult[i] = 0 due to no speed defined (for example last index).
+                // Fixing this would mean setting force setting the next position instead, but that would make this more complicated
+                // when actually each index could just have a time greater than 0.
                 float dt = deltaTime * timeRequiredIncrementalVelocityMult[i];
 
                 float newLocalX;

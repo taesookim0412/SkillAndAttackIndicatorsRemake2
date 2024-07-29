@@ -17,8 +17,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     {
 
         // these are static due to cross-assembly when migrated.
-        public const float FLOAT_TOLERANCE = 0.0001f;
-        public const float FLOAT_TOLERANCE_NEGATIVE = -0.0001f;
         public static readonly long FixedTimestep = 20L;
         public const float ONE_THIRD = 1 / 3f;
         public const float TWO_THIRDS = 2 / 3f;
@@ -293,11 +291,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         {
             if (direction > 0)
             {
-                return currentValue > maxValue + FLOAT_TOLERANCE;
+                return currentValue > maxValue + PartialMathUtil.FLOAT_TOLERANCE;
             }
             else if (direction < 0)
             {
-                return currentValue < maxValue - FLOAT_TOLERANCE;
+                return currentValue < maxValue - PartialMathUtil.FLOAT_TOLERANCE;
             }
             else
             {
