@@ -91,7 +91,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     //Debug.Log($"{deltaTimeAddRequired}, {deltaTime}, {remainingDeltaTime}");
                     elapsedPositionIndexDeltaTime = indexTimeRequiredSec;
 
-                    //Debug.Log(remainingDeltaTime);
+                    //Debug.Log($"{deltaTimeAddRequired}, {indexTimeRequiredSec}");
                     useMax = true;
 
                 }

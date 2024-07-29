@@ -179,11 +179,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         public void ManualUpdate(float fillProgress)
         {
-            float zUnits = fillProgress * LineLength;
+            int lineLength = LineLength;
+            float zUnits = fillProgress * lineLength;
             int zUnitsIndex = (int)zUnits;
             if (zUnitsIndex > 0)
             {
-                if (zUnitsIndex < LineLength)
+                if (zUnitsIndex < lineLength)
                 {
                     Vector3 localPosition = LocalPosition;
                     int positionIndex = PositionIndex;
@@ -218,13 +219,21 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     //    ElapsedPositionIndexDeltaTime = 0f;
                     //}
                     //Debug.Log($"{localPosition.z}, {positionIndex}");
-                    if (positionIndex < LineLength)
+                    if (positionIndex < lineLength)
                     {
-                        PositionIndex = PositionUtil.MoveTrailPosition(positionIndex, fixedDeltaTime, localPosition.x, localPosition.z,
+                        positionIndex = PositionUtil.MoveTrailPosition(positionIndex, fixedDeltaTime, localPosition.x, localPosition.z,
                             out float newLocalPositionX, out float newLocalPositionZ, TimeRequiredIncrementalSec,
                             TimeRequiredIncrementalVelocityMult, WorldPositionsPerZUnit, LocalXPositionsPerZUnit,
                             ref ElapsedPositionIndexDeltaTime, transform.position.y, out float newWorldPositionY);
 
+                        // Since the position only gets set before the dt, instead of after,
+                        // the final position has to be set if the conditions are met
+
+                        if (positionIndex == lineLength)
+                        {
+                            newLocalPositionX = LocalXPositionsPerZUnit[positionIndex - 1];
+                            newLocalPositionZ = positionIndex - 1;
+                        }
                         float rotatedLocalPositionX = newLocalPositionZ * sinYAngle + newLocalPositionX * cosYAngle;
                         float rotatedLocalPositionZ = newLocalPositionZ * cosYAngle - newLocalPositionX * sinYAngle;
 
@@ -247,6 +256,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         //localPosition.x = newLocalX;
                         //localPosition.z = newLocalZ;
                         //LocalPosition = localPosition;
+
+                        
+
+                        PositionIndex = positionIndex;
+                        //Debug.Log(PositionIndex);
                     }
                     
                     //Debug.Log($"{WorldPositionsPerZUnit[positionIndex].distanceFromPrev}, {dt}, {TimeRequiredVelocityMult[positionIndex]}");
