@@ -21,6 +21,7 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
         protected bool VariablesAdded;
         protected bool SkipDestroy = false;
 
+        private int WarnIncrement = 0;
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
@@ -89,6 +90,13 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
 
                 ParticleSystem.ShapeModule shapeModule = particleSystem.shape;
                 shapeModule.enabled = false;
+            }
+        }
+        protected void WarnFixedUpdateTimeChanged()
+        {
+            if (WarnIncrement++ % 100 == 0)
+            {
+                Debug.LogWarning("Warning: Time.FixedDeltaTime manually changed");
             }
         }
     }

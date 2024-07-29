@@ -20,8 +20,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private static readonly int PortalStateLength = Enum.GetNames(typeof(PortalState)).Length;
 
         [NonSerialized]
-        public ObserverUpdateCache ObserverUpdateCache;
-        [NonSerialized]
         public PlayerClientData PlayerClientData;
         [NonSerialized]
         public PortalOrbPurple PortalOrb;
@@ -111,7 +109,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed,
             bool setPlayerInactive, bool isClone)
         {
-            InitializeManualAwake();
+            base.Initialize(observerUpdateCache);
             
             if (durationAllowed != null)
             {
@@ -136,7 +134,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PlayerOpacityTimer.ObserverUpdateCache = observerUpdateCache;
             PlayerOpaqueTimer.ObserverUpdateCache = observerUpdateCache;
 
-            ObserverUpdateCache = observerUpdateCache;
             PlayerClientData = playerClientData;
 
             PlayerComponent playerComponent = playerClientData.PlayerComponent;
@@ -364,7 +361,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         protected override void EditorDestroy()
         {
-            Instance.ObserverUpdateCache = null;
             GameObject.DestroyImmediate(Instance.PlayerClientData.PlayerComponent.gameObject);
             GameObject.DestroyImmediate(Instance.CrimsonAura.gameObject);
             GameObject.DestroyImmediate(Instance.PortalOrb.gameObject);

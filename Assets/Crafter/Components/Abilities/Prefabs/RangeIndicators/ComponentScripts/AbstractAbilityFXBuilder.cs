@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Crafter.Components.Systems.Observers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 {
     public abstract class AbstractAbilityFXBuilder : AbstractAbilityFX
     {
+        [NonSerialized]
+        protected ObserverUpdateCache ObserverUpdateCache;
         protected bool AwakeInitialized = false;
+        protected void Initialize(ObserverUpdateCache observerUpdateCache)
+        {
+            ObserverUpdateCache = observerUpdateCache;
+            InitializeManualAwake();
+        }
         protected void InitializeManualAwake()
         {
             if (!AwakeInitialized)

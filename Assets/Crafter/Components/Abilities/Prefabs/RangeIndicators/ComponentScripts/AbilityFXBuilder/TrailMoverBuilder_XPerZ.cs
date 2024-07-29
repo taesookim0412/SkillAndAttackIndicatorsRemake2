@@ -15,10 +15,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     {
         private static readonly float TrailRendererYOffset = 0.7f;
         // lower delay mult = velocity mult lower = trail moves slower.
-        private static readonly float TimeRequiredVelocityDelayMult = 1f;
+        //private static readonly float TimeRequiredVelocityDelayMult = 1f;
 
-        [NonSerialized]
-        private ObserverUpdateCache ObserverUpdateCache;
         [NonSerialized]
         public ElectricTrail ElectricTrail;
 
@@ -59,9 +57,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float startPositionX, float startPositionZ, float cosYAngle,
             float sinYAngle)
         {
-            InitializeManualAwake();
-
-            ObserverUpdateCache = observerUpdateCache;
+            base.Initialize(observerUpdateCache);
 
             electricTrail.transform.localPosition = Vector3.zero;
             ElectricTrail = electricTrail;
@@ -82,21 +78,21 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             long prevAccumTimeRequiredForZDistance = timeRequiredForZDistances[0];
 
-            float oneSecMillisMultByTimeRequiredDelay = 1000f * TimeRequiredVelocityDelayMult;
-            float timeRequiredVelocityMultDivByMillis = TimeRequiredVelocityDelayMult / 1000f;
+            //float oneSecMillisMultByTimeRequiredDelay = 1000f * TimeRequiredVelocityDelayMult;
+            //float timeRequiredVelocityMultDivByMillis = TimeRequiredVelocityDelayMult / 1000f;
             for (int i = 1; i < timeRequiredForZDistances.Length; i++)
             {
                 long timeRequiredAccum = timeRequiredForZDistances[i];
                 long timeRequiredDifference = timeRequiredAccum - prevAccumTimeRequiredForZDistance;
                 if (timeRequiredDifference > 0L)
                 {
-                    timeRequiredIncrementalVelocityMult[i] = oneSecMillisMultByTimeRequiredDelay / timeRequiredDifference;
+                    timeRequiredIncrementalVelocityMult[i] = 1000f / timeRequiredDifference;
                 }
                 else
                 {
                     timeRequiredIncrementalVelocityMult[i] = 0f;
                 }
-                timeRequiredIncrementalSec[i] = timeRequiredDifference * timeRequiredVelocityMultDivByMillis;
+                timeRequiredIncrementalSec[i] = timeRequiredDifference * 0.001f;
 
                 prevAccumTimeRequiredForZDistance = timeRequiredAccum;
             }
@@ -318,6 +314,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         protected override void ManualUpdate()
         {
             Time.fixedDeltaTime = (ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastUpdateTime) / 1000f;
+            WarnFixedUpdateTimeChanged();
             float chargeDurationPercentage = (ObserverUpdateCache.UpdateTickTimeFixedUpdate - StartTime) / ChargeDurationFloat;
             float fillProgress = EffectsUtil.EaseInOutQuad(chargeDurationPercentage);
             Instance.ManualUpdate(fillProgress);

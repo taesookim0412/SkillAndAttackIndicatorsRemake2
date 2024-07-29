@@ -17,11 +17,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     {
 
         // these are static due to cross-assembly when migrated.
-        public static readonly float FLOAT_TOLERANCE = 0.0001f;
-        public static readonly float FLOAT_TOLERANCE_NEGATIVE = -0.0001f;
+        public const float FLOAT_TOLERANCE = 0.0001f;
+        public const float FLOAT_TOLERANCE_NEGATIVE = -0.0001f;
         public static readonly long FixedTimestep = 20L;
-        public static readonly float ONE_THIRD = 1 / 3f;
-        public static readonly float TWO_THIRDS = 2 / 3f;
+        public const float ONE_THIRD = 1 / 3f;
+        public const float TWO_THIRDS = 2 / 3f;
 
 
         [SerializeField]
