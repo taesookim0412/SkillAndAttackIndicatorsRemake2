@@ -30,5 +30,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             return value;
         }
+        public static float DeltaAngle(float current, float target)
+        {
+            float num = RepeatRotation(target - current);
+            if (num > 180f)
+            {
+                num -= 360f;
+            }
+
+            return num;
+        }
     }
 }

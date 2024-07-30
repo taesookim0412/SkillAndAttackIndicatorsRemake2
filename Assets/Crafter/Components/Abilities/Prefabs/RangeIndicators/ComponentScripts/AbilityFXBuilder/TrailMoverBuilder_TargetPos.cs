@@ -80,8 +80,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     float timeElapsedPercentage = elapsedTimeSec * TimeRequiredSecReciprocal;
                     float easeTimePercentage = EffectsUtil.EaseInOutQuad(timeElapsedPercentage);
 
-                    float rotationXDifference = rotation.x - movementRotation.x;
-                    float rotationYDifference = rotation.y - movementRotation.y;
+                    float rotationXDifference = PartialMathUtil.DeltaAngle(movementRotation.x, rotation.x);
+                    float rotationYDifference = PartialMathUtil.DeltaAngle(movementRotation.y, rotation.y);
 
                     bool useNewRotationX = rotationXDifference < -3f || rotationXDifference > 3f;
                     bool useNewRotationY = rotationYDifference < -3f || rotationYDifference > 3f;
