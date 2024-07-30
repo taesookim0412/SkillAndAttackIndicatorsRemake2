@@ -128,7 +128,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private Vector3 StartPosition;
         private Vector3 StartRotation = new Vector3(-45f, 0f, 0f);
         private Vector3 LocalEndPosition = new Vector3(1f, 2f, 1f);
-        private float TimeRequiredSec = 3f;
+        private float TimeRequiredSec = 0.5f;
 
         private long StartTime;
         private long LastUpdateTime;
