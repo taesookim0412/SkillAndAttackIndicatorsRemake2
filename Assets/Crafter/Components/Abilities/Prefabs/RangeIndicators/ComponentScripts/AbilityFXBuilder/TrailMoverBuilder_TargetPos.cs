@@ -68,14 +68,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 Vector3 currentPosition = transform.position;
                 Vector3 endPosition = EndPosition;
-
-                float distance = (endPosition - currentPosition).magnitude;
+                Vector3 directionVector = endPosition - currentPosition;
+                float distance = directionVector.magnitude;
 
                 if (distance > 0.05f)
                 {
                     Vector3 movementRotation = MovementRotation;
                     Vector3 rotatingAnglesForwardVector = RotatingAnglesForwardVector;
-                    Vector3 rotation = Vector3Util.LookRotationPitchYaw(endPosition - currentPosition);
+                    Vector3 rotation = Vector3Util.LookRotationPitchYaw(directionVector);
 
                     float timeElapsedPercentage = elapsedTimeSec * TimeRequiredSecReciprocal;
                     float easeTimePercentage = EffectsUtil.EaseInOutQuad(timeElapsedPercentage);
