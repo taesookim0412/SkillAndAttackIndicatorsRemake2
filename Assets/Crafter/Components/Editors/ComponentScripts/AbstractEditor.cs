@@ -99,5 +99,21 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
                 Debug.LogWarning("Warning: Time.FixedDeltaTime manually changed");
             }
         }
+
+        protected Vector3 CreateEditorLayout(Vector3[] vectors, int index, 
+            string fieldName)
+        {
+            Vector3 existingVector3;
+            if (vectors != null && index < vectors.Length)
+            {
+                existingVector3 = vectors[index];
+                
+            }
+            else
+            {
+                existingVector3 = Vector3.zero;
+            }
+            return EditorGUILayout.Vector3Field($"{fieldName}{index}", existingVector3);
+        }
     }
 }

@@ -1035,6 +1035,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         CrimsonAuraBlack,
         PortalOrbPurple,
         PortalBuilder_Source,
-        PortalBuilder_Dest
+        PortalBuilder_Dest,
+        BlinkRibbonTrailRenderer
     }
 }
