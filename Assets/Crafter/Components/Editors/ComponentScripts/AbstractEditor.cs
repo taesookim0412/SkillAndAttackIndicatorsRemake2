@@ -100,20 +100,20 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             }
         }
 
-        protected Vector3 CreateEditorLayout(Vector3[] vectors, int index, 
-            string fieldName)
+        protected Vector3 CreateEditorField(string fieldName, Vector3[] vectors,
+            int index)
         {
-            Vector3 existingVector3;
+            Vector3 result;
             if (vectors != null && index < vectors.Length)
             {
-                existingVector3 = vectors[index];
+                result = vectors[index];
                 
             }
             else
             {
-                existingVector3 = Vector3.zero;
+                result = Vector3.zero;
             }
-            return EditorGUILayout.Vector3Field($"{fieldName}{index}", existingVector3);
+            return EditorGUILayout.Vector3Field($"{fieldName}{index}", result);
         }
     }
 }

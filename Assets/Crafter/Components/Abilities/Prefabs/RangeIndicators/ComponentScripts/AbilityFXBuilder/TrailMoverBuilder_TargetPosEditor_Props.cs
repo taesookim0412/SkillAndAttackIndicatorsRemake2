@@ -9,6 +9,7 @@ using UnityEngine;
 namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder
 {
 #if UNITY_EDITOR
+    [Serializable]
     public class TrailMoverBuilder_TargetPosEditor_Props : MonoBehaviour
     {
         [SerializeField]

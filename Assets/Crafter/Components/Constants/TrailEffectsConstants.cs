@@ -27,7 +27,7 @@ namespace Assets.Crafter.Components.Constants
                 {
                     new Vector3(-45f, 0f, 0f),
                     new Vector3(-45f, 0f, 0f)
-                }) 
+                })
             }
         };
     }

@@ -29,5 +29,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             // Return the rotation as a Vector3
             return new Vector3(pitchDegrees, yawDegrees, 0f);
         }
+
+        public static Vector3 Copy(this Vector3 vect)
+        {
+            return vect;
+        }
     }
 }
