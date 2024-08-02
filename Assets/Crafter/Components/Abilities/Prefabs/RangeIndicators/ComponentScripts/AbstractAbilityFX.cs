@@ -16,6 +16,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [SerializeField]
         protected ParticleSystem[] ParticleSystems;
 
+        [SerializeField]
+        protected TrailRenderer TrailRenderer;
+
         public void DisableParticleSystems()
         {
             foreach (ParticleSystem particleSystem in ParticleSystems)
@@ -29,6 +32,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 particleSystem.enableEmission = true;
             }
+        }
+        public void SetTrailRendererWidth(float widthMultiplier)
+        {
+            TrailRenderer.widthMultiplier = widthMultiplier;
         }
 
         public virtual void CleanUpInstance()

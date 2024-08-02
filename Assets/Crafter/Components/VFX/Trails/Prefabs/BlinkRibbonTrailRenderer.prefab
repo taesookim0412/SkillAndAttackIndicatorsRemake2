@@ -88,30 +88,48 @@ TrailRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.05185124
-        inSlope: 0.38305414
-        outSlope: 0.38305414
+        value: 0.5753056
+        inSlope: 5.5529327
+        outSlope: 5.5529327
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.07090668
+        outWeight: 0.6367342
       - serializedVersion: 3
-        time: 0.98632336
-        value: 0.06282934
-        inSlope: -0.08541193
-        outSlope: -0.08541193
+        time: 0.08110759
+        value: 0.94779444
+        inSlope: 0.57966757
+        outSlope: 0.57966757
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.9921144
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.36125776
+        value: 1
+        inSlope: -0.013771553
+        outSlope: -0.013771553
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.68864924
+        value: 0.817989
+        inSlope: -1.0718662
+        outSlope: -1.0718662
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.075265
-        outWeight: 0.33333334
+        outWeight: 0.28783137
       - serializedVersion: 3
         time: 1
-        value: 0.070178986
-        inSlope: -0.1319191
-        outSlope: -0.1319191
+        value: 0.54991496
+        inSlope: -0.29768664
+        outSlope: -0.29768664
         tangentMode: 0
         weightedMode: 0
-        inWeight: 0.07754892
+        inWeight: 0.30603087
         outWeight: 0.50508
       m_PreInfinity: 2
       m_PostInfinity: 2
@@ -172,3 +190,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   VisualEffect: {fileID: 0}
   ParticleSystems: []
+  TrailRenderer: {fileID: 4999382771056782900}

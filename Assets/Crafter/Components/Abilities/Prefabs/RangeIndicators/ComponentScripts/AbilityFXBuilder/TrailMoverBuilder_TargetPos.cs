@@ -50,13 +50,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float startRotationYCosYAngle,
             float startRotationYSinYAngle,
             float timeRequiredSec,
-            Vector3 endPosition)
+            Vector3 endPositionWorld)
         {
             base.Initialize(observerUpdateCache);
 
             Vector3 startWorldPosition = transform.position;
 
-            Vector3[] localStartPositionOffsets = blinkRibbonTrailProps.LocalStartPositionOffsets;
+            float[] widthMultipliers = blinkRibbonTrailProps.WidthMultipliers;
+            Vector3[] localStartPositionOffsets = blinkRibbonTrailProps.StartPositionOffsetsLocal;
             for (int i = 0; i < trails.Length; i++)
             {
                 Vector3 startPositionOffset = localStartPositionOffsets[i];
@@ -66,12 +67,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 float rotatedLocalPositionX = startPositionOffsetZ * startRotationYSinYAngle + startPositionOffsetX * startRotationYCosYAngle;
                 float rotatedLocalPositionZ = startPositionOffsetZ * startRotationYCosYAngle - startPositionOffsetX * startRotationYSinYAngle;
 
-                trails[i].transform.position = new Vector3(startWorldPosition.x + rotatedLocalPositionX,
+                BlinkRibbonTrailRenderer trail = trails[i];
+                trail.SetTrailRendererWidth(widthMultipliers[i]);
+                trail.transform.position = new Vector3(startWorldPosition.x + rotatedLocalPositionX,
                     startWorldPosition.y + startPositionOffset.y,
                     startWorldPosition.z + rotatedLocalPositionZ);
             }
 
-            Vector3[] localStartRotationOffsets = blinkRibbonTrailProps.LocalStartRotationOffsets;
+            Vector3[] localStartRotationOffsets = blinkRibbonTrailProps.StartRotationOffsetsLocal;
             Vector3[] movementRotations = new Vector3[trails.Length];
             for (int i = 0; i < trails.Length; i++)
             {
@@ -80,12 +83,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 movementRotations[i] = startRotation;
             }
 
+            
+
             MovementRotations = movementRotations;
 
             Trails = trails;
             TrailProps = blinkRibbonTrailProps;
 
-            SetEndPositionsWorld(startRotationY, endPosition, startRotationYCosYAngle, startRotationYSinYAngle);
+            SetEndPositionsWorld(startRotationY, endPositionWorld, startRotationYCosYAngle, startRotationYSinYAngle);
 
             TimeRequiredSec = timeRequiredSec;
             TimeRequiredSecReciprocal = 1 / timeRequiredSec;
@@ -101,11 +106,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             RotatingAnglesForwardVectors = rotatingAnglesForwardVectors;
         }
 
-        public void SetEndPositionsWorld(float startYRotation, Vector3 newEndPosition,
+        public void SetEndPositionsWorld(float startYRotation, Vector3 newEndPositionWorld,
             float startRotationYCosYAngle,
             float startRotationYSinYAngle)
         {
-            Vector3[] localEndPositionOffsets = TrailProps.LocalEndPositionOffsets;
+            Vector3[] localEndPositionOffsets = TrailProps.EndPositionOffsetsLocal;
             Vector3[] endPositions = new Vector3[localEndPositionOffsets.Length];
 
             for (int i = 0; i < endPositions.Length; i++)
@@ -116,12 +121,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                 float rotatedEndPositionX = endPositionOffsetZ * startRotationYSinYAngle + endPositionOffsetX * startRotationYCosYAngle;
                 float rotatedEndPositionZ = endPositionOffsetZ * startRotationYCosYAngle - endPositionOffsetX * startRotationYSinYAngle;
-                endPositions[i] = new Vector3(newEndPosition.x + rotatedEndPositionX, newEndPosition.y + endPositionOffset.y, newEndPosition.z + rotatedEndPositionZ);
-                Debug.Log(newEndPosition);
-                Debug.Log(endPositions[i]);
+                endPositions[i] = new Vector3(newEndPositionWorld.x + rotatedEndPositionX, newEndPositionWorld.y + endPositionOffset.y, newEndPositionWorld.z + rotatedEndPositionZ);
+                //Debug.Log(newEndPositionWorld);
+                //Debug.Log(endPositions[i]);
             }
 
-            EndPositionTracker = newEndPosition;
+            EndPositionTracker = newEndPositionWorld;
             EndPositionsWorld = endPositions;
         }
 
@@ -227,16 +232,17 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         BlinkRibbonTrailProps blinkRibbonTrailProps = props.BlinkRibbonTrailProps[props.PropsIndex];
                         if (blinkRibbonTrailProps != null)
                         {
-                            BlinkRibbonTrailRenderer[] blinkRibbonTrailRenderers = new BlinkRibbonTrailRenderer[blinkRibbonTrailProps.LocalStartPositionOffsets.Length];
+                            BlinkRibbonTrailRenderer[] blinkRibbonTrailRenderers = new BlinkRibbonTrailRenderer[blinkRibbonTrailProps.StartPositionOffsetsLocal.Length];
                             for (int j = 0; j < blinkRibbonTrailRenderers.Length; j++)
                             {
                                 blinkRibbonTrailRenderers[j] = GameObject.Instantiate(blinkRibbonTrailRendererPrefab, instance.transform);
                             }
+                            Vector3 endPositionWorld = Props.EndPositionLocal + instance.transform.position;
 
                             instance.Initialize(ObserverUpdateCache, blinkRibbonTrailRenderers, blinkRibbonTrailProps, startRotationY,
                                 startRotationYCosYAngle, startRotationYSinYAngle,
                                 TimeRequiredSec,
-                                endPosition: new Vector3(1f, 2f, 1f));
+                                endPositionWorld: endPositionWorld);
                             TryAddParticleSystem(instance.gameObject);
                             StartTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                             return true;
@@ -271,6 +277,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     Props.NumProps = newPropsArray.Length;
                 }
 
+                Props.EndPositionLocal = EditorGUILayout.Vector3Field("LocalEndPosition", Props.EndPositionLocal);
                 Props.PropsIndex = EditorGUILayout.IntField("PropsIndex", Props.PropsIndex);
                 EditorGUI.BeginChangeCheck();
                 Props.NumProps = EditorGUILayout.IntField("NumProps", Props.NumProps);
@@ -284,22 +291,25 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     //    Props.BlinkRibbonTrailProps[i].LocalStartPositionOffsets.Length 
                     //    : 0);
                     int numTrails = EditorGUILayout.IntField("NumTrails", existingProp ? Props.BlinkRibbonTrailProps[i].NumTrails : 0);
-                    Vector3[] localStartPositionOffsets = new Vector3[numTrails];
-                    Vector3[] localEndPositionOffsets = new Vector3[numTrails];
-                    Vector3[] localStartRotationOffsets = new Vector3[numTrails];
+                    Vector3[] startPositionOffsetsLocal = new Vector3[numTrails];
+                    Vector3[] endPositionOffsetsLocal = new Vector3[numTrails];
+                    Vector3[] startRotationOffsetsLocal = new Vector3[numTrails];
+                    float[] widthMultipliers = new float[numTrails];
                     //bool numTrailsChanged = EditorGUI.EndChangeCheck();
 
                     //EditorGUI.BeginChangeCheck();
                     for (int j = 0; j < numTrails; j++)
                     {
-                        localStartPositionOffsets[j] = CreateEditorField("LocalStartPositionOffset", existingProp ? Props.BlinkRibbonTrailProps[i].LocalStartPositionOffsets : null, j);
-                        localEndPositionOffsets[j] = CreateEditorField("LocalEndPositionOffset", existingProp ? Props.BlinkRibbonTrailProps[i].LocalEndPositionOffsets : null, j);
-                        localStartRotationOffsets[j] = CreateEditorField("LocalStartRotationOffset", existingProp ? Props.BlinkRibbonTrailProps[i].LocalStartRotationOffsets : null, j);
+                        startPositionOffsetsLocal[j] = CreateEditorField("StartPositionOffsetLocal", existingProp ? Props.BlinkRibbonTrailProps[i].StartPositionOffsetsLocal : null, j);
+                        endPositionOffsetsLocal[j] = CreateEditorField("EndPositionOffsetLocal", existingProp ? Props.BlinkRibbonTrailProps[i].EndPositionOffsetsLocal : null, j);
+                        startRotationOffsetsLocal[j] = CreateEditorField("StartRotationOffsetLocal", existingProp ? Props.BlinkRibbonTrailProps[i].StartRotationOffsetsLocal : null, j);
+                        widthMultipliers[j] = CreateEditorField("WidthMultiplier", existingProp ? Props.BlinkRibbonTrailProps[i].WidthMultipliers : null, j);
                     }
                     if (EditorGUI.EndChangeCheck())
                     {
                         BlinkRibbonTrailProps blinkRibbonTrailProps = new BlinkRibbonTrailProps(numTrails: numTrails,
-                            localStartPositionOffsets: localStartPositionOffsets, localEndPositionOffsets: localEndPositionOffsets, localStartRotationOffsets: localStartRotationOffsets);
+                            startPositionOffsetsLocal: startPositionOffsetsLocal, endPositionOffsetsLocal: endPositionOffsetsLocal, startRotationOffsetsLocal: startRotationOffsetsLocal,
+                            widthMultipliers);
                         Props.BlinkRibbonTrailProps[i] = blinkRibbonTrailProps;
                         EditorDestroy();
                     }

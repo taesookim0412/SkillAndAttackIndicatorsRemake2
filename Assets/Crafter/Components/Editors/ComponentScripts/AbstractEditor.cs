@@ -115,5 +115,33 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             }
             return EditorGUILayout.Vector3Field($"{fieldName}{index}", result);
         }
+
+        protected S CreateEditorField<S>(string fieldName, S[] values,
+            int index) where S: IConvertible
+        {
+            S result;
+            if (values != null && index < values.Length)
+            {
+                result = values[index];
+            }
+            else
+            {
+                result = default(S);
+            }
+            switch (Type.GetTypeCode(typeof(S))) 
+            {
+                case TypeCode.Single:
+                    if (result is float f)
+                    {
+                        float editorField = EditorGUILayout.FloatField($"{fieldName}{index}", f);
+                        if (editorField is S tEditorField)
+                        {
+                            return tEditorField;
+                        }
+                    }
+                    break;
+            }
+            throw new NotImplementedException();
+        }
     }
 }

@@ -14,19 +14,23 @@ namespace Assets.Crafter.Components.Constants
         public static readonly Dictionary<BlinkRibbonTrailType, BlinkRibbonTrailProps> BlinkRibbonTrailProps = new Dictionary<BlinkRibbonTrailType, BlinkRibbonTrailProps>(BlinkRibbonTrailTypeEnumLength)
         {
             { BlinkRibbonTrailType.Dual, new BlinkRibbonTrailProps(
-                localStartPositionOffsets: new Vector3[2] {
+                startPositionOffsetsLocal: new Vector3[2] {
                     new Vector3(-0.3f, -0.3f, 0f),
                     new Vector3(0.3f, 0.3f, 0f)
                 },
-                localEndPositionOffsets: new Vector3[2]
+                endPositionOffsetsLocal: new Vector3[2]
                 {
                     new Vector3(-0.3f, -0.3f, 0f),
                     new Vector3(0.3f, 0.3f, 0f)
                 },
-                localStartRotationOffsets: new Vector3[2]
+                startRotationOffsetsLocal: new Vector3[2]
                 {
                     new Vector3(-45f, 0f, 0f),
                     new Vector3(-45f, 0f, 0f)
+                },
+                widthMultipliers: new float[2]
+                {
+                    0.1f, 0.1f
                 })
             }
         };
