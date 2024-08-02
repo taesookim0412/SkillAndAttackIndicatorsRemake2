@@ -117,7 +117,7 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
         }
 
         protected S CreateEditorField<S>(string fieldName, S[] values,
-            int index) where S: IConvertible
+            int index)
         {
             S result;
             if (values != null && index < values.Length)
