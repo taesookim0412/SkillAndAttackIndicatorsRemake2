@@ -20,6 +20,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public int NumProps;
         [SerializeField]
         public BlinkRibbonTrailProps[] BlinkRibbonTrailProps = new BlinkRibbonTrailProps[0];
+
+        [SerializeField]
+        public Transform MarkersParent;
     }
 #endif
 }

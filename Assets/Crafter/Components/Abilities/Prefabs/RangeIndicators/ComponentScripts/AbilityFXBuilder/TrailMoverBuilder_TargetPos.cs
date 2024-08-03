@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Timeline;
 
 namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder
 {
@@ -21,7 +22,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized]
         public BlinkRibbonTrailRenderer[] Trails;
         [HideInInspector]
-        BlinkRibbonTrailProps TrailProps;
+        private BlinkRibbonTrailProps TrailProps;
 
         [HideInInspector]
         private Vector3 EndPositionTracker;
@@ -82,9 +83,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 startRotation.y += startRotationY;
                 movementRotations[i] = startRotation;
             }
-
-            
-
             MovementRotations = movementRotations;
 
             Trails = trails;
@@ -140,6 +138,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 Vector3[] endPositions = EndPositionsWorld;
                 Vector3[] movementRotations = MovementRotations;
                 Vector3[] rotatingAnglesForwardVectors = RotatingAnglesForwardVectors;
+                Vector3[] trailMarkers = TrailProps.TrailMarkersLocal;
 
                 for (int i = 0; i < blinkTrails.Length; i++)
                 {
@@ -156,26 +155,32 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         Vector3 rotation = Vector3Util.LookRotationPitchYaw(directionVector);
 
                         float timeElapsedPercentage = elapsedTimeSec * TimeRequiredSecReciprocal;
-                        float easeTimePercentage = EffectsUtil.EaseInOutQuad(timeElapsedPercentage);
+                        //float easeTimePercentage = EffectsUtil.EaseInOutQuad(timeElapsedPercentage);
 
                         float rotationXDifference = PartialMathUtil.DeltaAngle(movementRotation.x, rotation.x);
                         float rotationYDifference = PartialMathUtil.DeltaAngle(movementRotation.y, rotation.y);
 
-                        bool useNewRotationX = rotationXDifference < -3f || rotationXDifference > 3f;
-                        bool useNewRotationY = rotationYDifference < -3f || rotationYDifference > 3f;
+                        bool useNewRotationX = rotationXDifference < -0.5f || rotationXDifference > 0.5f;
+                        bool useNewRotationY = rotationYDifference < -0.5f || rotationYDifference > 0.5f;
                         if (useNewRotationX || useNewRotationY)
                         {
                             if (useNewRotationX)
                             {
-                                movementRotation.x = movementRotation.x + rotationXDifference * easeTimePercentage;
+                                movementRotation.x = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, elapsedTimeSec);
+                                //float maxMovementRotationX = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, elapsedTimeSec * rotationSpeedMultiplier);
+                                //movementRotation.x = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.x, maxMovementRotationX, elapsedDeltaTime);
+                                //movementRotation.x = movementRotation.x + rotationXDifference * easeTimePercentage;
                             }
                             if (useNewRotationY)
                             {
-                                movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
+                                movementRotation.y = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, elapsedTimeSec);
+                                //float maxMovementRotationY = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, elapsedTimeSec * rotationSpeedMultiplier);
+                                //movementRotation.y = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.y, maxMovementRotationY, elapsedDeltaTime);
+                                //movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
                             }
                             RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(movementRotation);
                             rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward();
-                            //Debug.Log(movementRotation);
+                            //Debug.Log($"{i}: {movementRotation}, {directionVector}, {endPosition}, {currentPosition}");
 
                             rotatingAnglesForwardVectors[i] = rotatingAnglesForwardVector;
                             // chances are both x and y need to change so its better to set all at once.
@@ -284,6 +289,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 int numProps = Props.NumProps;
                 for (int i = 0; i < numProps; i++)
                 {
+                    // i think existingProp can be removed now.
                     bool existingProp = i < Props.BlinkRibbonTrailProps.Length && Props.BlinkRibbonTrailProps[i] != null;
                     EditorGUI.BeginChangeCheck();
                     //int numTrails = EditorGUILayout.IntField((existingProp && Props.BlinkRibbonTrailProps[i] != null &&
@@ -295,6 +301,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     Vector3[] endPositionOffsetsLocal = new Vector3[numTrails];
                     Vector3[] startRotationOffsetsLocal = new Vector3[numTrails];
                     float[] widthMultipliers = new float[numTrails];
+                    int numTrailMarkers = EditorGUILayout.IntField("NumTrailMarkers", existingProp ? Props.BlinkRibbonTrailProps[i].NumTrailMarkers : 0);
+                    Vector3[] trailMarkersLocal = new Vector3[numTrailMarkers];
                     //bool numTrailsChanged = EditorGUI.EndChangeCheck();
 
                     //EditorGUI.BeginChangeCheck();
@@ -304,12 +312,40 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         endPositionOffsetsLocal[j] = CreateEditorField("EndPositionOffsetLocal", existingProp ? Props.BlinkRibbonTrailProps[i].EndPositionOffsetsLocal : null, j);
                         startRotationOffsetsLocal[j] = CreateEditorField("StartRotationOffsetLocal", existingProp ? Props.BlinkRibbonTrailProps[i].StartRotationOffsetsLocal : null, j);
                         widthMultipliers[j] = CreateEditorField("WidthMultiplier", existingProp ? Props.BlinkRibbonTrailProps[i].WidthMultipliers : null, j);
+
+                        Transform markersParent = Props.MarkersParent;
+                        if (markersParent != null)
+                        {
+                            Transform[] markerTrailsForProps = GetFirstLevelTransforms(markersParent);
+
+                            if (i < markerTrailsForProps.Length)
+                            {
+                                Transform markerTrailItemContainer = markerTrailsForProps[i];
+                                for (int k = 0; k < numTrailMarkers; k++)
+                                {
+                                    Transform[] markersForTrail = GetFirstLevelTransforms(markerTrailItemContainer);
+
+                                    EditorGUILayout.ObjectField($"MarkerTransform_Trail{j}_Marker{k}",
+                                        (existingProp && k < markersForTrail.Length) ? markersForTrail[k] : null,
+                                        typeof(Transform), true);
+                                    if (existingProp && Props.BlinkRibbonTrailProps[i].TrailMarkersLocal != null)
+                                    {
+                                        Vector3 markerPosition = k < markersForTrail.Length ? markersForTrail[k].localPosition : Vector3.zero;
+                                        Props.BlinkRibbonTrailProps[i].TrailMarkersLocal[k] = markerPosition;
+                                    }
+                                    // Readonly vector3.
+                                    trailMarkersLocal[k] = CreateEditorField("TrailMarkerPos", existingProp ? Props.BlinkRibbonTrailProps[i].TrailMarkersLocal : null, k);
+                                }
+                            }
+                            
+                            
+                        }
                     }
                     if (EditorGUI.EndChangeCheck())
                     {
                         BlinkRibbonTrailProps blinkRibbonTrailProps = new BlinkRibbonTrailProps(numTrails: numTrails,
                             startPositionOffsetsLocal: startPositionOffsetsLocal, endPositionOffsetsLocal: endPositionOffsetsLocal, startRotationOffsetsLocal: startRotationOffsetsLocal,
-                            widthMultipliers);
+                            widthMultipliers: widthMultipliers, numTrailMarkers: numTrailMarkers, trailMarkersLocal: trailMarkersLocal);
                         Props.BlinkRibbonTrailProps[i] = blinkRibbonTrailProps;
                         EditorDestroy();
                     }

@@ -143,5 +143,15 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             }
             throw new NotImplementedException();
         }
+
+        protected Transform[] GetFirstLevelTransforms(Transform t)
+        {
+            List<Transform> children = new List<Transform>();
+            foreach (Transform child in t)
+            {
+                children.Add(child);
+            }
+            return children.ToArray();
+        }
     }
 }

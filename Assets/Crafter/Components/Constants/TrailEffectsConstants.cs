@@ -31,7 +31,14 @@ namespace Assets.Crafter.Components.Constants
                 widthMultipliers: new float[2]
                 {
                     0.1f, 0.1f
-                })
+                },
+                trailMarkersLocal: new Vector3[3]
+                {
+                    new Vector3(1f,1f,1f),
+                    new Vector3(2f,1f,2f),
+                    new Vector3(3f,1f,3f),
+                }
+                )
             }
         };
     }
