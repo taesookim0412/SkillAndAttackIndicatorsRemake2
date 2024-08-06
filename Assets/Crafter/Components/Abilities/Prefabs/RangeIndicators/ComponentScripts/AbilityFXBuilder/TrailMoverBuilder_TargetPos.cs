@@ -62,7 +62,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Vector3 startWorldPosition = transform.position;
             StartPosition = startWorldPosition;
 
-            float[] widthMultipliers = blinkRibbonTrailProps.WidthMultipliers;
+            float[] widthMultipliers = blinkRibbonTrailProps.WidthMultipliers; 
             Vector3[] localStartPositionOffsets = blinkRibbonTrailProps.StartPositionOffsetsLocal;
             for (int i = 0; i < trails.Length; i++)
             {
@@ -96,7 +96,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Vector3[][] allTrailMarkersWorldAndEndPosition = new Vector3[trails.Length][];
             for (int i = 0; i < trails.Length; i++)
             {
-                Vector3[] trailMarkersLocal = blinkRibbonTrailProps.TrailMarkersLocal[i];
+                Vector3[] trailMarkersLocal = blinkRibbonTrailProps.TrailMarkersLocal[i].Items;
                 Vector3[] trailMarkersWorldAndEndPosition = new Vector3[trailMarkersLocal.Length + 1];
                 for (int j = 0; j < trailMarkersWorldAndEndPosition.Length - 1; j++) 
                 {
@@ -212,7 +212,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         float totalDirectionDistance = (endPosition - currentPosition).magnitude;
 
                         // this will be short because the total distance is not curved so it needs to be faster ( mult by 5 ).
-                        float targetVelocity = totalDirectionDistance * timeRequiredSecReciprocal * 5f;
+                        float targetVelocity = totalDirectionDistance * timeRequiredSecReciprocal * 2f;
                         float dtxTargetVelocity = trailElapsedDeltaTime * targetVelocity;
                         //float dtxTargetVelocity = trailElapsedDeltaTime;
 
@@ -248,9 +248,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                         bool trailMarkerIndexCompleted = clampedX && clampedY && clampedZ;
                         //Debug.Log($"{i}: {distance}, {trailMarkerIndexCompleted}, {trailMarkerIndex}");
-                        int rotationCalculationTrailMarkerIndex = trailMarkerIndex;
                         if (trailMarkerIndexCompleted)
                         {
+                            int rotationCalculationTrailMarkerIndex = trailMarkerIndex;
                             if (++rotationCalculationTrailMarkerIndex < trailMarkers.Length) 
                             {
                                 destPosition = trailMarkers[rotationCalculationTrailMarkerIndex];
@@ -273,38 +273,28 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             float rotationXDifference = PartialMathUtil.DeltaAngle(movementRotation.x, rotation.x);
                             float rotationYDifference = PartialMathUtil.DeltaAngle(movementRotation.y, rotation.y);
 
-                            bool useNewRotationX = rotationXDifference < -0.5f || rotationXDifference > 0.5f;
-                            bool useNewRotationY = rotationYDifference < -0.5f || rotationYDifference > 0.5f;
-                            if (useNewRotationX || useNewRotationY)
-                            {
-                                if (useNewRotationX)
-                                {
-                                    movementRotation.x = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, trailElapsedDeltaTime * 5f);
-                                    //float maxMovementRotationX = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
-                                    //movementRotation.x = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.x, maxMovementRotationX, elapsedDeltaTime);
-                                    //movementRotation.x = movementRotation.x + rotationXDifference * easeTimePercentage;
-                                    Debug.Log($"{i}: directionVect: {directionVector}, New rotationg x: {movementRotation.x}");
-                                }
-                                if (useNewRotationY)
-                                {
-                                    movementRotation.y = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, trailElapsedDeltaTime * 5f);
-                                    //float maxMovementRotationY = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
-                                    //movementRotation.y = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.y, maxMovementRotationY, elapsedDeltaTime);
-                                    //movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
-                                }
-                                RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(movementRotation);
-                                rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward();
-                                //Debug.Log($"{i}: {movementRotation}, {directionVector}, {endPosition}, {currentPosition}");
+                            movementRotation.x = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, dtxTargetVelocity);
+                            //float maxMovementRotationX = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
+                            //movementRotation.x = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.x, maxMovementRotationX, elapsedDeltaTime);
+                            //movementRotation.x = movementRotation.x + rotationXDifference * easeTimePercentage;
 
-                                rotatingAnglesForwardVectors[i] = rotatingAnglesForwardVector;
-                                // chances are both x and y need to change so its better to set all at once.
-                                movementRotations[i] = movementRotation;
-                            }
+                            movementRotation.y = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, dtxTargetVelocity);
+                            //float maxMovementRotationY = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
+                            //movementRotation.y = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.y, maxMovementRotationY, elapsedDeltaTime);
+                            //movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
+
+                            RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(movementRotation);
+                            rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward();
+                            //Debug.Log($"{i}: {movementRotation}, {directionVector}, {endPosition}, {currentPosition}");
+
+                            rotatingAnglesForwardVectors[i] = rotatingAnglesForwardVector;
+                            // chances are both x and y need to change so its better to set all at once.
+                            movementRotations[i] = movementRotation;
 
                             if (!trailMarkerIndexCompleted)
                             {
                                 break;
-                                
+
                             }
                             else
                             {
@@ -317,7 +307,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             //    // hard to calculate rn
                             //    trailElapsedDeltaTime = (float)Math.Min(remainingPositiveMultipleX, Math.Min(remainingPositiveMultipleY, remainingPositiveMultipleZ));
                             //}
-                            
+
                         }
 
                         
@@ -431,7 +421,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     Vector3[] startRotationOffsetsLocal = new Vector3[numTrails];
                     float[] widthMultipliers = new float[numTrails];
                     int[] allTrailsNumTrailMarkers = new int[numTrails];
-                    Vector3[][] allTrailsTrailMarkersLocal = new Vector3[numTrails][];
+                    SerializeableArray<Vector3>[] allTrailsTrailMarkersLocal = new SerializeableArray<Vector3>[numTrails];
                     //bool numTrailsChanged = EditorGUI.EndChangeCheck();
 
                     //EditorGUI.BeginChangeCheck();
@@ -440,7 +430,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         allTrailsNumTrailMarkers[j] = EditorGUILayout.IntField("NumTrailMarkers", (existingProp && Props.BlinkRibbonTrailProps[i].NumTrailMarkers != null) ?
                             Props.BlinkRibbonTrailProps[i].NumTrailMarkers[j] : 0);
                         Vector3[] trailMarkersLocal = new Vector3[allTrailsNumTrailMarkers[j]];
-                        allTrailsTrailMarkersLocal[j] = trailMarkersLocal;
+                        allTrailsTrailMarkersLocal[j] = new SerializeableArray<Vector3>(trailMarkersLocal);
                         startPositionOffsetsLocal[j] = CreateEditorField("StartPositionOffsetLocal", existingProp ? Props.BlinkRibbonTrailProps[i].StartPositionOffsetsLocal : null, j);
                         endPositionOffsetsLocal[j] = CreateEditorField("EndPositionOffsetLocal", existingProp ? Props.BlinkRibbonTrailProps[i].EndPositionOffsetsLocal : null, j);
                         startRotationOffsetsLocal[j] = CreateEditorField("StartRotationOffsetLocal", existingProp ? Props.BlinkRibbonTrailProps[i].StartRotationOffsetsLocal : null, j);
@@ -467,14 +457,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                                     //Debug.Log($"{j < Props.BlinkRibbonTrailProps[i].TrailMarkersLocal.Length}, {k < Props.BlinkRibbonTrailProps[i].TrailMarkersLocal[j].Length}"); 
                                     if (existingProp && Props.BlinkRibbonTrailProps[i].TrailMarkersLocal != null && 
                                         j < Props.BlinkRibbonTrailProps[i].TrailMarkersLocal.Length &&
-                                        k < Props.BlinkRibbonTrailProps[i].TrailMarkersLocal[j].Length)
+                                        k < Props.BlinkRibbonTrailProps[i].TrailMarkersLocal[j].Items.Length)
                                     {
                                         Vector3 markerPosition = k < markersForTrail.Length ? markersForTrail[k].localPosition : Vector3.zero;
-                                        Props.BlinkRibbonTrailProps[i].TrailMarkersLocal[j][k] = markerPosition;
+                                        Props.BlinkRibbonTrailProps[i].TrailMarkersLocal[j].Items[k] = markerPosition;
                                     }
                                     // Readonly vector3.
                                     trailMarkersLocal[k] = CreateEditorField($"TrailMarkerPos_Trail{j}_Marker", 
-                                        (existingProp && j < Props.BlinkRibbonTrailProps[i].TrailMarkersLocal.Length) ? Props.BlinkRibbonTrailProps[i].TrailMarkersLocal[j] : null, k);
+                                        (existingProp && j < Props.BlinkRibbonTrailProps[i].TrailMarkersLocal.Length) ? Props.BlinkRibbonTrailProps[i].TrailMarkersLocal[j].Items : null, k);
                                 }
                             }
                             

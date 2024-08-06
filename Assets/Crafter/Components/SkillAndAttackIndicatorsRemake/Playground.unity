@@ -10769,6 +10769,15 @@ MonoBehaviour:
     - 0.4
     - 0.1
     NumTrailMarkers: 0300000003000000
+    TrailMarkersLocal:
+    - Items:
+      - {x: 1.77, y: 0, z: 3}
+      - {x: 3.135, y: 0, z: 7.58}
+      - {x: 2.82, y: 0, z: 20.17}
+    - Items:
+      - {x: 0, y: 0, z: 0}
+      - {x: 0, y: 0, z: 0}
+      - {x: 0, y: 0, z: 0}
   MarkersParent: {fileID: 537167969}
 --- !u!4 &1052903590
 Transform:
