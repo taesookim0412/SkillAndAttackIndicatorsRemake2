@@ -98,5 +98,15 @@ namespace Assets.Crafter.Components.Models
 
             return new Vector3(new_x_2, new_y, new_z_2);
         }
+        public Vector3 RotateXY_Forward(float distance)
+        {
+            float new_y = 0f - distance * SinXAngle;
+            float new_z = distance * CosXAngle;
+
+            float new_z_2 = new_z * CosYAngle;
+            float new_x_2 = new_z * SinYAngle;
+
+            return new Vector3(new_x_2, new_y, new_z_2);
+        }
     }
 }

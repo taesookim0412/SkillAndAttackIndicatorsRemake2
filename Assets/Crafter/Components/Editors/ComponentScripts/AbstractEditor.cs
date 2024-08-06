@@ -70,9 +70,23 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             Initialize();
             if (VariablesSet)
             {
-                ObserverUpdateCache.Update_FixedUpdate();
-                ManualUpdate();
+                if (UpdateFixedTimeStep())
+                {
+                    WarnFixedUpdateTimeChanged();
+                    ManualUpdate();
+                }
             }
+        }
+        protected bool UpdateFixedTimeStep()
+        {
+            long newTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            if (newTime - ObserverUpdateCache.UpdateTickTimeFixedUpdate >= SkillAndAttackIndicatorSystem.FixedTimestep)
+            {
+                ObserverUpdateCache.UpdateTickTimeFixedUpdateDeltaTimeSec = (newTime - ObserverUpdateCache.UpdateTickTimeFixedUpdate) * 0.001f;
+                ObserverUpdateCache.UpdateTickTimeFixedUpdate = newTime;
+                return true;
+            }
+            return false;
         }
         protected void SetObserverUpdateCache()
         {
