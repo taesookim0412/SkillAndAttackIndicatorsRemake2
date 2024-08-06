@@ -52,12 +52,54 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
         }
+        //// incorrect code. TODO: Remove.
+        //public static float CalculateClosestMultipleOrClamp(float value, float maxValue, float positiveMultiple,
+        //    out float remainingPositiveMultiple,
+        //    bool useMaxWhenDtSmall = false)
+        //{
+        //    if (positiveMultiple < PartialMathUtil.FLOAT_TOLERANCE)
+        //    {
+        //        if (!useMaxWhenDtSmall)
+        //        {
+        //            remainingPositiveMultiple = 0f;
+        //            return value;
+        //        }
+        //        else
+        //        {
+        //            remainingPositiveMultiple = 0f;
+        //            return maxValue;
+        //        }
+        //    }
+        //    float difference = maxValue - value;
+        //    float absDifference = (float)Math.Abs(difference);
+        //    if (positiveMultiple > absDifference)
+        //    {
+        //        remainingPositiveMultiple = positiveMultiple - absDifference;
+        //        return maxValue;
+        //    }
+
+        //    float quotient = difference / positiveMultiple;
+        //    float remainder = quotient - (int)quotient;
+        //    // if lt 10% of the multiple then just return the maxvalue
+        //    if (remainder > -0.1f && remainder < 0.1f)
+        //    {
+        //        remainingPositiveMultiple = 0f;
+        //        return maxValue;
+        //    }
+        //    else
+        //    {
+        //        remainingPositiveMultiple = 0f;
+        //        return maxValue - (remainder * positiveMultiple);
+        //    }
+
+        //}
         public static int MoveTrailPosition(int positionIndex, float deltaTime, float localPositionX,
             float localPositionZ, out float newLocalPositionX, out float newLocalPositionZ,
             float[] timeRequiredIncrementalSec, float[] timeRequiredIncrementalVelocityMult,
             (Vector3 worldPosition, Vector3 distanceFromPrev, float localXPosFromPrev)[] worldPositionsPerZUnit,
             float[] localXPositionsPerZUnit,
-            ref float elapsedPositionIndexDeltaTimeRef, float worldPositionY, out float newWorldPositionY)
+            float elapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, 
+            float worldPositionY, out float newWorldPositionY)
         {
             int i;
             bool addDeltaTime = false;
@@ -65,7 +107,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             for (i = positionIndex; i < timeRequiredIncrementalSec.Length; i++)
             {
-                float elapsedPositionIndexDeltaTime = elapsedPositionIndexDeltaTimeRef;
                 if (addDeltaTime)
                 {
                     deltaTime += deltaTimeAddRequired;
@@ -128,8 +169,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 {
                     elapsedPositionIndexDeltaTime = calculationElapsedPositionIndexDeltaTime;
                 }
-                
-                elapsedPositionIndexDeltaTimeRef = elapsedPositionIndexDeltaTime;
 
                 // Warning: timeRequiredIncrementalVelocityMult[i] = 0 due to no speed defined (for example last index).
                 // Fixing this would mean setting force setting the next position instead, but that would make this more complicated
@@ -181,6 +220,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             newLocalPositionX = localPositionX;
             newLocalPositionZ = localPositionZ;
             newWorldPositionY = worldPositionY;
+            newElapsedPositionIndexDeltaTime = elapsedPositionIndexDeltaTime;
             return i;
         }
     }

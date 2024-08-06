@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,9 +41,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             return num;
         }
-        public static float LerpDeltaAngle(float a, float deltaAngle, float normalizedT)
+        //public static float LerpDeltaAngle(float a, float deltaAngle, float normalizedT)
+        //{
+        //    return a + deltaAngle * Clamp01(normalizedT);
+        //}
+        public static float LerpDeltaAngle(float a, float deltaAngle, float t)
         {
-            return a + deltaAngle * Clamp01(normalizedT);
+            return a + deltaAngle * t;
         }
         public static float Clamp01(float value)
         {
@@ -57,6 +62,47 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
             return value;
+        }
+
+        public static float DirectionMaxValueClamped(float comparisonStartValue, float nextMaxValue, float clampedMaxValue, out bool clamped)
+        {
+            float possibleZeroDistanceDifference = clampedMaxValue - comparisonStartValue;
+            if (possibleZeroDistanceDifference > PartialMathUtil.FLOAT_TOLERANCE_NEGATIVE && possibleZeroDistanceDifference < PartialMathUtil.FLOAT_TOLERANCE)
+            {
+                clamped = true;
+                return clampedMaxValue;
+            }
+            if (clampedMaxValue > comparisonStartValue)
+            {
+                if (nextMaxValue > clampedMaxValue)
+                {
+                    clamped = true;
+                    //UnityEngine.Debug.Log($"{nextMaxValue}, {clampedMaxValue}, returning {clampedMaxValue}");
+                    return clampedMaxValue;
+                }
+                else
+                {
+                    clamped = false;
+                    //UnityEngine.Debug.Log($"{nextMaxValue}, {clampedMaxValue}, returning {nextMaxValue}");
+                    return nextMaxValue;
+                }
+            }
+            else
+            {
+                if (nextMaxValue < clampedMaxValue)
+                {
+                    clamped = true;
+                    //UnityEngine.Debug.Log($"{nextMaxValue}, from {comparisonStartValue} to {clampedMaxValue}, returning {clampedMaxValue}");
+                    return clampedMaxValue;
+                }
+                else
+                {
+                    clamped = false;
+                    //UnityEngine.Debug.Log($"{nextMaxValue}, from {comparisonStartValue} to {clampedMaxValue}, returning {nextMaxValue}");
+                    return nextMaxValue;
+                }
+            }
+
         }
     }
 }

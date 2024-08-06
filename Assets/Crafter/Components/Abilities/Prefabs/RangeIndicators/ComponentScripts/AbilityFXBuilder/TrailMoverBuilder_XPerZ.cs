@@ -217,7 +217,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         positionIndex = PositionUtil.MoveTrailPosition(positionIndex, fixedDeltaTime, localPosition.x, localPosition.z,
                             out float newLocalPositionX, out float newLocalPositionZ, TimeRequiredIncrementalSec,
                             TimeRequiredIncrementalVelocityMult, WorldPositionsPerZUnit, LocalXPositionsPerZUnit,
-                            ref ElapsedPositionIndexDeltaTime, transform.position.y, out float newWorldPositionY);
+                            ElapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, transform.position.y, out float newWorldPositionY);
 
                         // Since the position only gets set before the dt, instead of after,
                         // the final position has to be set if the conditions are met
@@ -253,6 +253,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         
 
                         PositionIndex = positionIndex;
+                        ElapsedPositionIndexDeltaTime = newElapsedPositionIndexDeltaTime;
                         //Debug.Log(PositionIndex);
                     }
                     
