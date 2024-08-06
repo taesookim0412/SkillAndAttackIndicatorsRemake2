@@ -47,7 +47,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         //}
         public static float LerpDeltaAngle(float a, float deltaAngle, float t)
         {
-            return a + deltaAngle * t;
+            return a + deltaAngle * Clamp01(t);
         }
         public static float Clamp01(float value)
         {

@@ -205,17 +205,46 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                         Vector3 currentPosition = blinkTrailTransform.position;
                         Vector3 destPosition = trailMarkers[trailMarkerIndex];
-                        Debug.Log($"{i}: {currentPosition}, {destPosition}");
                         Vector3 movementRotation = movementRotations[i];
+                        //Debug.Log($"{i}: {currentPosition}, {destPosition}, previousMovementRotation: {movementRotation}");
                         Vector3 rotatingAnglesForwardVector = rotatingAnglesForwardVectors[i];
 
+
+                        Vector3 directionVector = destPosition - currentPosition;
+
+                        float dtxTargetVelocity = trailElapsedDeltaTime * 50f;
+                        Vector3 rotation = Vector3Util.LookRotationPitchYaw(directionVector);
+
+                        //float timeElapsedPercentage = trailElapsedTimeSec * timeRequiredSecReciprocal;
+                        //float easeTimePercentage = EffectsUtil.EaseInOutQuad(timeElapsedPercentage);
+                        
+                        float rotationXDifference = PartialMathUtil.DeltaAngle(movementRotation.x, rotation.x);
+                        float rotationYDifference = PartialMathUtil.DeltaAngle(movementRotation.y, rotation.y);
+
+                        movementRotation.x = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, dtxTargetVelocity);
+                        //float maxMovementRotationX = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
+                        //movementRotation.x = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.x, maxMovementRotationX, elapsedDeltaTime);
+                        //movementRotation.x = movementRotation.x + rotationXDifference * easeTimePercentage;
+
+                        movementRotation.y = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, dtxTargetVelocity);
+                        //float maxMovementRotationY = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
+                        //movementRotation.y = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.y, maxMovementRotationY, elapsedDeltaTime);
+                        //movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
+
+                        RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(movementRotation);
+                        rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward();
+                        //Debug.Log($"{i}: {movementRotation}, {directionVector}, {endPosition}, {currentPosition}");
+
+                        rotatingAnglesForwardVectors[i] = rotatingAnglesForwardVector;
+                        // chances are both x and y need to change so its better to set all at once.
+                        movementRotations[i] = movementRotation;
+
+
                         Vector3 endPosition = trailMarkers[trailMarkers.Length - 1];
-                        float totalDirectionDistance = (endPosition - currentPosition).magnitude;
 
                         // this will be short because the total distance is not curved so it needs to be faster ( mult by 5 ).
-                        float targetVelocity = totalDirectionDistance * timeRequiredSecReciprocal * 2f;
-                        float dtxTargetVelocity = trailElapsedDeltaTime * targetVelocity;
-                        //float dtxTargetVelocity = trailElapsedDeltaTime;
+                        //float targetVelocity = totalDirectionDistance * timeRequiredSecReciprocal * 5f;
+                        //float dtxTargetVelocity = trailElapsedDeltaTime * targetVelocity;
 
                         float nextMaxXValue = currentPosition.x + rotatingAnglesForwardVector.x * dtxTargetVelocity;
                         float clampedMaxXValue = PartialMathUtil.DirectionMaxValueClamped(trailMarkerIndex == 0 ? StartPosition.x : trailMarkers[trailMarkerIndex - 1].x,
@@ -234,89 +263,41 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         float newPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(currentPosition.z, clampedMaxZValue,
                             trailElapsedDeltaTime);
 
-                        Debug.Log($"{i}: {clampedMaxYValue}, {newPositionY}, {nextMaxYValue}, {rotatingAnglesForwardVector.y}");
                         Vector3 newPosition = new Vector3(newPositionX, newPositionY, newPositionZ);
-                        currentPosition = newPosition;
-                        blinkTrailTransform.position = currentPosition;
+
+                        //Debug.Log($"{i}: {newPosition}, {trailElapsedDeltaTime}, {clampedMaxXValue}, {clampedMaxYValue}, {clampedMaxZValue}, newMovementRotation: {movementRotation}");
+                        blinkTrailTransform.position = newPosition;
 
                         // calculate the new rotation.
-                        Vector3 directionVector = destPosition - currentPosition;
                         float distance = directionVector.magnitude;
 
                         // distance is not needed and manhattan can be used but usually the rotation will just use distance instead.
 
-                        bool calculateNextRotation = true;
-
                         bool trailMarkerIndexCompleted = clampedX && clampedY && clampedZ;
-                        //Debug.Log($"{i}: {distance}, {trailMarkerIndexCompleted}, {trailMarkerIndex}");
-                        if (trailMarkerIndexCompleted)
+                        if (!trailMarkerIndexCompleted)
                         {
-                            int rotationCalculationTrailMarkerIndex = trailMarkerIndex;
-                            if (++rotationCalculationTrailMarkerIndex < trailMarkers.Length) 
-                            {
-                                destPosition = trailMarkers[rotationCalculationTrailMarkerIndex];
-                                //Debug.Log(destPosition);
-                                directionVector = destPosition - currentPosition;
-                                //distance is stale.
-                            }
-                            else
-                            {
-                                calculateNextRotation = false;
-                            }
-                        }
-                        if (calculateNextRotation)
-                        {
-                            Vector3 rotation = Vector3Util.LookRotationPitchYaw(directionVector);
-
-                            //float timeElapsedPercentage = trailElapsedTimeSec * timeRequiredSecReciprocal;
-                            //float easeTimePercentage = EffectsUtil.EaseInOutQuad(timeElapsedPercentage);
-
-                            float rotationXDifference = PartialMathUtil.DeltaAngle(movementRotation.x, rotation.x);
-                            float rotationYDifference = PartialMathUtil.DeltaAngle(movementRotation.y, rotation.y);
-
-                            movementRotation.x = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, dtxTargetVelocity);
-                            //float maxMovementRotationX = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
-                            //movementRotation.x = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.x, maxMovementRotationX, elapsedDeltaTime);
-                            //movementRotation.x = movementRotation.x + rotationXDifference * easeTimePercentage;
-
-                            movementRotation.y = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, dtxTargetVelocity);
-                            //float maxMovementRotationY = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
-                            //movementRotation.y = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.y, maxMovementRotationY, elapsedDeltaTime);
-                            //movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
-
-                            RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(movementRotation);
-                            rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward();
-                            //Debug.Log($"{i}: {movementRotation}, {directionVector}, {endPosition}, {currentPosition}");
-
-                            rotatingAnglesForwardVectors[i] = rotatingAnglesForwardVector;
-                            // chances are both x and y need to change so its better to set all at once.
-                            movementRotations[i] = movementRotation;
-
-                            if (!trailMarkerIndexCompleted)
-                            {
-                                break;
-
-                            }
-                            else
-                            {
-                                trailMarkerIndex++;
-                                break;
-                                //trailElapsedDeltaTime = 0f;
-                            }
-                            //else
-                            //{
-                            //    // hard to calculate rn
-                            //    trailElapsedDeltaTime = (float)Math.Min(remainingPositiveMultipleX, Math.Min(remainingPositiveMultipleY, remainingPositiveMultipleZ));
-                            //}
+                            break;
 
                         }
+                        else
+                        {
+                            // dp = v * dt
+                            // dt = dp / v
+                            float velocityReciprocal = 1 / 50f;
+                            float xDeltaTime = (float)Math.Abs((clampedMaxXValue - currentPosition.x)) * velocityReciprocal;
+                            float yDeltaTime = (float)Math.Abs((clampedMaxYValue - currentPosition.y)) * velocityReciprocal;
+                            float zDeltaTime = (float)Math.Abs((clampedMaxZValue - currentPosition.z)) * velocityReciprocal;
+                            float maxDeltaTimeElapsed = (float)Math.Max(xDeltaTime, Math.Max(yDeltaTime, zDeltaTime));
 
-                        
+                            trailElapsedDeltaTime -= maxDeltaTimeElapsed;
+                            //trailElapsedDeltaTime = 0f;
+                        }
+
+
                         //Debug.Log(distance);
                     }
 
                     targetMarkerPositionIndices[i] = trailMarkerIndex;
-                    Debug.Log($"{i}, {trailMarkerIndex}");
                 }
 
 
