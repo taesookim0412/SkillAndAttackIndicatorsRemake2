@@ -2,6 +2,7 @@
 using Assets.Crafter.Components.Constants;
 using Assets.Crafter.Components.Editors.ComponentScripts;
 using Assets.Crafter.Components.Models;
+using Assets.Crafter.Components.Models.dco;
 using Assets.Crafter.Components.Models.dpo.TrailEffectsDpo;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using Assets.Crafter.Components.Systems.Observers;

@@ -16,8 +16,4 @@ namespace Assets.Crafter.Components.Models.dco
             Items = items;
         }
     }
-    public enum BlinkRibbonTrailType
-    {
-        Dual
-    }
 }

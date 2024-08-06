@@ -1,4 +1,5 @@
-﻿using Assets.Crafter.Components.Models.dpo.TrailEffectsDpo;
+﻿using Assets.Crafter.Components.Models.dco;
+using Assets.Crafter.Components.Models.dpo.TrailEffectsDpo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,5 +45,9 @@ namespace Assets.Crafter.Components.Constants
                 )
             }
         };
+    }
+    public enum BlinkRibbonTrailType
+    {
+        Dual
     }
 }
