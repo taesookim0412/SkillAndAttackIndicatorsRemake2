@@ -222,7 +222,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             // dp = v * dt
                             // dt = dp * 1/v
                             float velocityReciprocal = 1 / 35f;
-                            trailElapsedDeltaTime -= (targetDistance - destPositionDistance) * velocityReciprocal;
+                            trailElapsedDeltaTime -= destPositionDistance * velocityReciprocal;
 
                             targetDistance = destPositionDistance;
 
