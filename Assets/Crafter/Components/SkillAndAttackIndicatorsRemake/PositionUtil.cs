@@ -34,7 +34,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
             float difference = maxValue - value;
 
-            if (positiveMultiple > (float) Math.Abs(difference))
+            if (positiveMultiple > (float)Math.Abs(difference))
             {
                 return maxValue;
             }
@@ -51,6 +51,32 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 return maxValue - (remainder * positiveMultiple);
             }
 
+        }
+        public static void SmoothenTrail_MovingAverageWindow3(Vector3[] positions)
+        {
+            if (positions.Length < 3)
+            {
+                return;
+            }
+
+            int itemsLength = positions.Length;
+
+            Vector3 left = positions[0];
+            Vector3 current = positions[1];
+
+            for (int i = 1; i < itemsLength - 1; i++)
+            {
+                Vector3 right = positions[i + 1];
+
+                current.x = (left.x + current.x + right.x) / 3;
+                current.y = (left.y + current.y + right.y) / 3;
+                current.z = (left.z + current.z + right.z) / 3;
+
+                // important for Vector3: replace the struct.
+                positions[i] = current;
+                left = current;
+                current = right;
+            }
         }
         //// incorrect code. TODO: Remove.
         //public static float CalculateClosestMultipleOrClamp(float value, float maxValue, float positiveMultiple,
