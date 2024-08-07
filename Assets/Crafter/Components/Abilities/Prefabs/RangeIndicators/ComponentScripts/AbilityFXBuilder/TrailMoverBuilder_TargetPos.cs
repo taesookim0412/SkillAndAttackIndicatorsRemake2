@@ -215,17 +215,21 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         Vector3 directionVector = destPosition - currentPosition;
                         float destPositionDistance = directionVector.magnitude;
 
+                        bool destPositionReached = destPositionDistance <= 0.1f;
+
                         float targetDistance = trailElapsedDeltaTime * 35f;
 
                         if (targetDistance > destPositionDistance)
                         {
+                            continue;
                             // dp = v * dt
                             // dt = dp * 1/v
-                            float velocityReciprocal = 1 / 35f;
-                            trailElapsedDeltaTime -= destPositionDistance * velocityReciprocal;
+                            //float velocityReciprocal = 1 / 35f;
+                            //trailElapsedDeltaTime -= destPositionDistance * velocityReciprocal;
 
-                            targetDistance = destPositionDistance;
+                            //targetDistance = destPositionDistance;
 
+                            //destPositionReached = true;
                             //Debug.Log($"{i}: {1}");
                         }
                         else
@@ -248,12 +252,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         float rotationXDifference = PartialMathUtil.DeltaAngle(movementRotation.x, rotation.x);
                         float rotationYDifference = PartialMathUtil.DeltaAngle(movementRotation.y, rotation.y);
 
-                        movementRotation.x = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, targetDistance);
+                        float rotationSpeed = trailElapsedDeltaTime * 15f;
+                        movementRotation.x = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, rotationSpeed);
                         //float maxMovementRotationX = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
                         //movementRotation.x = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.x, maxMovementRotationX, elapsedDeltaTime);
                         //movementRotation.x = movementRotation.x + rotationXDifference * easeTimePercentage;
 
-                        movementRotation.y = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, targetDistance);
+                        movementRotation.y = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, rotationSpeed);
                         //float maxMovementRotationY = PartialMathUtil.LerpDeltaAngle(movementRotation.y, rotationYDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
                         //movementRotation.y = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.y, maxMovementRotationY, elapsedDeltaTime);
                         //movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
@@ -273,20 +278,20 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
 
                         float nextMaxXValue = currentPosition.x + rotatingAnglesForwardVector.x;
-                        float clampedMaxXValue = PartialMathUtil.DirectionMaxValueClamped(trailMarkerIndex == 0 ? StartPositions[i].x : trailMarkers[trailMarkerIndex - 1].x,
-                            nextMaxXValue, destPosition.x, out bool clampedX);
+                        //float clampedMaxXValue = PartialMathUtil.DirectionMaxValueClamped(trailMarkerIndex == 0 ? StartPositions[i].x : trailMarkers[trailMarkerIndex - 1].x,
+                        //    nextMaxXValue, destPosition.x, out bool clampedX);
                         float nextMaxYValue = currentPosition.y + rotatingAnglesForwardVector.y;
-                        float clampedMaxYValue = PartialMathUtil.DirectionMaxValueClamped(trailMarkerIndex == 0 ? StartPositions[i].y : trailMarkers[trailMarkerIndex - 1].y,
-                            nextMaxYValue, destPosition.y, out bool clampedY);
+                        //float clampedMaxYValue = PartialMathUtil.DirectionMaxValueClamped(trailMarkerIndex == 0 ? StartPositions[i].y : trailMarkers[trailMarkerIndex - 1].y,
+                        //    nextMaxYValue, destPosition.y, out bool clampedY);
                         float nextMaxZValue = currentPosition.z + rotatingAnglesForwardVector.z;
-                        float clampedMaxZValue = PartialMathUtil.DirectionMaxValueClamped(trailMarkerIndex == 0 ? StartPositions[i].z : trailMarkers[trailMarkerIndex - 1].z,
-                            nextMaxZValue, destPosition.z, out bool clampedZ);
+                        //float clampedMaxZValue = PartialMathUtil.DirectionMaxValueClamped(trailMarkerIndex == 0 ? StartPositions[i].z : trailMarkers[trailMarkerIndex - 1].z,
+                        //    nextMaxZValue, destPosition.z, out bool clampedZ);
 
-                        float newPositionX = PositionUtil.CalculateClosestMultipleOrClamp(currentPosition.x, clampedMaxXValue,
+                        float newPositionX = PositionUtil.CalculateClosestMultipleOrClamp(currentPosition.x, nextMaxXValue,
                             trailElapsedDeltaTime);
-                        float newPositionY = PositionUtil.CalculateClosestMultipleOrClamp(currentPosition.y, clampedMaxYValue,
+                        float newPositionY = PositionUtil.CalculateClosestMultipleOrClamp(currentPosition.y, nextMaxYValue,
                             trailElapsedDeltaTime);
-                        float newPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(currentPosition.z, clampedMaxZValue,
+                        float newPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(currentPosition.z, nextMaxZValue,
                             trailElapsedDeltaTime);
 
                         Vector3 newPosition = new Vector3(newPositionX, newPositionY, newPositionZ);
@@ -300,7 +305,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                         //bool trailMarkerIndexCompleted = (clampedX && clampedY && clampedZ) || distance <= 0.1f;
                         //if (!trailMarkerIndexCompleted)
-                        if (!clampedZ)
+                        if (!destPositionReached)
                         {
                             break;
 
