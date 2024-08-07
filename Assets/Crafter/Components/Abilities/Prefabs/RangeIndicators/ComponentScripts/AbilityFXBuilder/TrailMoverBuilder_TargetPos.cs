@@ -52,6 +52,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             float[] widthMultipliers = blinkRibbonTrailProps.WidthMultipliers; 
             Vector3[] localStartPositionOffsets = blinkRibbonTrailProps.StartPositionOffsetsLocal;
+            Vector3[] trailStartPositions = new Vector3[trails.Length];
             for (int i = 0; i < trails.Length; i++)
             {
                 Vector3 startPositionOffset = localStartPositionOffsets[i];
@@ -66,6 +67,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 Vector3 startPosition = new Vector3(startWorldPosition.x + rotatedLocalPositionX,
                     startWorldPosition.y + startPositionOffset.y,
                     startWorldPosition.z + rotatedLocalPositionZ);
+                trailStartPositions[i] = startPosition;
                 trail.transform.position = startPosition;
             }
 
@@ -109,13 +111,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             ElapsedTimeSec = 0f;
             TimeRequiredSec = timeRequiredSec;
 
-            Vector3[][] trailPositions = CreateTrailPositions(trails, allTrailMarkersWorldAndEndPosition, movementRotations, timeRequiredSec);
-
-            for (int i = 0; i < trailPositions.Length; i++)
-            {
-                PositionUtil.SmoothenTrail_MovingAverageWindow3(trailPositions[i]);
-            }
-            TrailPositions = trailPositions;
+            TrailPositions = CreateTrailPositions(trails, allTrailMarkersWorldAndEndPosition, movementRotations, trailStartPositions, timeRequiredSec);
         }
 
         public void SetEndPositionsWorld(float startYRotation, Vector3 newEndPositionWorld,
@@ -184,6 +180,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public Vector3[][] CreateTrailPositions(BlinkRibbonTrailRenderer[] blinkTrails,
             Vector3[][] trailMarkersWorldAndEndPosition,
             Vector3[] movementRotations,
+            Vector3[] trailStartPositions,
             float timeRequiredSec)
         {
             float timestepDeltaTime = SkillAndAttackIndicatorSystem.FixedTimestepSec;
@@ -193,14 +190,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             for (int i = 0; i < blinkTrails.Length; i++)
             {
-                Vector3[] trailPositions = new Vector3[positions];
                 Vector3 rotatingAnglesForwardVector = Vector3.forward;
                 Vector3 movementRotation = movementRotations[i];
-                allTrailPositions[i] = trailPositions;
-                Transform blinkTrailTransform = blinkTrails[i].transform;
-                Vector3 blinkTrailPosition = blinkTrails[i].transform.position;
+                Vector3 blinkTrailPosition = trailStartPositions[i];
                 Vector3[] trailMarkers = trailMarkersWorldAndEndPosition[i];
                 int trailMarkerIndex = 0;
+
+                Vector3[] trailRotations = new Vector3[positions];
                 for (int j = 0; j < positions; j++)
                 {
                     if (trailMarkerIndex < trailMarkers.Length)
@@ -262,6 +258,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             //movementRotation.y = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.y, maxMovementRotationY, elapsedDeltaTime);
                             //movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
 
+                            trailRotations[j] = movementRotation;
+
                             RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(movementRotation);
                             rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward(targetDistance);
                             //Debug.Log($"{i}: {movementRotation}, {directionVector}, {endPosition}, {currentPosition}");
@@ -292,7 +290,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             blinkTrailPosition = new Vector3(newPositionX, newPositionY, newPositionZ);
 
                             //Debug.Log($"{i}: {newPosition}, {trailElapsedDeltaTime}, {clampedMaxXValue}, {clampedMaxYValue}, {clampedMaxZValue}, newMovementRotation: {movementRotation}, {rotatingAnglesForwardVector.x}, {rotatingAnglesForwardVector.y}, {rotatingAnglesForwardVector.z}, {rotatingAnglesForwardVector.magnitude}");
-                            trailPositions[j] = blinkTrailPosition;
+                            //trailPositions[j] = blinkTrailPosition;
 
                             // calculate the new rotation.
 
@@ -309,6 +307,32 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         //Debug.Log(distance);
                     }
                 }
+
+                PositionUtil.SmoothenTrail_MovingAverageWindow3(trailRotations);
+
+                Vector3[] trailPositions = new Vector3[positions];
+                blinkTrailPosition = trailStartPositions[i];
+                allTrailPositions[i] = trailPositions;
+                for (int j = 0; j < trailRotations.Length; j++) 
+                {
+                    float targetDistance = timestepDeltaTime * 35f;
+                    RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(trailRotations[j]);
+                    rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward(targetDistance);
+                    float nextMaxXValue = blinkTrailPosition.x + rotatingAnglesForwardVector.x;
+                    float nextMaxYValue = blinkTrailPosition.y + rotatingAnglesForwardVector.y;
+                    float nextMaxZValue = blinkTrailPosition.z + rotatingAnglesForwardVector.z;
+
+                    float newPositionX = PositionUtil.CalculateClosestMultipleOrClamp(blinkTrailPosition.x, nextMaxXValue,
+                        timestepDeltaTime);
+                    float newPositionY = PositionUtil.CalculateClosestMultipleOrClamp(blinkTrailPosition.y, nextMaxYValue,
+                        timestepDeltaTime);
+                    float newPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(blinkTrailPosition.z, nextMaxZValue,
+                        timestepDeltaTime);
+                    blinkTrailPosition = new Vector3(newPositionX, newPositionY, newPositionZ); ;
+                    trailPositions[j] = blinkTrailPosition;
+                }
+
+                PositionUtil.SmoothenTrail_MovingAverageWindow3(trailPositions);
             }
             return allTrailPositions;
         }
