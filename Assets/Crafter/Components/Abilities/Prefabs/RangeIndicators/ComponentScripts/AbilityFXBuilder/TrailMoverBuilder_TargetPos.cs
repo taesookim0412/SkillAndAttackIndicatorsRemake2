@@ -155,8 +155,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float previousElapsedTimeSec = ElapsedTimeSec;
             float destElapsedTimeSec = previousElapsedTimeSec + elapsedDeltaTime;
 
-            int startIndex = Math.Max((int) (previousElapsedTimeSec * SkillAndAttackIndicatorSystem.FixedTimestepSecReciprocal), 0);
-            int endIndex = (int)(destElapsedTimeSec * SkillAndAttackIndicatorSystem.FixedTimestepSecReciprocal);
+            int startIndex = Math.Max((int) (previousElapsedTimeSec * SkillAndAttackIndicatorSystem.FixedTrailTimestepSecReciprocal), 0);
+            int endIndex = (int)(destElapsedTimeSec * SkillAndAttackIndicatorSystem.FixedTrailTimestepSecReciprocal);
 
             // very simple with no interpolation between remainder dt.
             BlinkRibbonTrailRenderer[] trails = Trails;
@@ -170,8 +170,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 {
                     clampedEndIndex = trailPositions.Length - 1;
                 }
+                TrailRenderer trailRenderer = trail.TrailRenderer;
                 for (int j = startIndex + 1; j < clampedEndIndex + 1; j++)
                 {
+                    trailRenderer.AddPosition(trailPositions[j]);
                     trail.transform.position = trailPositions[j];
                 }
             }
@@ -183,10 +185,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Vector3[] trailStartPositions,
             float timeRequiredSec)
         {
-            float timestepDeltaTime = SkillAndAttackIndicatorSystem.FixedTimestepSec;
+            float timestepDeltaTime = SkillAndAttackIndicatorSystem.FixedTrailTimestepSec;
             Vector3[][] allTrailPositions = new Vector3[blinkTrails.Length][];
 
-            int positions = (int) (timeRequiredSec * SkillAndAttackIndicatorSystem.FixedTimestepSecReciprocal);
+            int positions = (int) (timeRequiredSec * SkillAndAttackIndicatorSystem.FixedTrailTimestepSecReciprocal);
 
             for (int i = 0; i < blinkTrails.Length; i++)
             {
@@ -195,8 +197,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 Vector3 blinkTrailPosition = trailStartPositions[i];
                 Vector3[] trailMarkers = trailMarkersWorldAndEndPosition[i];
                 int trailMarkerIndex = 0;
+                int stopIndex = positions - 1;
 
-                float velocity = 20f;
+                float velocity = 35f;
+                float targetDistance = timestepDeltaTime * velocity;
+                float rotationSpeed = 0.8f;
 
                 Vector3[] trailRotations = new Vector3[positions];
                 for (int j = 0; j < positions; j++)
@@ -212,8 +217,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             float destPositionDistance = directionVector.magnitude;
 
                             bool destPositionReached = destPositionDistance <= 0.1f;
-
-                            float targetDistance = timestepDeltaTime * velocity;
 
                             if (targetDistance > destPositionDistance)
                             {
@@ -249,7 +252,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             float rotationXDifference = PartialMathUtil.DeltaAngle(movementRotation.x, rotation.x);
                             float rotationYDifference = PartialMathUtil.DeltaAngle(movementRotation.y, rotation.y);
 
-                            float rotationSpeed = targetDistance * 2f;
                             movementRotation.x = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, rotationSpeed);
                             //float maxMovementRotationX = PartialMathUtil.LerpDeltaAngle(movementRotation.x, rotationXDifference, trailElapsedTimeSec * rotationSpeedMultiplier);
                             //movementRotation.x = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.x, maxMovementRotationX, elapsedDeltaTime);
@@ -308,6 +310,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         
                         //Debug.Log(distance);
                     }
+                    if (trailMarkerIndex == trailMarkers.Length)
+                    {
+                        stopIndex = j;
+                        break;
+                    }
                 }
 
                 PositionUtil.SmoothenTrail_MovingAverageWindow3(trailRotations);
@@ -315,9 +322,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 Vector3[] trailPositions = new Vector3[positions];
                 blinkTrailPosition = trailStartPositions[i];
                 allTrailPositions[i] = trailPositions;
-                for (int j = 0; j < trailRotations.Length; j++) 
+                for (int j = 0; j < stopIndex + 1; j++) 
                 {
-                    float targetDistance = timestepDeltaTime * velocity;
                     RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(trailRotations[j]);
                     rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward(targetDistance);
                     float nextMaxXValue = blinkTrailPosition.x + rotatingAnglesForwardVector.x;
@@ -333,6 +339,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     blinkTrailPosition = new Vector3(newPositionX, newPositionY, newPositionZ); ;
                     trailPositions[j] = blinkTrailPosition;
                 }
+                for (int j = stopIndex; j < trailRotations.Length; j++)
+                {
+                    trailPositions[j] = trailPositions[j - 1];
+                }
 
                 PositionUtil.SmoothenTrail_MovingAverageWindow3(trailPositions);
             }
@@ -346,7 +356,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     {
         private TrailMoverBuilder_TargetPosEditor_Props Props;
 
-        private float TimeRequiredSec = 3f;
+        private float TimeRequiredSec = 1f;
 
         private long StartTime;
         private long LastUpdateTime;

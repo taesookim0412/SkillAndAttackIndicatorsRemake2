@@ -17,9 +17,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     {
 
         // these are static due to cross-assembly when migrated.
-        public static readonly long FixedTimestep = 20L;
-        public static readonly float FixedTimestepSec = 0.02f;
-        public static readonly float FixedTimestepSecReciprocal = 1f / FixedTimestepSec;
+        public const long FixedTimestep = 20L;
+        public const float FixedTimestepSec = 0.02f;
+        public const float FixedTimestepSecReciprocal = 1f / FixedTimestepSec;
+        public const float FixedTrailTimestepSec = 0.01f;
+        public const float FixedTrailTimestepSecReciprocal = 1f / FixedTrailTimestepSec;
         public const float ONE_THIRD = 1 / 3f;
         public const float TWO_THIRDS = 2 / 3f;
 

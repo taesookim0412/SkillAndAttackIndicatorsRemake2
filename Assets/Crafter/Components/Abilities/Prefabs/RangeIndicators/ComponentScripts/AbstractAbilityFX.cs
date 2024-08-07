@@ -17,7 +17,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         protected ParticleSystem[] ParticleSystems;
 
         [SerializeField]
-        protected TrailRenderer TrailRenderer;
+        public TrailRenderer TrailRenderer;
 
         public void DisableParticleSystems()
         {
