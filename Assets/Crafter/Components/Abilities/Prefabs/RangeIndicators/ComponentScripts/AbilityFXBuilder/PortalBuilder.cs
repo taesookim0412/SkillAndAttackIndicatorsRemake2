@@ -277,7 +277,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(PortalBuilder))]
     public class PortalBuilderEditor : AbstractEditor<PortalBuilder>
     {
-        protected override bool OnInitialize(PortalBuilder instance)
+        public long? RequiredDuration = null;
+        protected override bool OnInitialize(PortalBuilder instance, ObserverUpdateCache observerUpdateCache)
         {
             SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
             if (system != null)
@@ -304,9 +305,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                     CrimsonAuraBlack crimsonAura = GameObject.Instantiate(crimsonAuraPrefab, instance.transform);
 
-                    SetObserverUpdateCache();
-                    instance.ManualAwake();
-                    instance.Initialize(ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, null, instance.SetPlayerInactive, isClone: true);
+                    if (observerUpdateCache == null)
+                    {
+                        SetObserverUpdateCache();
+                        observerUpdateCache = ObserverUpdateCache;
+                    }
+                    
+                    instance.Initialize(observerUpdateCache, playerClientData, portalOrb, crimsonAura, RequiredDuration, instance.SetPlayerInactive, isClone: true);
                     TryAddParticleSystem(instance.gameObject);
                     return true;
                 }
@@ -343,8 +348,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PlayerComponent playerComponent = (PlayerComponent) EditorGUILayout.ObjectField("PlayerComponent", Instance.PlayerClientData != null ? Instance.PlayerClientData.PlayerComponent : null, typeof(PlayerComponent), true);
             PortalOrbPurple portalOrbPurple = (PortalOrbPurple) EditorGUILayout.ObjectField("PortalOrb", Instance.PortalOrb, typeof(PortalOrbPurple), true);
             CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack) EditorGUILayout.ObjectField("CrimsonAura", Instance.CrimsonAura, typeof(CrimsonAuraBlack), true);
-
-
         }
 
         protected override void ManualUpdate()
@@ -358,9 +361,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             GameObject.DestroyImmediate(Instance.CrimsonAura.gameObject);
             GameObject.DestroyImmediate(Instance.PortalOrb.gameObject);
 
-            Instance.PlayerClientData = null;
-            Instance.PortalOrb = null;
-            Instance.CrimsonAura = null;
+            Instance.CleanUpInstance();
         }
     }
 }

@@ -1037,6 +1037,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         PortalOrbPurple,
         PortalBuilder_Source,
         PortalBuilder_Dest,
+        PortalBuilderChain,
         BlinkRibbonTrailRenderer,
         TrailMoverBuilder_XPerZ,
         TrailMoverBuilder_TargetPos

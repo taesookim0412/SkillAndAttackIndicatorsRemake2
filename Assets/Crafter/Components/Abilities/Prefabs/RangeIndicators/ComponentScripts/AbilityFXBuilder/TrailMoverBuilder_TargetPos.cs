@@ -385,7 +385,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private long StartTime;
         private long LastUpdateTime;
         
-        protected override bool OnInitialize(TrailMoverBuilder_TargetPos instance)
+        protected override bool OnInitialize(TrailMoverBuilder_TargetPos instance, ObserverUpdateCache observerUpdateCache)
         {
             TrailMoverBuilder_TargetPosEditor_Props props = Props;
             if (props != null && props.BlinkRibbonTrailProps != null && props.PropsIndex < props.BlinkRibbonTrailProps.Length)
@@ -393,8 +393,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
                 if (system != null)
                 {
-                    SetObserverUpdateCache();
-
                     string blinkRibbonTrailRendererType = AbilityFXComponentType.BlinkRibbonTrailRenderer.ToString();
                     BlinkRibbonTrailRenderer blinkRibbonTrailRendererPrefab = (BlinkRibbonTrailRenderer)system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == blinkRibbonTrailRendererType);
 
@@ -414,12 +412,18 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             }
                             Vector3 endPositionWorld = Props.EndPositionLocal + instance.transform.position;
 
-                            instance.Initialize(ObserverUpdateCache, blinkRibbonTrailRenderers, blinkRibbonTrailProps, startRotationY,
+                            if (observerUpdateCache == null)
+                            {
+                                SetObserverUpdateCache();
+                                observerUpdateCache = ObserverUpdateCache;
+                            }
+
+                            instance.Initialize(observerUpdateCache, blinkRibbonTrailRenderers, blinkRibbonTrailProps, startRotationY,
                                 startRotationYCosYAngle, startRotationYSinYAngle,
                                 TimeRequiredSec,
                                 endPositionWorld: endPositionWorld);
                             TryAddParticleSystem(instance.gameObject);
-                            StartTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                            StartTime = observerUpdateCache.UpdateTickTimeFixedUpdate;
                             return true;
                         }
                     }
@@ -562,12 +566,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 {
                     GameObject.DestroyImmediate(trails[i].gameObject);
                 }
-                Instance.Trails = null;
             }
-            //if (LastUpdateTime > StartTime)
-            //{
-            //    Instance.transform.position = StartPosition;
-            //}
+            Instance.CleanUpInstance();
         }
     }
 

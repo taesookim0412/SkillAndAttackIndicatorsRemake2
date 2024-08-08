@@ -40,20 +40,20 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
                 GameObject.DestroyImmediate(particleSystem);
             }
         }
-        protected void Initialize()
+        protected void Initialize(ObserverUpdateCache observerUpdateCache)
         {
             if (!VariablesSet && PrefabStageUtility.GetCurrentPrefabStage() == null)
             {
                 T instance = (T)target;
                 Instance = instance;
-                if (OnInitialize(instance))
+                if (OnInitialize(instance, observerUpdateCache))
                 {
                     VariablesSet = true;
                     VariablesAdded = true;
                 }
             }
         }
-        protected abstract bool OnInitialize(T instance);
+        protected abstract bool OnInitialize(T instance, ObserverUpdateCache observerUpdateCache);
         protected abstract void ManualUpdate();
         protected abstract void EditorDestroy();
         public void OnDisable()
@@ -67,7 +67,7 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
         }
         public void OnSceneGUI()
         {
-            Initialize();
+            Initialize(null);
             if (VariablesSet)
             {
                 if (UpdateFixedTimeStep())
@@ -76,6 +76,10 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
                     ManualUpdate();
                 }
             }
+        }
+        public void ForceInitialize(ObserverUpdateCache observerUpdateCache)
+        {
+            Initialize(observerUpdateCache);
         }
         protected bool UpdateFixedTimeStep()
         {

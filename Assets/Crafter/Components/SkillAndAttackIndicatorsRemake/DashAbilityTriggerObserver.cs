@@ -92,12 +92,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     endPositionWorld: TargetPosition);
 
                 PlayerClientData = playerClientData;
-                PortalBuilderChain = new PortalBuilderChain(
-                    portalSource: portalSource, 
+
+                PortalBuilderChain portalBuilderChain = (PortalBuilderChain)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilderChain];
+                portalBuilderChain.transform.position = playerPosition;
+                portalBuilderChain.transform.localEulerAngles = playerRotation;
+                portalBuilderChain.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache,
+                    portalSource: portalSource,
                     portalDest: portalDest,
                     trailMoverBuilderTargetPos,
                     startTime: 0L,
                     endTime: Timer.RequiredDuration - 200L);
+                PortalBuilderChain = portalBuilderChain;
                 return true;
             }
 
@@ -106,7 +111,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         protected override void TimerConstrainedFixedUpdate()
         {
-            PortalBuilderChain.UpdatePortals(Timer.ElapsedTime_FixedUpdateThread());
+            PortalBuilderChain.ManualUpdate(Timer.ElapsedTime_FixedUpdateThread());
         }
         protected override void OnObserverCompleted()
         {
@@ -123,6 +128,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         PortalOrbPurple,
         PortalBuilder_Source,
         PortalBuilder_Dest,
+        PortalBuilderChain,
         BlinkRibbonTrailRenderer1,
         BlinkRibbonTrailRenderer2,
         TrailMoverBuilder_TargetPos

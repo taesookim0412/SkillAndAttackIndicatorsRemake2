@@ -265,6 +265,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 }
             }
         }
+        public override void CleanUpInstance()
+        {
+            ElectricTrail = null;
+            WorldPositionsPerZUnit = null;
+        }
     }
 
     [CustomEditor(typeof(TrailMoverBuilder_XPerZ))]
@@ -276,13 +281,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         private long StartTime;
         private long LastUpdateTime;
-        protected override bool OnInitialize(TrailMoverBuilder_XPerZ instance)
+        protected override bool OnInitialize(TrailMoverBuilder_XPerZ instance, ObserverUpdateCache observerUpdateCache)
         {
             SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
             if (system != null)
             {
-                SetObserverUpdateCache();
-
                 string electricTrailType = AbilityFXComponentType.ElectricTrail.ToString();
                 ElectricTrail electricTrailPrefab = (ElectricTrail) system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == electricTrailType);
 
@@ -295,10 +298,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     float cosYAngle = (float)Math.Cos(0f * Mathf.Deg2Rad);
                     float sinYAngle = (float)Math.Sin(0f * Mathf.Deg2Rad);
 
-                    instance.Initialize(ObserverUpdateCache, electricTrail, LineLengthUnits, timeRequiredForZDistances, system,
+                    if (observerUpdateCache == null)
+                    {
+                        SetObserverUpdateCache();
+                        observerUpdateCache = ObserverUpdateCache;
+                    }
+                    instance.Initialize(observerUpdateCache, electricTrail, LineLengthUnits, timeRequiredForZDistances, system,
                         position.x, position.z, cosYAngle, sinYAngle);
                     TryAddParticleSystem(instance.gameObject);
-                    StartTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                    StartTime = observerUpdateCache.UpdateTickTimeFixedUpdate;
                     return true;
                 }
             }
@@ -322,8 +330,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             StartTime = default;
             GameObject.DestroyImmediate(Instance.ElectricTrail.gameObject);
-            Instance.ElectricTrail = null;
             Instance.transform.position = Instance.WorldPositionsPerZUnit[0].worldPosition;
+            Instance.CleanUpInstance();
         }
     }
 }
