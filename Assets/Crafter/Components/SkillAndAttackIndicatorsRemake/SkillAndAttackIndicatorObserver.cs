@@ -1022,7 +1022,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     public enum DashParticlesFXTypeInstancePools
     {
         DashParticles,
-        ElectricTrailRenderer
+        ElectricTrailRenderer,
+        TrailMoverBuilder_XPerZ,
     }
     public enum AbilityFXComponentType
     {
@@ -1036,6 +1037,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         PortalOrbPurple,
         PortalBuilder_Source,
         PortalBuilder_Dest,
-        BlinkRibbonTrailRenderer
+        BlinkRibbonTrailRenderer,
+        TrailMoverBuilder_XPerZ,
+        TrailMoverBuilder_TargetPos
     }
 }

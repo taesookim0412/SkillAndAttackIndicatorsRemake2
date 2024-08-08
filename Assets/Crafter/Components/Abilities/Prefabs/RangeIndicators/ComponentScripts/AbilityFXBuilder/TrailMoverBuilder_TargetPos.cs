@@ -140,11 +140,23 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         public void ManualUpdate()
         {
+            if (Completed)
+            {
+                return;
+            }
+            if (!Active)
+            {
+                Active = true;
+            }
             float elapsedDeltaTime = ObserverUpdateCache.UpdateTickTimeFixedUpdateDeltaTimeSec;
             float elapsedTimeSec = ElapsedTimeSec;
             if (elapsedTimeSec < TimeRequiredSec)
             {
                 MoveTrailToEndPositions(elapsedDeltaTime);
+            }
+            else
+            {
+                Completed = true;
             }
 
             ElapsedTimeSec += elapsedDeltaTime;
@@ -336,17 +348,29 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         timestepDeltaTime);
                     float newPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(blinkTrailPosition.z, nextMaxZValue,
                         timestepDeltaTime);
-                    blinkTrailPosition = new Vector3(newPositionX, newPositionY, newPositionZ); ;
+                    blinkTrailPosition = new Vector3(newPositionX, newPositionY, newPositionZ);
                     trailPositions[j] = blinkTrailPosition;
                 }
-                for (int j = stopIndex; j < trailRotations.Length; j++)
+                if (stopIndex > 0)
                 {
-                    trailPositions[j] = trailPositions[j - 1];
+                    for (int j = stopIndex; j < trailRotations.Length; j++)
+                    {
+                        trailPositions[j] = trailPositions[j - 1];
+                    }
                 }
-
                 PositionUtil.SmoothenTrail_MovingAverageWindow3(trailPositions);
             }
             return allTrailPositions;
+        }
+        public override void Complete()
+        {
+            base.Complete();
+        }
+        public override void CleanUpInstance()
+        {
+            Trails = null;
+            TrailProps = null;
+            TrailPositions = null;
         }
     }
     

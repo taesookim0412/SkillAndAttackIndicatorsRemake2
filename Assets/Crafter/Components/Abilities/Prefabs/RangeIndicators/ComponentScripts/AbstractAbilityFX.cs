@@ -19,6 +19,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [SerializeField]
         public TrailRenderer TrailRenderer;
 
+        [HideInInspector]
+        public bool Active = false;
+        [HideInInspector]
+        public bool Completed = false;
+        protected void Initialize()
+        {
+            Active = false;
+            Completed = false;
+        }
         public void DisableParticleSystems()
         {
             foreach (ParticleSystem particleSystem in ParticleSystems)
@@ -37,7 +46,16 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             TrailRenderer.widthMultiplier = widthMultiplier;
         }
-
+        protected void ClearTrailRenderer()
+        {
+            TrailRenderer.Clear();
+        }
+        // Disable Particle Systems after the FX is completed.
+        public virtual void Complete()
+        {
+            Completed = true;
+        }
+        // Clean up / destroy resources / arrays after the observer is completed.
         public virtual void CleanUpInstance()
         {
 

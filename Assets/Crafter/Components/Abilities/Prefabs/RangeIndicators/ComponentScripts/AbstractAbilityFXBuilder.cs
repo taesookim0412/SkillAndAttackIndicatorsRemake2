@@ -17,6 +17,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             ObserverUpdateCache = observerUpdateCache;
             InitializeManualAwake();
+            base.Initialize();
         }
         protected void InitializeManualAwake()
         {

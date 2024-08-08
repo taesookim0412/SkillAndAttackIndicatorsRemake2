@@ -37,7 +37,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [SerializeField]
         private Vector3 PortalScaleMax;
         [SerializeField]
-        private Vector3 PortalOrbOffsetPosition;
+        public Vector3 PortalOrbOffsetPosition;
         [SerializeField]
         private Vector3 CrimsonAuraOffsetPosition;
         [SerializeField]
@@ -96,10 +96,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private TimerStructDco_Observer PlayerOpaqueTimer;
         [HideInInspector]
         private bool RequiredDurationsModified = false;
-        [HideInInspector]
-        public bool Active = false;
-        [HideInInspector]
-        public bool Completed = false;
 
         //public string DebugLogRequiredDurations()
         //{
@@ -158,9 +154,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             crimsonAura.DisableParticleSystems();
             
             PortalState = PortalState.PortalCreate;
-
-            Active = false;
-            Completed = false;
         }
         public void ManualUpdate()
         {
@@ -250,7 +243,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     break;
             }
         }
-        public void Complete()
+        public override void Complete()
         {
             //PortalOrb.gameObject.SetActive(false);
             //CrimsonAura.gameObject.SetActive(false);
@@ -261,7 +254,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             //}
             PortalOrb.DisableParticleSystems();
             CrimsonAura.DisableParticleSystems();
-            Completed = true;
+            base.Complete();
         }
 
         public override void CleanUpInstance()

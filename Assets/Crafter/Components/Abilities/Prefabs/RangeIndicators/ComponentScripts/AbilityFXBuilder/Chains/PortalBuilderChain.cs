@@ -10,20 +10,22 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     {
         public readonly PortalBuilder PortalSource;
         public readonly PortalBuilder PortalDest;
+        public readonly TrailMoverBuilder_TargetPos TrailForPortals;
 
         private readonly long StartTime;
         private readonly long EndTime;
 
-        private readonly bool Inverted;
         private bool Completed = false;
 
-        public PortalBuilderChain(PortalBuilder portalSource, PortalBuilder portalDest, long startTime, long endTime, bool inverted)
+        public PortalBuilderChain(PortalBuilder portalSource, PortalBuilder portalDest,
+            TrailMoverBuilder_TargetPos trailForPortals,
+            long startTime, long endTime)
         {
             PortalSource = portalSource;
             PortalDest = portalDest;
+            TrailForPortals = trailForPortals;
             StartTime = startTime;
             EndTime = endTime;
-            Inverted = inverted;
         }
 
         public bool UpdatePortals(long elapsedTime)
@@ -33,49 +35,48 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 return false;
             }
 
-            PortalBuilder startPortal;
-            PortalBuilder endPortal;
-            if (Inverted)
-            {
-                startPortal = PortalDest;
-                endPortal = PortalSource;
-            }
-            else
-            {
-                startPortal = PortalSource;
-                endPortal = PortalDest;
-            }
-
             if (elapsedTime >= StartTime)
             {
                 if (elapsedTime <= EndTime)
                 {
-                    if (!startPortal.Completed)
+                    if (!PortalSource.Completed)
                     {
-                        if (!startPortal.Active)
+                        if (!PortalSource.Active)
                         {
-                            startPortal.gameObject.SetActive(true);
+                            PortalSource.gameObject.SetActive(true);
                         }
-                        startPortal.ManualUpdate();
+                        PortalSource.ManualUpdate();
                     }
-                    else
+                    else if (!TrailForPortals.Completed)
                     {
-                        if (!endPortal.Active)
+                        if (!TrailForPortals.Active)
                         {
-                            endPortal.gameObject.SetActive(true);
+                            TrailForPortals.gameObject.SetActive(true);
                         }
-                        endPortal.ManualUpdate();
+                        TrailForPortals.ManualUpdate();
+                    }
+                    else if (!PortalDest.Completed)
+                    {
+                        if (!PortalDest.Active)
+                        {
+                            PortalDest.gameObject.SetActive(true);
+                        }
+                        PortalDest.ManualUpdate();
                     }
                 }
                 else
                 {
-                    if (!startPortal.Completed)
+                    if (!PortalSource.Completed)
                     {
-                        startPortal.Complete();
+                        PortalSource.Complete();
                     }
-                    if (!endPortal.Completed)
+                    if (!TrailForPortals.Completed)
                     {
-                        endPortal.Complete();
+                        TrailForPortals.Complete();
+                    }
+                    if (!PortalDest.Completed)
+                    {
+                        PortalDest.Complete();
                     }
                     Completed = true;
                 }

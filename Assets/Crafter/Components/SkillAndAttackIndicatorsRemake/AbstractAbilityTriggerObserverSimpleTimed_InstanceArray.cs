@@ -27,12 +27,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 abilityFXInstances[i] = abilityTriggerFXInstancePools[i].InstantiatePooled(null);
             }
 
-            PostInstantiateItems(abilityFXInstances);
             AbilityFXInstances = abilityFXInstances;
-            return base.TrySetItems();
+            return PostInstantiateItems(abilityFXInstances) && base.TrySetItems();
         }
 
-        protected abstract void PostInstantiateItems(AbstractAbilityFX[] abstractAbilityFXes);
+        protected abstract bool PostInstantiateItems(AbstractAbilityFX[] abstractAbilityFXes);
 
         protected override void CleanAbilityFXInstances()
         {
