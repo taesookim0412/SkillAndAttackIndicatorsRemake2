@@ -151,13 +151,22 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     PortalBuilder portalBuilderSourceInstance = GameObject.Instantiate(portalBuilderSourcePrefab, instance.transform);
                     PortalBuilderEditor portalBuilderSourceEditor = (PortalBuilderEditor) Editor.CreateEditor(portalBuilderSourceInstance, typeof(PortalBuilderEditor));
 
+                    float startRotationY = instance.transform.localEulerAngles.y;
+                    float startRotationYCosYAngle = (float)Math.Cos(startRotationY * Mathf.Deg2Rad);
+                    float startRotationYSinYAngle = (float)Math.Sin(startRotationY * Mathf.Deg2Rad);
+
+                    Vector3 startPosition = instance.transform.position;
+                    Vector3 targetPosition = instance.transform.position + RotateY_Forward_Editor(20f, startRotationYCosYAngle, startRotationYSinYAngle);
+                    portalBuilderSourceInstance.transform.position = startPosition;
+
                     PortalBuilder portalBuilderDestInstance = GameObject.Instantiate(portalBuilderDestPrefab, instance.transform);
-                    PortalBuilderEditor portalBuilderDestEditor = (PortalBuilderEditor) Editor.CreateEditor(portalBuilderDestInstance, typeof(PortalBuilderEditor));
+                    PortalBuilderEditor portalBuilderDestEditor = (PortalBuilderEditor)Editor.CreateEditor(portalBuilderDestInstance, typeof(PortalBuilderEditor));
+                    portalBuilderDestInstance.transform.position = targetPosition;
 
                     TrailMoverBuilder_TargetPos trailMoverBuilderTargetPosInstance = GameObject.Instantiate(trailMoverBuilderTargetPosPrefab, instance.transform);
                     TrailMoverBuilder_TargetPosEditor trailMoverBuilderTargetPosEditor = (TrailMoverBuilder_TargetPosEditor) Editor.CreateEditor(trailMoverBuilderTargetPosInstance,
                         typeof(TrailMoverBuilder_TargetPosEditor));
-
+                    trailMoverBuilderTargetPosInstance.transform.position = startPosition + portalBuilderSourceInstance.PortalOrbOffsetPosition;
 
                     if (observerUpdateCache == null)
                     {

@@ -171,5 +171,13 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             }
             return children.ToArray();
         }
+
+        protected Vector3 RotateY_Forward_Editor(float zDistance, float cosYAngle, float sinYAngle)
+        {
+            float rotatedPositionOffsetX = zDistance * sinYAngle;
+            float rotatedPositionOffsetZ = zDistance * cosYAngle;
+
+            return new Vector3(rotatedPositionOffsetX, 0f, rotatedPositionOffsetZ);
+        }
     }
 }

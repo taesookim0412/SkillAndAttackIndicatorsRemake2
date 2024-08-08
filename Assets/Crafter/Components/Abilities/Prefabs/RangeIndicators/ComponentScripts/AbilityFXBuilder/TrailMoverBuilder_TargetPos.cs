@@ -69,6 +69,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     startWorldPosition.z + rotatedLocalPositionZ);
                 trailStartPositions[i] = startPosition;
                 trail.transform.position = startPosition;
+                trail.TrailRenderer.Clear();
+                trail.TrailRenderer.AddPosition(startPosition);
             }
 
             Vector3[] localStartRotationOffsets = blinkRibbonTrailProps.StartRotationOffsetsLocal;
