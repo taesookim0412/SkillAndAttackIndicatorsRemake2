@@ -16,13 +16,13 @@ namespace Assets.Crafter.Components.Constants
         {
             { BlinkRibbonTrailType.Dual, new BlinkRibbonTrailProps(
                 startPositionOffsetsLocal: new Vector3[2] {
-                    new Vector3(0.39f, -0.13f, 0f),
-                    new Vector3(-0.8f, 0f, 0f)
+                    new Vector3(0.3f, 0f, 0f),
+                    new Vector3(-0.3f, 0f, 0f)
                 },
                 endPositionOffsetsLocal: new Vector3[2]
                 {
-                    new Vector3(-0.76f, -0.11f, 0f),
-                    new Vector3(-0.2f, 0.04f, 0f)
+                    new Vector3(0.3f, 0f, 0f),
+                    new Vector3(0.2f, 0f, 0f)
                 },
                 startRotationOffsetsLocal: new Vector3[2]
                 {
@@ -36,13 +36,13 @@ namespace Assets.Crafter.Components.Constants
                 trailMarkersLocal: new SerializeableArray<Vector3>[2]
                 {
                     new SerializeableArray<Vector3>(new Vector3[3]{ 
-                        new Vector3(0.99f,0f,2.19f),
-                        new Vector3(1.01f,0f,6.06f),
-                        new Vector3(0.56f,0f,9.59f) }),
+                        new Vector3(0.99f,1.35f,0f),
+                        new Vector3(0.768f, 2.5f, 0f),
+                        new Vector3(0.56f, 1.8f, 9.59f) }),
                     new SerializeableArray<Vector3>(new Vector3[3]{ 
-                        new Vector3(-0.01f, 0f, 2.19f),
-                        new Vector3(1.005f, 0f, 6.06f),
-                        new Vector3(0.85f, 0f, 9.59f) })
+                        new Vector3(0.248f, 1.35f, 0f),
+                        new Vector3(0.763f, 2.5f, 0f),
+                        new Vector3(0.85f, 1.8f, 9.59f) })
                 }
                 )
             }

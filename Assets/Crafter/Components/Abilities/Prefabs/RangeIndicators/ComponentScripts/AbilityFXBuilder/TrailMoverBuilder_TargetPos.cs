@@ -177,18 +177,21 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             for (int i = 0; i < trails.Length; i++)
             {
                 Vector3[] trailPositions = TrailPositions[i];
-                BlinkRibbonTrailRenderer trail = trails[i];
+                if (startIndex + 1 < trailPositions.Length) 
+                {
+                    BlinkRibbonTrailRenderer trail = trails[i];
 
-                int clampedEndIndex = endIndex;
-                if (clampedEndIndex >= trailPositions.Length)
-                {
-                    clampedEndIndex = trailPositions.Length - 1;
-                }
-                TrailRenderer trailRenderer = trail.TrailRenderer;
-                for (int j = startIndex + 1; j < clampedEndIndex + 1; j++)
-                {
-                    trailRenderer.AddPosition(trailPositions[j]);
-                    trail.transform.position = trailPositions[j];
+                    int clampedEndIndex = endIndex;
+                    if (clampedEndIndex >= trailPositions.Length)
+                    {
+                        clampedEndIndex = trailPositions.Length - 1;
+                    }
+                    TrailRenderer trailRenderer = trail.TrailRenderer;
+                    for (int j = startIndex + 1; j < clampedEndIndex + 1; j++)
+                    {
+                        trailRenderer.AddPosition(trailPositions[j]);
+                        trail.transform.position = trailPositions[j];
+                    }
                 }
             }
         }
@@ -217,6 +220,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 float targetDistance = timestepDeltaTime * velocity;
                 float rotationSpeed = 0.8f;
 
+                bool useLastPositionTargetDistance = false;
+                float lastPositionTargetDistance = targetDistance;
+
                 Vector3[] trailRotations = new Vector3[positions];
                 for (int j = 0; j < positions; j++)
                 {
@@ -234,8 +240,16 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                             if (targetDistance > destPositionDistance)
                             {
+                                if (trailMarkerIndex != trailMarkers.Length - 1)
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    lastPositionTargetDistance = destPositionDistance;
+                                    useLastPositionTargetDistance = true;
+                                }
 
-                                continue;
                                 // dp = v * dt
                                 // dt = dp * 1/v
                                 //float velocityReciprocal = 1 / 35f;
@@ -253,6 +267,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                                     float distanceScalar = targetDistance / destPositionDistance;
                                     directionVector = distanceScalar * directionVector;
                                     //Debug.Log($"{i}: {2}");
+                                }
+                                else
+                                {
+                                    continue;
                                 }
                                 //Debug.Log($"{i}: {3}");
                             }
@@ -333,13 +351,17 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                 PositionUtil.SmoothenTrail_MovingAverageWindow3(trailRotations);
 
-                Vector3[] trailPositions = new Vector3[positions];
+                int trailPositionsLength = stopIndex + 1;
+
+                Vector3[] trailPositions = new Vector3[trailPositionsLength];
                 blinkTrailPosition = trailStartPositions[i];
                 allTrailPositions[i] = trailPositions;
-                for (int j = 0; j < stopIndex + 1; j++) 
+                for (int j = 0; j < trailPositionsLength; j++) 
                 {
                     RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(trailRotations[j]);
-                    rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward(targetDistance);
+                    rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward(!(j == stopIndex && useLastPositionTargetDistance) ? targetDistance : lastPositionTargetDistance);
+                    // the final position is difficult to set, sometimes it is past the end position.
+                    //Debug.Log($"{rotatingAnglesForwardVector}, {rotatingAnglesForwardVector.magnitude}");
                     float nextMaxXValue = blinkTrailPosition.x + rotatingAnglesForwardVector.x;
                     float nextMaxYValue = blinkTrailPosition.y + rotatingAnglesForwardVector.y;
                     float nextMaxZValue = blinkTrailPosition.z + rotatingAnglesForwardVector.z;
@@ -353,15 +375,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     blinkTrailPosition = new Vector3(newPositionX, newPositionY, newPositionZ);
                     trailPositions[j] = blinkTrailPosition;
                 }
-                if (stopIndex > 0)
-                {
-                    for (int j = stopIndex; j < trailRotations.Length; j++)
-                    {
-                        trailPositions[j] = trailPositions[j - 1];
-                    }
-                }
+
                 PositionUtil.SmoothenTrail_MovingAverageWindow3(trailPositions);
             }
+
             return allTrailPositions;
         }
         public override void Complete()
@@ -380,6 +397,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(TrailMoverBuilder_TargetPos))]
     public class TrailMoverBuilder_TargetPosEditor : AbstractEditor<TrailMoverBuilder_TargetPos>
     {
+        public bool EndPositionOverride = false;
+        public Vector3 EndPosition;
+
         private TrailMoverBuilder_TargetPosEditor_Props Props;
 
         private float TimeRequiredSec = 1f;
@@ -387,6 +407,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private long StartTime;
         private long LastUpdateTime;
         
+        public void SetEndPositionOverride(Vector3 endPositionOverride)
+        {
+            EndPositionOverride = true;
+            EndPosition = endPositionOverride;
+        }
         protected override bool OnInitialize(TrailMoverBuilder_TargetPos instance, ObserverUpdateCache observerUpdateCache)
         {
             TrailMoverBuilder_TargetPosEditor_Props props = Props;
@@ -412,7 +437,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             {
                                 blinkRibbonTrailRenderers[j] = GameObject.Instantiate(blinkRibbonTrailRendererPrefab, instance.transform);
                             }
-                            Vector3 endPositionWorld = Props.EndPositionLocal + instance.transform.position;
+
+                            Vector3 endPositionWorld = EndPositionOverride ? EndPosition : Props.EndPositionLocal + instance.transform.position;
 
                             if (observerUpdateCache == null)
                             {

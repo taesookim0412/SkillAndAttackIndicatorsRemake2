@@ -174,7 +174,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         observerUpdateCache = ObserverUpdateCache;
                     }
 
-
                     portalBuilderSourceEditor.RequiredDuration = 400L;
                     portalBuilderSourceEditor.OnInspectorGUI();
                     portalBuilderSourceEditor.ForceInitialize(observerUpdateCache);
@@ -182,13 +181,19 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     portalBuilderDestEditor.RequiredDuration = 400L;
                     portalBuilderDestEditor.OnInspectorGUI();
                     portalBuilderDestEditor.ForceInitialize(observerUpdateCache);
+
+                    Vector3 targetPlayerEndPosition = portalBuilderDestInstance.PlayerClientData.PlayerComponent.transform.position;
+
+                    trailMoverBuilderTargetPosEditor.SetEndPositionOverride(targetPlayerEndPosition);
                     trailMoverBuilderTargetPosEditor.OnInspectorGUI();
                     trailMoverBuilderTargetPosEditor.ForceInitialize(observerUpdateCache);
-                    
+
                     instance.Initialize(observerUpdateCache, portalBuilderSourceInstance, portalBuilderDestInstance, trailMoverBuilderTargetPosInstance,
                         startTime: 0L,
                         endTime: 1800L);
+
                     TryAddParticleSystem(instance.gameObject);
+
                     StartTime = observerUpdateCache.UpdateTickTimeFixedUpdate;
                     return true;
                 }

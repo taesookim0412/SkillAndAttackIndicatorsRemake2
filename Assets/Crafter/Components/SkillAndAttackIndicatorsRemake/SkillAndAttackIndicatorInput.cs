@@ -17,6 +17,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         public void OnAbility1(InputValue value)
         {
+            return;
             SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Arc,
                 AbilityProjectorMaterialType.First,
                 AbilityIndicatorCastType.ShowDuringCast,
@@ -24,6 +25,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
         public void OnAbility2(InputValue value)
         {
+            return;
             SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Circle,
                 AbilityProjectorMaterialType.First,
                 AbilityIndicatorCastType.ShowDuringCast,
@@ -38,6 +40,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
         public void OnAbility4(InputValue value)
         {
+            return;
             SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.ScatterLine,
                 AbilityProjectorMaterialType.First,
                 AbilityIndicatorCastType.ShowDuringCast,

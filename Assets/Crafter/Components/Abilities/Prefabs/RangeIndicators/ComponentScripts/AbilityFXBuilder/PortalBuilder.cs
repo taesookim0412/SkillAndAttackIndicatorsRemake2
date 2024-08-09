@@ -168,7 +168,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     Transform portalOrbTransform = PortalOrb.transform;
                     portalOrbTransform.localPosition = PortalOrbOffsetPosition;
                     portalOrbTransform.SetParent(transform, worldPositionStays: false);
-                    portalOrbTransform.localScale = Vector3.zero;
+                    portalOrbTransform.localScale = PortalScaleMin;
                     PortalOrb.EnableParticleSystems();
 
                     Transform crimsonAuraTransform = CrimsonAura.transform;
@@ -188,6 +188,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     }
                     else
                     {
+                        PortalOrb.transform.localScale = PortalScaleMax;
                         PortalState = PortalState.PlayerCreate;
                     }
                     break;
