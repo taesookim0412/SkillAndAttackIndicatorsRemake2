@@ -253,8 +253,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             //{
             //    PlayerClientData.PlayerComponent.gameObject.SetActive(false);
             //}
-            PortalOrb.DisableParticleSystems();
-            CrimsonAura.DisableParticleSystems();
+            PortalOrb.gameObject.SetActive(false);
+            CrimsonAura.gameObject.SetActive(false);
+            PortalOrb.EnableParticleSystems();
+            CrimsonAura.EnableParticleSystems();
             base.Complete();
         }
 

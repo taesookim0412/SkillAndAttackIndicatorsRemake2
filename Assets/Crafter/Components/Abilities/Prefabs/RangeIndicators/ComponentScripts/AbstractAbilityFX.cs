@@ -46,6 +46,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             TrailRenderer.widthMultiplier = widthMultiplier;
         }
+        public void ClearParticleSystems()
+        {
+            foreach (ParticleSystem particleSystem in ParticleSystems)
+            {
+                particleSystem.Clear();
+            }
+        }
         protected void ClearTrailRenderer()
         {
             TrailRenderer.Clear();

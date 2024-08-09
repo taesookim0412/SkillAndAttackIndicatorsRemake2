@@ -56,8 +56,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float sinYAngle)
         {
             base.Initialize(observerUpdateCache);
+            electricTrail.ClearParticleSystems();
 
-            electricTrail.transform.localPosition = Vector3.zero;
             ElectricTrail = electricTrail;
             LineLength = lineLength;
 
@@ -233,7 +233,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         float worldPositionX = StartPosition.x + rotatedLocalPositionX;
                         float worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
 
-                        transform.position = new Vector3(worldPositionX,
+                        ElectricTrail.transform.position = new Vector3(worldPositionX,
                             newWorldPositionY, worldPositionZ);
 
                         localPosition.x = newLocalPositionX;
@@ -292,6 +292,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 if (electricTrailPrefab != null)
                 {
                     ElectricTrail electricTrail = GameObject.Instantiate(electricTrailPrefab, instance.transform);
+                    electricTrail.transform.localPosition = Vector3.zero;
                     Vector3 position = instance.transform.position;
                     long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
 

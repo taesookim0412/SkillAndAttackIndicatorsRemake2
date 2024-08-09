@@ -79,7 +79,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPLineRegionProjector LineRegionProjectorRef;
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
-        private (DashParticles[] dashParticles, ElectricTrailRenderer electricTrailRenderer,
+        private (DashParticles[] dashParticles,
+            ElectricTrail electricTrail,
+            TrailMoverBuilder_XPerZ trailMoverXPerZ,
             bool[] portalSpotsPassed,
             int numElectricTrailRendererPositions,
             int lastArcPathsIndex) DashParticlesItems;
@@ -89,8 +91,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private long[] TimeRequiredForDistancesPerUnit;
 
-        private Vector3 PreviousTerrainProjectorPosition;
-        private float PreviousRotationY;
+        //private Vector3 PreviousTerrainProjectorPosition;
+        //private float PreviousRotationY;
         private float PreviousChargeDurationFloatPercentage;
 
         private long LastTickTime;
@@ -188,8 +190,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     }
 
                     ProjectorMonoBehaviour.transform.position = terrainProjectorPosition;
-                    PreviousTerrainProjectorPosition = terrainProjectorPosition;
-                    PreviousRotationY = playerRotation;
+                    //PreviousTerrainProjectorPosition = terrainProjectorPosition;
+                    //PreviousRotationY = playerRotation;
 
                     switch (AbilityProjectorMaterialType)
                     {
@@ -279,34 +281,34 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 }
 
-                Vector3 terrainProjectorPosition = GetTerrainProjectorPosition();
-                float playerRotation = GetThirdPersonControllerRotation();
+                //Vector3 terrainProjectorPosition = GetTerrainProjectorPosition();
+                //float playerRotation = GetThirdPersonControllerRotation();
                 
-                ProjectorMonoBehaviour.transform.position = terrainProjectorPosition;
+                //ProjectorMonoBehaviour.transform.position = terrainProjectorPosition;
 
-                Vector3 previousProjectorRotation = ProjectorMonoBehaviour.transform.localEulerAngles;
-                ProjectorMonoBehaviour.transform.localEulerAngles = new Vector3(previousProjectorRotation.x, playerRotation, previousProjectorRotation.z);
+                //Vector3 previousProjectorRotation = ProjectorMonoBehaviour.transform.localEulerAngles;
+                //ProjectorMonoBehaviour.transform.localEulerAngles = new Vector3(previousProjectorRotation.x, playerRotation, previousProjectorRotation.z);
 
                 if (AbilityIndicatorFXTypes != null)
                 {
-                    float rotationDifference = playerRotation - PreviousRotationY;
-                    if (rotationDifference < -10f || rotationDifference > 10f ||
-                        (PreviousTerrainProjectorPosition - terrainProjectorPosition).magnitude > 0.03f)
-                    {
-                        foreach (AbilityIndicatorFXType abilityFXType in AbilityIndicatorFXTypes)
-                        {
-                            switch (abilityFXType)
-                            {
-                                case AbilityIndicatorFXType.DashParticles:
-                                    UpdateDashParticlesItemsPositions(LineLengthUnits, terrainProjectorPosition.x, terrainProjectorPosition.z, playerRotation,
-                                        fillProgress: newFillProgress);
-                                    break;
-                            }
-                        }
+                    //float rotationDifference = playerRotation - PreviousRotationY;
+                    //if (rotationDifference < -10f || rotationDifference > 10f ||
+                    //    (PreviousTerrainProjectorPosition - terrainProjectorPosition).magnitude > 0.03f)
+                    //{
+                    //    foreach (AbilityIndicatorFXType abilityFXType in AbilityIndicatorFXTypes)
+                    //    {
+                    //        switch (abilityFXType)
+                    //        {
+                    //            case AbilityIndicatorFXType.DashParticles:
+                    //                UpdateDashParticlesItemsPositions(LineLengthUnits, terrainProjectorPosition.x, terrainProjectorPosition.z, playerRotation,
+                    //                    fillProgress: newFillProgress);
+                    //                break;
+                    //        }
+                    //    }
                         
-                        PreviousTerrainProjectorPosition = terrainProjectorPosition;
-                        PreviousRotationY = playerRotation;
-                    }
+                    //    PreviousTerrainProjectorPosition = terrainProjectorPosition;
+                    //    PreviousRotationY = playerRotation;
+                    //}
 
                     foreach (AbilityIndicatorFXType abilityFXType in AbilityIndicatorFXTypes)
                     {
@@ -334,16 +336,22 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         switch (AbilityIndicatorFXTypes[i])
                         {
                             case AbilityIndicatorFXType.DashParticles:
-                                PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int) DashParticlesFXTypeInstancePools.DashParticles];
-                                PoolBagDco<AbstractAbilityFX> electricTrailRendererPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.ElectricTrailRenderer];
+                                PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.DashParticles];
+                                PoolBagDco<AbstractAbilityFX> electricTrailPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.ElectricTrail];
+                                PoolBagDco<AbstractAbilityFX> trailMoverXPerZPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ];
 
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
                                 {
                                     dashParticlesPool.ReturnPooled(dashParticles);
                                 }
 
-                                DashParticlesItems.electricTrailRenderer.CleanUpInstance();
-                                electricTrailRendererPool.ReturnPooled(DashParticlesItems.electricTrailRenderer);
+                                ElectricTrail electricTrail = DashParticlesItems.electricTrail;
+                                electricTrail.CleanUpInstance();
+                                electricTrailPool.ReturnPooled(electricTrail);
+
+                                TrailMoverBuilder_XPerZ trailMoverXPerZ = DashParticlesItems.trailMoverXPerZ;
+                                trailMoverXPerZ.CleanUpInstance();
+                                trailMoverXPerZPool.ReturnPooled(trailMoverXPerZ);
                                 break;
                         }
                     }
@@ -450,7 +458,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
 
         private (DashParticles[] dashParticles,
-            ElectricTrailRenderer electricTrailRenderer,
+            ElectricTrail electricTrail,
+            TrailMoverBuilder_XPerZ trailMoverXPerZ,
             bool[] portalSpotsPassed,
             int numElectricTrailRendererPositions,
             int lastArcPathsIndex) CreateDashParticlesItems(int lineLengthUnits,
@@ -525,87 +534,96 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 prevXAnglei1 = xAngle;
             }
 
-            PoolBagDco<AbstractAbilityFX> electricTrailRendererInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ElectricTrailRenderer];
-
-            ElectricTrailRenderer electricTrailRenderer = (ElectricTrailRenderer) electricTrailRendererInstancePool.InstantiatePooled(dashParticles[0].transform.position);
-
-            return (dashParticles, electricTrailRenderer, portalSpotsPassed, 1, -1);
-        }
-        private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
-            float startPositionX, float startPositionZ,
-            float yRotation, float fillProgress)
-        {
-            float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
-            float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
-
-            Vector3 yRotationVector = new Vector3(0f, yRotation, 0f);
-
-            float worldRotatedPositionX = startPositionX;
-            float worldRotatedPositionZ = startPositionZ;
-
-            float previousPositionY = 0f;
-            float prevXAnglei0 = 0f;
-            float prevXAnglei1 = 0f;
-
-            DashParticles[] dashParticlesArray = DashParticlesItems.dashParticles;
-            for (int i = 0; i < lineLengthUnits; i++)
-            {
-                float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
-
-                AnimationCurve yVelocityAnimCurve = CreateTerrainYVelocityAnimationCurve(
-                    unitsPerKeyframe: 0.05f,
-                    worldStartRotatedPositionX: worldRotatedPositionX,
-                    positionY: positionY,
-                    worldStartRotatedPositionZ: worldRotatedPositionZ,
-                    cosYAngle: cosYAngle,
-                    sinYAngle: sinYAngle);
-
-                float xAngle;
-                if (i > 1)
-                {
-                    xAngle = (((float)Math.Atan((positionY - previousPositionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei0 + prevXAnglei1) / 3f;
-                }
-                else if (i == 1)
-                {
-                    float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
-                    xAngle = (((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei1) / 2f;
-                }
-                else
-                {
-                    float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
-                    xAngle = ((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f);
-                }
-
-                DashParticles dashParticles = dashParticlesArray[i];
-                dashParticles.SetYVelocityAnimationCurve(yVelocityAnimCurve);
-                dashParticles.SetXAngle(xAngle);
-                dashParticles.transform.position = new Vector3(worldRotatedPositionX,
-                    positionY,
-                    worldRotatedPositionZ);
-                dashParticles.transform.localEulerAngles = yRotationVector;
-
-                worldRotatedPositionX += sinYAngle;
-                worldRotatedPositionZ += cosYAngle;
-                previousPositionY = positionY;
-                prevXAnglei0 = prevXAnglei1;
-                prevXAnglei1 = xAngle;
-            }
-
-
-
-            Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
-            worldElectricTrailRendererPositions[0] = dashParticlesArray[0].transform.position;
+            Vector3 startPosition = dashParticles[0].transform.position;
+            PoolBagDco<AbstractAbilityFX> electricTrailInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ElectricTrail];
+            ElectricTrail electricTrail = (ElectricTrail) electricTrailInstancePool.InstantiatePooled(startPosition);
             
-            for (int i = 1; i < worldElectricTrailRendererPositions.Length; i++)
-            {
-                int portalSpotIndex = Math.Clamp(PortalSpotOffsetUnits + ((i - 1) * UnitsPerPortalSpot), 0, lineLengthUnits - 1);
-                Vector3 dashParticlePosition = dashParticlesArray[portalSpotIndex].transform.position;
-                worldElectricTrailRendererPositions[i] = new Vector3(dashParticlePosition.x, dashParticlePosition.y + TrailRendererYOffset, dashParticlePosition.z);
-            }
+            PoolBagDco<AbstractAbilityFX> trailMoverBuilderXPerZInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ];
+            TrailMoverBuilder_XPerZ trailMoverXPerZ = (TrailMoverBuilder_XPerZ)trailMoverBuilderXPerZInstancePool.InstantiatePooled(startPosition);
 
-            DashParticlesItems.electricTrailRenderer.OverwritePositions(worldElectricTrailRendererPositions);
+            //TODO: Cache this somehow.
+            long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
 
+            trailMoverXPerZ.Initialize(Props.ObserverUpdateCache, electricTrail, lineLengthUnits, timeRequiredForZDistances,
+                Props.SkillAndAttackIndicatorSystem, startPositionX, startPositionZ, cosYAngle, sinYAngle);
+
+            return (dashParticles, electricTrail, trailMoverXPerZ, portalSpotsPassed, 1, -1);
         }
+        //private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
+        //    float startPositionX, float startPositionZ,
+        //    float yRotation, float fillProgress)
+        //{
+        //    float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
+        //    float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
+
+        //    Vector3 yRotationVector = new Vector3(0f, yRotation, 0f);
+
+        //    float worldRotatedPositionX = startPositionX;
+        //    float worldRotatedPositionZ = startPositionZ;
+
+        //    float previousPositionY = 0f;
+        //    float prevXAnglei0 = 0f;
+        //    float prevXAnglei1 = 0f;
+
+        //    DashParticles[] dashParticlesArray = DashParticlesItems.dashParticles;
+        //    for (int i = 0; i < lineLengthUnits; i++)
+        //    {
+        //        float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+
+        //        AnimationCurve yVelocityAnimCurve = CreateTerrainYVelocityAnimationCurve(
+        //            unitsPerKeyframe: 0.05f,
+        //            worldStartRotatedPositionX: worldRotatedPositionX,
+        //            positionY: positionY,
+        //            worldStartRotatedPositionZ: worldRotatedPositionZ,
+        //            cosYAngle: cosYAngle,
+        //            sinYAngle: sinYAngle);
+
+        //        float xAngle;
+        //        if (i > 1)
+        //        {
+        //            xAngle = (((float)Math.Atan((positionY - previousPositionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei0 + prevXAnglei1) / 3f;
+        //        }
+        //        else if (i == 1)
+        //        {
+        //            float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
+        //            xAngle = (((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei1) / 2f;
+        //        }
+        //        else
+        //        {
+        //            float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
+        //            xAngle = ((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f);
+        //        }
+
+        //        DashParticles dashParticles = dashParticlesArray[i];
+        //        dashParticles.SetYVelocityAnimationCurve(yVelocityAnimCurve);
+        //        dashParticles.SetXAngle(xAngle);
+        //        dashParticles.transform.position = new Vector3(worldRotatedPositionX,
+        //            positionY,
+        //            worldRotatedPositionZ);
+        //        dashParticles.transform.localEulerAngles = yRotationVector;
+
+        //        worldRotatedPositionX += sinYAngle;
+        //        worldRotatedPositionZ += cosYAngle;
+        //        previousPositionY = positionY;
+        //        prevXAnglei0 = prevXAnglei1;
+        //        prevXAnglei1 = xAngle;
+        //    }
+
+
+
+        //    Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
+        //    worldElectricTrailRendererPositions[0] = dashParticlesArray[0].transform.position;
+            
+        //    for (int i = 1; i < worldElectricTrailRendererPositions.Length; i++)
+        //    {
+        //        int portalSpotIndex = Math.Clamp(PortalSpotOffsetUnits + ((i - 1) * UnitsPerPortalSpot), 0, lineLengthUnits - 1);
+        //        Vector3 dashParticlePosition = dashParticlesArray[portalSpotIndex].transform.position;
+        //        worldElectricTrailRendererPositions[i] = new Vector3(dashParticlePosition.x, dashParticlePosition.y + TrailRendererYOffset, dashParticlePosition.z);
+        //    }
+
+        //    DashParticlesItems.electricTrailRenderer.OverwritePositions(worldElectricTrailRendererPositions);
+
+        //}
 
         private void UpdateDashParticlesItems(int lineLengthUnits, float fillProgress)
         {
@@ -653,9 +671,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 {
                     if (DashParticlesItems.lastArcPathsIndex < i)
                     {
-                        Vector3 portalSpotPosition = dashParticlesArray[particlesIndex].transform.position;
-                        DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(portalSpotPosition.x,
-                            portalSpotPosition.y + TrailRendererYOffset, portalSpotPosition.z);
+                        //Vector3 portalSpotPosition = dashParticlesArray[particlesIndex].transform.position;
+                        //DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(portalSpotPosition.x,
+                        //    portalSpotPosition.y + TrailRendererYOffset, portalSpotPosition.z);
                         DashParticlesItems.numElectricTrailRendererPositions = i + 2;
                         DashParticlesItems.lastArcPathsIndex = i;
                     }
@@ -674,6 +692,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     break;
                 }
             }
+
+            DashParticlesItems.trailMoverXPerZ.ManualUpdate(fillProgress);
 
             //long elapsedTime = ElapsedTime;
 
@@ -1022,7 +1042,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     public enum DashParticlesFXTypeInstancePools
     {
         DashParticles,
-        ElectricTrailRenderer,
+        ElectricTrail,
         TrailMoverBuilder_XPerZ,
     }
     public enum AbilityFXComponentType

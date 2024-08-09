@@ -135,12 +135,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
 
             if (abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.DashParticles, out AbstractAbilityFX dashParticlesPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ElectricTrailRenderer, out AbstractAbilityFX electricTrailRendererPrefab) &&
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.ElectricTrail, out AbstractAbilityFX electricTrailPrefab) &&
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.TrailMoverBuilder_XPerZ, out AbstractAbilityFX trailMoverBuilderXPerZPrefab))
             {
                 PoolBagDco<AbstractAbilityFX>[] dashParticlesPoolBag = new PoolBagDco<AbstractAbilityFX>[3];
                 dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.DashParticles] = new PoolBagDco<AbstractAbilityFX>(dashParticlesPrefab, 30);
-                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.ElectricTrailRenderer] = new PoolBagDco<AbstractAbilityFX>(electricTrailRendererPrefab, 30);
+                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.ElectricTrail] = new PoolBagDco<AbstractAbilityFX>(electricTrailPrefab, 30);
                 dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ] = new PoolBagDco<AbstractAbilityFX>(trailMoverBuilderXPerZPrefab, 30);
 
                 abilityIndicatorFXInstancePools[AbilityIndicatorFXType.DashParticles] = dashParticlesPoolBag;
