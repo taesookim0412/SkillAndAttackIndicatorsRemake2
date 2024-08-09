@@ -468,6 +468,34 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             if (Props != null)
             {
                 Undo.RecordObject(Props, "Props");
+                if (GUILayout.Button("Reset Transform Positions"))
+                {
+                    Transform markersParent = Props.MarkersParent;
+                    Transform[] markerTrailsForProps = GetFirstLevelTransforms(markersParent);
+                    for (int i = 0; i < TrailEffectsConstants.BlinkRibbonTrailTypeEnumLength; i++)
+                    {
+                        BlinkRibbonTrailType blinkRibbonTrailType = (BlinkRibbonTrailType)i;
+                        if (TrailEffectsConstants.BlinkRibbonTrailProps.TryGetValue(blinkRibbonTrailType, out BlinkRibbonTrailProps props))
+                        {
+                            Transform markerTrailItemContainer = markerTrailsForProps[i];
+                            Transform[] markersForTrailsContainer = GetFirstLevelTransforms(markerTrailItemContainer);
+                            for (int j = 0; j < markersForTrailsContainer.Length; j++)
+                            {
+                                if (j < props.TrailMarkersLocal.Length)
+                                {
+                                    Transform[] markersForTrail = GetFirstLevelTransforms(markersForTrailsContainer[j]);
+                                    for (int k = 0; k < markersForTrail.Length; k++)
+                                    {
+                                        if (k < props.TrailMarkersLocal[j].Items.Length)
+                                        {
+                                            markersForTrail[k].transform.localPosition = props.TrailMarkersLocal[j].Items[k];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 if (GUILayout.Button("Reset Props"))
                 {
                     BlinkRibbonTrailProps[] newPropsArray = new BlinkRibbonTrailProps[TrailEffectsConstants.BlinkRibbonTrailProps.Count];
