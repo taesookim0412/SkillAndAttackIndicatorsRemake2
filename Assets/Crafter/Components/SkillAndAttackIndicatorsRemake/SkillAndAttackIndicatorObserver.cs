@@ -196,8 +196,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     switch (AbilityProjectorMaterialType)
                     {
                         case AbilityProjectorMaterialType.First:
-                            ChargeDuration = 3000L;
-                            ChargeDurationSecondsFloat = 3000 * 0.001f;
+                            ChargeDuration = 800L;
+                            ChargeDurationSecondsFloat = 800 * 0.001f;
                             break;
                         //case AbilityProjectorMaterialType.Second:
                         //    ChargeDuration = 5000L;
@@ -536,7 +536,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             Vector3 startPosition = dashParticles[0].transform.position;
             PoolBagDco<AbstractAbilityFX> electricTrailInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ElectricTrail];
-            ElectricTrail electricTrail = (ElectricTrail) electricTrailInstancePool.InstantiatePooled(startPosition);
+            ElectricTrail electricTrail = (ElectricTrail) electricTrailInstancePool.InstantiatePooled(null);
             
             PoolBagDco<AbstractAbilityFX> trailMoverBuilderXPerZInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ];
             TrailMoverBuilder_XPerZ trailMoverXPerZ = (TrailMoverBuilder_XPerZ)trailMoverBuilderXPerZInstancePool.InstantiatePooled(startPosition);

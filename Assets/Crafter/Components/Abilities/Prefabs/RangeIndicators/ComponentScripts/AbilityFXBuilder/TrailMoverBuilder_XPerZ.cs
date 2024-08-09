@@ -13,7 +13,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 {
     public class TrailMoverBuilder_XPerZ : AbstractAbilityFXBuilder
     {
-        private static readonly float TrailRendererYOffset = 0.7f;
+        private static readonly float TrailRendererYOffset = 0.9f;
         // lower delay mult = velocity mult lower = trail moves slower.
         //private static readonly float TimeRequiredVelocityDelayMult = 1f;
 
@@ -56,6 +56,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float sinYAngle)
         {
             base.Initialize(observerUpdateCache);
+            electricTrail.transform.position = new Vector3(startPositionX, skillAndAttackIndicatorSystem.GetTerrainHeight(startPositionX, startPositionZ) + TrailRendererYOffset, startPositionZ);
             electricTrail.ClearParticleSystems();
 
             ElectricTrail = electricTrail;
@@ -217,7 +218,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         positionIndex = PositionUtil.MoveTrailPosition(positionIndex, fixedDeltaTime, localPosition.x, localPosition.z,
                             out float newLocalPositionX, out float newLocalPositionZ, TimeRequiredIncrementalSec,
                             TimeRequiredIncrementalVelocityMult, WorldPositionsPerZUnit, LocalXPositionsPerZUnit,
-                            ElapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, transform.position.y, out float newWorldPositionY);
+                            ElapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, ElectricTrail.transform.position.y, out float newWorldPositionY);
 
                         // Since the position only gets set before the dt, instead of after,
                         // the final position has to be set if the conditions are met

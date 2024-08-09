@@ -16,33 +16,35 @@ namespace Assets.Crafter.Components.Constants
         {
             { BlinkRibbonTrailType.Dual, new BlinkRibbonTrailProps(
                 startPositionOffsetsLocal: new Vector3[2] {
-                    new Vector3(0.3f, 0f, 0f),
-                    new Vector3(-0.3f, 0f, 0f)
+                    new Vector3(0.2f, 0f, 0f),
+                    new Vector3(-0.2f, 0f, 0f)
                 },
                 endPositionOffsetsLocal: new Vector3[2]
                 {
-                    new Vector3(0.3f, 0f, 0f),
-                    new Vector3(0.2f, 0f, 0f)
+                    new Vector3(0.2f, 0f, 0f),
+                    new Vector3(-0.2f, 0f, 0f)
                 },
                 startRotationOffsetsLocal: new Vector3[2]
                 {
-                    new Vector3(-1.41f, 26.2f, 0f),
-                    new Vector3(0f, 19.84f, 0f)
+                    new Vector3(0f, 0f, 0f),
+                    new Vector3(0f, 0f, 0f)
                 },
                 widthMultipliers: new float[2]
                 {
-                    0.15f, 0.15f
+                    0.1f, 0.1f
                 },
                 trailMarkersLocal: new SerializeableArray<Vector3>[2]
                 {
-                    new SerializeableArray<Vector3>(new Vector3[3]{ 
-                        new Vector3(0.99f,1.35f,0f),
-                        new Vector3(0.768f, 2.5f, 0f),
-                        new Vector3(0.56f, 1.8f, 9.59f) }),
-                    new SerializeableArray<Vector3>(new Vector3[3]{ 
-                        new Vector3(0.248f, 1.35f, 0f),
-                        new Vector3(0.763f, 2.5f, 0f),
-                        new Vector3(0.85f, 1.8f, 9.59f) })
+                    new SerializeableArray<Vector3>(new Vector3[4]{ 
+                        new Vector3(0.2f,0.4f,0f),
+                        new Vector3(0.2f, 1.37f, 2.31f),
+                        new Vector3(0.2f, 1.938f, 5.98f),
+                        new Vector3(0.2f, 1.8f, 9.59f) }),
+                    new SerializeableArray<Vector3>(new Vector3[4]{ 
+                        new Vector3(-0.2f,0.4f,0f),
+                        new Vector3(-0.2f, 1.37f, 2.31f),
+                        new Vector3(-0.2f, 1.938f, 5.98f),
+                        new Vector3(-0.2f, 1.8f, 9.59f)})
                 }
                 )
             }
