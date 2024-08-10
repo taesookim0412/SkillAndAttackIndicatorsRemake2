@@ -45,6 +45,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 particleSystem.enableEmission = true;
             }
         }
+        public void ReinitVisualEffect()
+        {
+            VisualEffect.Reinit();
+        }
         public void SetTrailRendererWidth(float widthMultiplier)
         {
             TrailRenderer.widthMultiplier = widthMultiplier;

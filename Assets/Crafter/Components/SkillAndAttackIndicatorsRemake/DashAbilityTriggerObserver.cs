@@ -71,18 +71,21 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 PortalOrbPurple portalOrb = (PortalOrbPurple)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalOrbPurple];
                 portalOrb.transform.localEulerAngles = playerRotation;
 
+                BlinkParticles blinkParticles = (BlinkParticles)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.BlinkParticles];
+                blinkParticles.transform.localEulerAngles = playerRotation;
+
                 long blinkRibbonTrailRequiredDuration = 1000L;
                 float blinkRibbonTrailRequiredDurationSec = blinkRibbonTrailRequiredDuration * 0.001f;
                 long portalRequiredDuration = (long)((Timer.RequiredDuration - blinkRibbonTrailRequiredDuration) * 0.4f);
                 PortalBuilder portalSource = (PortalBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Source];
                 portalSource.transform.position = playerPosition;
                 portalSource.transform.localEulerAngles = playerRotation;
-                portalSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, portalRequiredDuration);
+                portalSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, blinkParticles, portalRequiredDuration);
 
                 PortalBuilder portalDest = (PortalBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Dest];
                 portalDest.transform.position = TargetPosition;
                 portalDest.transform.localEulerAngles = playerRotation;
-                portalDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, portalRequiredDuration);
+                portalDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, blinkParticles, portalRequiredDuration);
 
                 BlinkRibbonTrailRenderer blinkRibbonTrailRenderer1 = (BlinkRibbonTrailRenderer)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer1];
                 blinkRibbonTrailRenderer1.transform.localEulerAngles = playerRotation;
@@ -140,6 +143,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         PortalBuilderChain,
         BlinkRibbonTrailRenderer1,
         BlinkRibbonTrailRenderer2,
-        TrailMoverBuilder_TargetPos
+        TrailMoverBuilder_TargetPos,
+        BlinkParticles
     }
 }

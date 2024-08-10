@@ -1,4 +1,5 @@
-﻿using Assets.Crafter.Components.Editors.ComponentScripts;
+﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFX;
+using Assets.Crafter.Components.Editors.ComponentScripts;
 using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
@@ -27,6 +28,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public PortalOrbPurple PortalOrb;
         [NonSerialized]
         public CrimsonAuraBlack CrimsonAura;
+        [NonSerialized]
+        public BlinkParticles BlinkParticles;
 
         [Range(0f, 2f), SerializeField]
         private float PortalScaleDuration;
@@ -101,7 +104,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         //}
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
             PlayerComponent playerTransparentClone,
-            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed)
+            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, BlinkParticles blinkParticles, long? durationAllowed)
         {
             base.Initialize(observerUpdateCache);
             
@@ -142,7 +145,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             
             CrimsonAura = crimsonAura;
             crimsonAura.DisableParticleSystems();
-            
+
+            blinkParticles.gameObject.SetActive(false);
+            BlinkParticles = blinkParticles;
             PortalState = PortalState.PortalCreate;
         }
         public void ManualUpdate()
@@ -155,16 +160,17 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 case PortalState.PortalCreate:
                     Active = true;
+
+                    Vector3 playerPosition = transform.position;
                     Transform portalOrbTransform = PortalOrb.transform;
-                    portalOrbTransform.localPosition = PortalOrbOffsetPosition;
-                    portalOrbTransform.SetParent(transform, worldPositionStays: false);
+                    portalOrbTransform.position = playerPosition + PortalOrbOffsetPosition;
                     portalOrbTransform.localScale = PortalScaleMin;
                     PortalOrb.EnableParticleSystems();
 
-                    Transform crimsonAuraTransform = CrimsonAura.transform;
-                    crimsonAuraTransform.localPosition = CrimsonAuraOffsetPosition;
-                    crimsonAuraTransform.SetParent(transform, worldPositionStays: false);
+                    CrimsonAura.transform.position = playerPosition + CrimsonAuraOffsetPosition;
                     CrimsonAura.EnableParticleSystems();
+
+                    BlinkParticles.transform.position = playerPosition;
 
                     PortalScaleTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                     PortalState = PortalState.PortalScale;
@@ -183,6 +189,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     }
                     break;
                 case PortalState.PlayerCreate:
+                    BlinkParticles.gameObject.SetActive(true);
+                    BlinkParticles.ReinitVisualEffect();
                     PlayerTransparentClone.gameObject.SetActive(true);
                     PlayerTransparentClone.transform.position = transform.position;
                     PlayerClientData.PlayerComponent.transform.position = transform.position;
@@ -214,6 +222,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     }
                     else
                     {
+                        // This can't be set inactive so fast because vfx won't play at dest.
+                        //BlinkParticles.gameObject.SetActive(false);
                         PlayerTransparentClone.gameObject.SetActive(false);
                         PlayerClientData.PlayerComponent.gameObject.SetActive(!IsTeleportSource);
                         
@@ -235,6 +245,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             PortalOrb.gameObject.SetActive(false);
             CrimsonAura.gameObject.SetActive(false);
+            BlinkParticles.gameObject.SetActive(false);
             PortalOrb.EnableParticleSystems();
             CrimsonAura.EnableParticleSystems();
             base.Complete();
@@ -275,6 +286,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 string crimsonAuraBlackType = AbilityFXComponentType.CrimsonAuraBlack.ToString();
                 CrimsonAuraBlack crimsonAuraPrefab = (CrimsonAuraBlack)system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == crimsonAuraBlackType);
 
+                string blinkParticlesType = AbilityFXComponentType.BlinkParticles.ToString();
+                BlinkParticles blinkParticlesPrefab = (BlinkParticles)system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == blinkParticlesType);
+
                 if (playerComponentPrefab != null && portalOrbPrefab != null && crimsonAuraPrefab != null)
                 {
                     // for lack of better way to create the same player component, just use a transparent clone for the editor.
@@ -292,13 +306,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                     CrimsonAuraBlack crimsonAura = GameObject.Instantiate(crimsonAuraPrefab, instance.transform);
 
+                    BlinkParticles blinkParticles = GameObject.Instantiate(blinkParticlesPrefab, instance.transform);
+
                     if (observerUpdateCache == null)
                     {
                         SetObserverUpdateCache();
                         observerUpdateCache = ObserverUpdateCache;
                     }
                     
-                    instance.Initialize(observerUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, RequiredDuration);
+                    instance.Initialize(observerUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, blinkParticles, RequiredDuration);
                     TryAddParticleSystem(instance.gameObject);
                     return true;
                 }
@@ -327,15 +343,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         //}
 
-        public override void OnInspectorGUI()
-        {
-            base.OnInspectorGUI();
+        //public override void OnInspectorGUI()
+        //{
+        //    base.OnInspectorGUI();
 
-            EditorGUI.BeginChangeCheck();
-            PlayerComponent playerComponent = (PlayerComponent) EditorGUILayout.ObjectField("PlayerComponent", Instance.PlayerClientData != null ? Instance.PlayerClientData.PlayerComponent : null, typeof(PlayerComponent), true);
-            PortalOrbPurple portalOrbPurple = (PortalOrbPurple) EditorGUILayout.ObjectField("PortalOrb", Instance.PortalOrb, typeof(PortalOrbPurple), true);
-            CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack) EditorGUILayout.ObjectField("CrimsonAura", Instance.CrimsonAura, typeof(CrimsonAuraBlack), true);
-        }
+        //    EditorGUI.BeginChangeCheck();
+        //    PlayerComponent playerComponent = (PlayerComponent) EditorGUILayout.ObjectField("PlayerComponent", Instance.PlayerClientData != null ? Instance.PlayerClientData.PlayerComponent : null, typeof(PlayerComponent), true);
+        //    PortalOrbPurple portalOrbPurple = (PortalOrbPurple) EditorGUILayout.ObjectField("PortalOrb", Instance.PortalOrb, typeof(PortalOrbPurple), true);
+        //    CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack) EditorGUILayout.ObjectField("CrimsonAura", Instance.CrimsonAura, typeof(CrimsonAuraBlack), true);
+        //}
 
         protected override void ManualUpdate()
         {
@@ -345,8 +361,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         protected override void EditorDestroy()
         {
             GameObject.DestroyImmediate(Instance.PlayerClientData.PlayerComponent.gameObject);
+            GameObject.DestroyImmediate(Instance.PlayerTransparentClone.gameObject);
             GameObject.DestroyImmediate(Instance.CrimsonAura.gameObject);
             GameObject.DestroyImmediate(Instance.PortalOrb.gameObject);
+            GameObject.DestroyImmediate(Instance.BlinkParticles.gameObject);
 
             Instance.CleanUpInstance();
         }

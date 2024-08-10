@@ -1060,6 +1060,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         PortalBuilderChain,
         BlinkRibbonTrailRenderer,
         TrailMoverBuilder_XPerZ,
-        TrailMoverBuilder_TargetPos
+        TrailMoverBuilder_TargetPos,
+        BlinkParticles,
     }
 }
