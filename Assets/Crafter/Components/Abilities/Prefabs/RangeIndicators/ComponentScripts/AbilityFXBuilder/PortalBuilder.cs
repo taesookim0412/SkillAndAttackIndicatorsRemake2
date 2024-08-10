@@ -222,8 +222,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     }
                     else
                     {
-                        // This can't be set inactive so fast because vfx won't play at dest.
-                        //BlinkParticles.gameObject.SetActive(false);
+                        // This can't be set inactive so fast because vfx won't play at dest so its only at src.
+                        if (IsTeleportSource)
+                        {
+                            BlinkParticles.gameObject.SetActive(false);
+                        }
                         PlayerTransparentClone.gameObject.SetActive(false);
                         PlayerClientData.PlayerComponent.gameObject.SetActive(!IsTeleportSource);
                         
