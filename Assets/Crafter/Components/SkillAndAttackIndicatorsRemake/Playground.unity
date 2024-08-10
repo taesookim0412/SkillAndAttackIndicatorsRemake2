@@ -6573,8 +6573,8 @@ MonoBehaviour:
     - {x: 0, y: 0, z: 0}
     - {x: 0, y: 0, z: 0}
     WidthMultipliers:
-    - 0.1
-    - 0.1
+    - 0.15
+    - 0.15
     NumTrailMarkers: 0400000004000000
     TrailMarkersLocal:
     - Items:
@@ -52318,11 +52318,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4528916441157124378, guid: 8107de41d333a3645880e64af905350d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.91
+      value: -27.06
       objectReference: {fileID: 0}
     - target: {fileID: 4528916441157124378, guid: 8107de41d333a3645880e64af905350d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 38.3
+      value: 25.45
       objectReference: {fileID: 0}
     - target: {fileID: 4528916441157124378, guid: 8107de41d333a3645880e64af905350d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -52929,7 +52929,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3373270583001817590, guid: cf05a80abecd0b644b53a5eee97514de, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.491803
+      value: -0.291803
       objectReference: {fileID: 0}
     - target: {fileID: 3373270583001817590, guid: cf05a80abecd0b644b53a5eee97514de, type: 3}
       propertyPath: m_LocalPosition.z
