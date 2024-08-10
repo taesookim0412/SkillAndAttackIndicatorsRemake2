@@ -13,10 +13,12 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
         private static readonly int WalkAnimFullPathHash = Animator.StringToHash("Base Layer.Walking");
 
+        public Guid Id;
         public PlayerComponent PlayerComponent;
 
-        public PlayerClientData(PlayerComponent playerComponent)
+        public PlayerClientData(Guid id, PlayerComponent playerComponent)
         {
+            Id = id;
             PlayerComponent = playerComponent;
         }
 

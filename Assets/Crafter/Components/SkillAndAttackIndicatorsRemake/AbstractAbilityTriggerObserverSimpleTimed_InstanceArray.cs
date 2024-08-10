@@ -40,6 +40,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             for (int i = 0; i < abilityFXInstances.Length; i++)
             {
                 AbstractAbilityFX abilityFXInstance = abilityFXInstances[i];
+                if (!abilityFXInstance.Completed)
+                {
+                    abilityFXInstance.Complete();
+                }
                 abilityFXInstance.CleanUpInstance();
                 AbilityTriggerFXInstancePools[i].ReturnPooled(abilityFXInstance);
             }

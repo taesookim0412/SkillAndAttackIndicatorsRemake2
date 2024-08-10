@@ -23,10 +23,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public bool Active = false;
         [HideInInspector]
         public bool Completed = false;
+        [HideInInspector]
+        public bool CompletedStateful = false;
         protected void Initialize()
         {
             Active = false;
             Completed = false;
+            CompletedStateful = false;
         }
         public void DisableParticleSystems()
         {
@@ -62,7 +65,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             Completed = true;
         }
-        // Clean up / destroy resources / arrays after the observer is completed.
+        // Enforce the state is the same at the end. This can be very complex so the chain responsible for the state should usually only have this member.
+        public virtual void CompleteStatefulFX()
+        {
+            CompletedStateful = true;
+        }
+        // Set resources to null after observer is completed.
         public virtual void CleanUpInstance()
         {
 

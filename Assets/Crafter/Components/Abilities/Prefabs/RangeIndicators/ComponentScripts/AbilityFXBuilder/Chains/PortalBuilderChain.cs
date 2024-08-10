@@ -1,5 +1,6 @@
 ﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFX;
 using Assets.Crafter.Components.Editors.ComponentScripts;
+using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using Assets.Crafter.Components.Systems.Observers;
 using System;
@@ -84,25 +85,46 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 }
                 else
                 {
-                    if (!PortalSource.Completed)
-                    {
-                        PortalSource.Complete();
-                    }
-                    if (!TrailForPortals.Completed)
-                    {
-                        TrailForPortals.Complete();
-                    }
-                    if (!PortalDest.Completed)
-                    {
-                        PortalDest.Complete();
-                    }
-                    Completed = true;
+                    Complete();
                 }
                 return true;
             }
             else
             {
                 return true;
+            }
+        }
+        public override void Complete()
+        {
+            if (!Completed)
+            {
+                if (!PortalSource.Completed)
+                {
+                    PortalSource.Complete();
+                }
+                if (!TrailForPortals.Completed)
+                {
+                    TrailForPortals.Complete();
+                }
+                if (!PortalDest.Completed)
+                {
+                    PortalDest.Complete();
+                }
+                base.Complete();
+            }
+        }
+        public override void CompleteStatefulFX()
+        {
+            if (!CompletedStateful)
+            {
+                PlayerComponent playerComponent = PortalDest.PlayerClientData.PlayerComponent;
+                if (!playerComponent.gameObject.activeSelf)
+                {
+                    playerComponent.gameObject.SetActive(true);
+                }
+                playerComponent.transform.position = PortalDest.transform.position;
+
+                base.CompleteStatefulFX();
             }
         }
         public override void CleanUpInstance()

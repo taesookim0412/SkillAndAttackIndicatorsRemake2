@@ -31,27 +31,39 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private PortalBuilderChain PortalBuilderChain;
 
         private Vector3 TargetPosition;
+
+        private PoolBagDco<PlayerComponent> PlayerCloneInstancePool;
+
+        private PlayerComponent PlayerTransparentClone;
         
         public DashAbilityTriggerObserver(
+            PlayerClientData playerClientData,
             Vector3 targetPosition,
             P props) : base(
                 requiredDuration: 2000L,
                 AbilityTriggerFXType.DashTrigger, props)
         {
+            PlayerClientData = playerClientData;
             TargetPosition = targetPosition;
         }
 
         protected override bool PostInstantiateItems(AbstractAbilityFX[] abstractAbilityFXes)
         {
-            if (TrailEffectsConstants.BlinkRibbonTrailProps.TryGetValue(BlinkRibbonTrailType.Dual, out BlinkRibbonTrailProps blinkRibbonTrailProps))
+            PlayerClientData playerClientData = PlayerClientData;
+            if (TrailEffectsConstants.BlinkRibbonTrailProps.TryGetValue(BlinkRibbonTrailType.Dual, out BlinkRibbonTrailProps blinkRibbonTrailProps) &&
+                Props.SkillAndAttackIndicatorSystem.PlayerCloneInstancePools.TryGetValue(playerClientData.Id, out PlayerCloneInstancePool))
             {
-                PlayerClientData playerClientData = Props.SkillAndAttackIndicatorSystem.PlayerClientData;
+                
                 Vector3 playerPosition = playerClientData.PlayerComponent.transform.position;
                 Vector3 playerRotation = playerClientData.PlayerComponent.transform.localEulerAngles;
 
                 float startRotationY = playerRotation.y;
                 float startRotationYCosYAngle = (float)Math.Cos(startRotationY * Mathf.Deg2Rad);
                 float startRotationYSinYAngle = (float)Math.Sin(startRotationY * Mathf.Deg2Rad);
+
+                PlayerComponent playerTransparentClone = PlayerCloneInstancePool.InstantiatePooled(playerPosition);
+                playerTransparentClone.transform.localEulerAngles = playerRotation;
+                PlayerTransparentClone = playerTransparentClone;
 
                 CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.CrimsonAuraBlack];
                 crimsonAura.transform.localEulerAngles = playerRotation;
@@ -65,14 +77,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 PortalBuilder portalSource = (PortalBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Source];
                 portalSource.transform.position = playerPosition;
                 portalSource.transform.localEulerAngles = playerRotation;
-                portalSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, portalRequiredDuration,
-                    setPlayerInactive: true, isClone: false);
+                portalSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, portalRequiredDuration);
 
                 PortalBuilder portalDest = (PortalBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Dest];
                 portalDest.transform.position = TargetPosition;
                 portalDest.transform.localEulerAngles = playerRotation;
-                portalDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, portalOrb, crimsonAura, portalRequiredDuration,
-                    setPlayerInactive: false, isClone: false);
+                portalDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, portalRequiredDuration);
 
                 BlinkRibbonTrailRenderer blinkRibbonTrailRenderer1 = (BlinkRibbonTrailRenderer)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer1];
                 blinkRibbonTrailRenderer1.transform.localEulerAngles = playerRotation;
@@ -115,11 +125,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
         protected override void OnObserverCompleted()
         {
-            GameObject playerGameObject = PlayerClientData.PlayerComponent.gameObject;
-            if (!playerGameObject.activeSelf)
-            {
-                playerGameObject.SetActive(true);
-            }
+            // Warning: Potential stale player transparent clone. Workaround: Replace the instance pool reference entirely when meshes change.
+            PlayerCloneInstancePool.ReturnPooled(PlayerTransparentClone);
+            
+            PortalBuilderChain.CompleteStatefulFX();
         }
     }
     public enum DashAbilityTriggerTypeInstancePools

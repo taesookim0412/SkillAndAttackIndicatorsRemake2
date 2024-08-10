@@ -31,8 +31,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
             else
             {
-                CleanAbilityFXInstances();
                 OnObserverCompleted();
+                CleanAbilityFXInstances();
                 CompleteObserver();
             }
         }

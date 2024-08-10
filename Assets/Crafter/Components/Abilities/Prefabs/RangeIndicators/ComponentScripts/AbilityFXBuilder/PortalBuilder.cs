@@ -22,6 +22,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized]
         public PlayerClientData PlayerClientData;
         [NonSerialized]
+        public PlayerComponent PlayerTransparentClone;
+        [NonSerialized]
         public PortalOrbPurple PortalOrb;
         [NonSerialized]
         public CrimsonAuraBlack CrimsonAura;
@@ -42,10 +44,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private Vector3 CrimsonAuraOffsetPosition;
         [SerializeField]
         public bool IsTeleportSource;
-        [SerializeField]
-        public bool SetPlayerInactive;
-        [HideInInspector]
-        private bool IsClone;
 
         // incompatible with onvalidate
         [HideInInspector]
@@ -102,8 +100,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         //    return $"{PortalScaleTimer.RequiredDuration}, {PlayerOpacityTimer.RequiredDuration}, {PlayerOpaqueTimer.RequiredDuration}";
         //}
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
-            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed,
-            bool setPlayerInactive, bool isClone)
+            PlayerComponent playerTransparentClone,
+            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed)
         {
             base.Initialize(observerUpdateCache);
             
@@ -124,23 +122,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 }
             }
 
-            SetPlayerInactive = setPlayerInactive;
-
             PortalScaleTimer.ObserverUpdateCache = observerUpdateCache;
             PlayerOpacityTimer.ObserverUpdateCache = observerUpdateCache;
             PlayerOpaqueTimer.ObserverUpdateCache = observerUpdateCache;
 
             PlayerClientData = playerClientData;
 
+            PlayerTransparentClone = playerTransparentClone;
+
             PlayerComponent playerComponent = playerClientData.PlayerComponent;
-            if (isClone)
-            {
-                playerComponent.transform.localPosition = Vector3.zero;
-                playerComponent.transform.SetParent(transform, worldPositionStays: false);
-            }
-
-            IsClone = isClone;
-
 
             if (!IsTeleportSource)
             {
@@ -193,14 +183,22 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     }
                     break;
                 case PortalState.PlayerCreate:
-                    if (!IsTeleportSource)
+                    PlayerTransparentClone.gameObject.SetActive(true);
+                    PlayerTransparentClone.transform.position = transform.position;
+                    PlayerClientData.PlayerComponent.transform.position = transform.position;
+                    float playerTransparentCloneOpacity;
+                    if (IsTeleportSource)
                     {
-                        PlayerClientData.PlayerComponent.gameObject.SetActive(true);
-                        if (!IsClone)
-                        {
-                            PlayerClientData.PlayerComponent.transform.position = transform.position;
-                        }
+                        PlayerClientData.PlayerComponent.gameObject.SetActive(false);
+                        playerTransparentCloneOpacity = 1f;
                     }
+                    else
+                    {
+                        playerTransparentCloneOpacity = 0f;
+                    }
+
+                    PlayerTransparentClone.SetCloneFXOpacity(playerTransparentCloneOpacity);
+
                     PlayerOpacityTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                     PortalState = PortalState.PlayerOpaque;
                     break;
@@ -212,31 +210,20 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         {
                             scalePercentage = 1f - scalePercentage;
                         }
-                        PlayerClientData.PlayerComponent.SetCloneFXOpacity(scalePercentage);
+                        PlayerTransparentClone.SetCloneFXOpacity(scalePercentage);
                     }
                     else
                     {
-                        PlayerClientData.PlayerComponent.SetCloneFXOpacity(IsTeleportSource ? 0f : 1f);
-
-                        if (IsTeleportSource || SetPlayerInactive)
-                        {
-                            PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-                        }
+                        PlayerTransparentClone.gameObject.SetActive(false);
+                        PlayerClientData.PlayerComponent.gameObject.SetActive(!IsTeleportSource);
+                        
+                        PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
                         PortalOrb.DisableParticleSystems();
                         PortalState = PortalState.PlayerDespawn;
                     }
                     break;
                 case PortalState.PlayerDespawn:
-                    if (IsTeleportSource || SetPlayerInactive)
-                    {
-                        if (PlayerOpaqueTimer.IsTimeElapsed_FixedUpdateThread())
-                        {
-                            CrimsonAura.DisableParticleSystems();
-                            PlayerClientData.PlayerComponent.gameObject.SetActive(false);
-                            Completed = true;
-                        }
-                    }
-                    else
+                    if (PlayerOpaqueTimer.IsTimeElapsed_FixedUpdateThread())
                     {
                         CrimsonAura.DisableParticleSystems();
                         Completed = true;
@@ -246,13 +233,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         }
         public override void Complete()
         {
-            //PortalOrb.gameObject.SetActive(false);
-            //CrimsonAura.gameObject.SetActive(false);
-
-            //if (IsTeleportSource)
-            //{
-            //    PlayerClientData.PlayerComponent.gameObject.SetActive(false);
-            //}
             PortalOrb.gameObject.SetActive(false);
             CrimsonAura.gameObject.SetActive(false);
             PortalOrb.EnableParticleSystems();
@@ -264,6 +244,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             ObserverUpdateCache = null;
             PlayerClientData = null;
+            PlayerTransparentClone = null;
             PortalOrb = null;
             CrimsonAura = null;
         }
@@ -296,13 +277,16 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                 if (playerComponentPrefab != null && portalOrbPrefab != null && crimsonAuraPrefab != null)
                 {
-                    PlayerComponent playerComponent = playerComponentPrefab.CreateInactiveTransparentCloneInstance();
-                    playerComponent.transform.SetParent(instance.transform, false);
+                    // for lack of better way to create the same player component, just use a transparent clone for the editor.
+                    PlayerComponent playerComponentInstance = playerComponentPrefab.CreateInactiveTransparentCloneInstance();
+                    playerComponentInstance.transform.SetParent(instance.transform, false);
+                    PlayerComponent playerTransparentClone = playerComponentPrefab.CreateInactiveTransparentCloneInstance();
+                    playerTransparentClone.transform.SetParent(instance.transform, false);
                     if (instance.IsTeleportSource)
                     {
-                        playerComponent.gameObject.SetActive(true);
+                        playerComponentInstance.gameObject.SetActive(true);
                     }
-                    PlayerClientData playerClientData = new PlayerClientData(playerComponent);
+                    PlayerClientData playerClientData = new PlayerClientData(system.PlayerGuid, playerComponentInstance);
 
                     PortalOrbPurple portalOrb = GameObject.Instantiate(portalOrbPrefab, instance.transform);
 
@@ -314,7 +298,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         observerUpdateCache = ObserverUpdateCache;
                     }
                     
-                    instance.Initialize(observerUpdateCache, playerClientData, portalOrb, crimsonAura, RequiredDuration, instance.SetPlayerInactive, isClone: true);
+                    instance.Initialize(observerUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, RequiredDuration);
                     TryAddParticleSystem(instance.gameObject);
                     return true;
                 }

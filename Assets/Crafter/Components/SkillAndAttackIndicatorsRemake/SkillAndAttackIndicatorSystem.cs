@@ -80,7 +80,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public Guid PlayerGuid = Guid.NewGuid();
         public void Awake()
         {
-            PlayerClientData = new PlayerClientData(PlayerComponent);
+            PlayerClientData = new PlayerClientData(PlayerGuid, PlayerComponent);
             Camera = Camera.main;
         }
         public void OnEnable()
@@ -301,7 +301,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         public void AddDashAbilityTriggerObserver(Vector3 targetPosition)
         {
-            DashAbilityTriggerObserver<DashAbilityTriggerObserverProps> dashAbilityTriggerObserver = new DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>(targetPosition, DashAbilityTriggerObserverProps);
+            DashAbilityTriggerObserver<DashAbilityTriggerObserverProps> dashAbilityTriggerObserver = new DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>(
+                PlayerClientData,
+                targetPosition, DashAbilityTriggerObserverProps);
             DashAbilityTriggerObservers.Add(dashAbilityTriggerObserver);
         }
         public static bool IsValueOvershot(int direction, float maxValue, float currentValue)
