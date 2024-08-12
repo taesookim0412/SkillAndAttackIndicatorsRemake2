@@ -74,7 +74,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PortalScaleMax.z
-      value: 0.4
+      value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PortalScaleMin.x
@@ -106,7 +106,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PortalOrbOffsetPosition.y
-      value: 1.35
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
+      propertyPath: PortalOrbOffsetPosition.z
+      value: -0.3
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: CrimsonAuraOffsetPosition.y

@@ -88,37 +88,28 @@ TrailRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.1
-        inSlope: 1.8
-        outSlope: 1.8
-        tangentMode: 34
+        value: 0
+        inSlope: 0.25467288
+        outSlope: 0.25467288
+        tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.5
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 34
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
+        outWeight: 0.16360857
       - serializedVersion: 3
         time: 1
-        value: 0.1
-        inSlope: -1.8
-        outSlope: -1.8
-        tangentMode: 34
+        value: 1
+        inSlope: 0.10611367
+        outSlope: 0.10611367
+        tangentMode: 0
         weightedMode: 0
-        inWeight: 0.33333334
+        inWeight: 0.16360855
         outWeight: 0.50508
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 0.1740042, g: 0.1740042, b: 0.1740042, a: 1}
       key1: {r: 0, g: 0, b: 0, a: 1}
       key2: {r: 0.08235294, g: 0.08235294, b: 0.08235294, a: 0.21568628}
       key3: {r: 0, g: 0, b: 0, a: 0}
@@ -175,3 +166,4 @@ MonoBehaviour:
   TrailRenderer: {fileID: 4999382771056782900}
   Active: 0
   Completed: 0
+  CompletedStateful: 0
