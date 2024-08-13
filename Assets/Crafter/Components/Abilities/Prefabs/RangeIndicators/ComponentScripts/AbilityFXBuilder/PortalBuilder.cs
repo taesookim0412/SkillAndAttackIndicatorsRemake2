@@ -238,8 +238,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 case PortalState.PlayerDespawn:
                     if (PlayerOpaqueTimer.IsTimeElapsed_FixedUpdateThread())
                     {
-                        CrimsonAura.DisableParticleSystems();
-                        Completed = true;
+                        Complete();
                     }
                     break;
             }
