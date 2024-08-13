@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts
 {
-    public class PortalOrbPurple : AbstractAbilityFX
+    public class PortalOrbClear : AbstractAbilityFX
     {
 
     }

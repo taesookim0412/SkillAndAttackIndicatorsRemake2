@@ -68,7 +68,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.CrimsonAuraBlack];
                 crimsonAura.transform.localEulerAngles = playerRotation;
 
-                PortalOrbPurple portalOrb = (PortalOrbPurple)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalOrbPurple];
+                PortalOrbClear portalOrb = (PortalOrbClear)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalOrbClear];
                 portalOrb.transform.localEulerAngles = playerRotation;
 
                 BlinkParticles blinkParticles = (BlinkParticles)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.BlinkParticles];
@@ -137,7 +137,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     public enum DashAbilityTriggerTypeInstancePools
     {
         CrimsonAuraBlack,
-        PortalOrbPurple,
+        PortalOrbClear,
         PortalBuilder_Source,
         PortalBuilder_Dest,
         PortalBuilderChain,

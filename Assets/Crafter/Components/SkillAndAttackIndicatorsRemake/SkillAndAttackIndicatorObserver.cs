@@ -1054,7 +1054,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         ElectricTrailRenderer,
         ShockAura,
         CrimsonAuraBlack,
-        PortalOrbPurple,
+        PortalOrbClear,
         PortalBuilder_Source,
         PortalBuilder_Dest,
         PortalBuilderChain,

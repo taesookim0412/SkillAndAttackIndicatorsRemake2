@@ -25,7 +25,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized]
         public PlayerComponent PlayerTransparentClone;
         [NonSerialized]
-        public PortalOrbPurple PortalOrb;
+        public PortalOrbClear PortalOrb;
         [NonSerialized]
         public CrimsonAuraBlack CrimsonAura;
         [NonSerialized]
@@ -104,7 +104,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         //}
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
             PlayerComponent playerTransparentClone,
-            PortalOrbPurple portalOrb, CrimsonAuraBlack crimsonAura, BlinkParticles blinkParticles, long? durationAllowed)
+            PortalOrbClear portalOrb, CrimsonAuraBlack crimsonAura, BlinkParticles blinkParticles, long? durationAllowed)
         {
             base.Initialize(observerUpdateCache);
             
@@ -283,8 +283,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 PlayerComponent playerComponentPrefab = system.PlayerComponent;
 
-                string portalOrbPurpleType = AbilityFXComponentType.PortalOrbPurple.ToString();
-                PortalOrbPurple portalOrbPrefab = (PortalOrbPurple)system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == portalOrbPurpleType);
+                string portalOrbType = AbilityFXComponentType.PortalOrbClear.ToString();
+                PortalOrbClear portalOrbPrefab = (PortalOrbClear)system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == portalOrbType);
 
                 string crimsonAuraBlackType = AbilityFXComponentType.CrimsonAuraBlack.ToString();
                 CrimsonAuraBlack crimsonAuraPrefab = (CrimsonAuraBlack)system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == crimsonAuraBlackType);
@@ -305,7 +305,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     }
                     PlayerClientData playerClientData = new PlayerClientData(system.PlayerGuid, playerComponentInstance);
 
-                    PortalOrbPurple portalOrb = GameObject.Instantiate(portalOrbPrefab, instance.transform);
+                    PortalOrbClear portalOrb = GameObject.Instantiate(portalOrbPrefab, instance.transform);
 
                     CrimsonAuraBlack crimsonAura = GameObject.Instantiate(crimsonAuraPrefab, instance.transform);
 

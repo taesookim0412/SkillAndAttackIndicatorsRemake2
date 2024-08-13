@@ -165,7 +165,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             Dictionary<AbilityTriggerFXType, PoolBagDco<AbstractAbilityFX>[]> abilityTriggerFXInstancePools = new Dictionary<AbilityTriggerFXType,
     PoolBagDco<AbstractAbilityFX>[]>(AbilityFXDefinition.AbilityTriggerFXTypeEnumLength);
             if (abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.CrimsonAuraBlack, out AbstractAbilityFX crimsonAuraDarkPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalOrbPurple, out AbstractAbilityFX portalOrbPurplePrefab) && 
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalOrbClear, out AbstractAbilityFX portalOrbClearPrefab) && 
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalBuilder_Source, out AbstractAbilityFX portalBuilderSrcPrefab) &&
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalBuilder_Dest, out AbstractAbilityFX portalBuilderDestPrefab) &&
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalBuilderChain, out AbstractAbilityFX portalBuilderChainPrefab) &&
@@ -178,7 +178,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 PoolBagDco<AbstractAbilityFX>[] dashTriggerPoolBag = new PoolBagDco<AbstractAbilityFX>[9];
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.CrimsonAuraBlack] = new PoolBagDco<AbstractAbilityFX>(crimsonAuraDarkPrefab, 30);
-                dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PortalOrbPurple] = new PoolBagDco<AbstractAbilityFX>(portalOrbPurplePrefab, 30);
+                dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PortalOrbClear] = new PoolBagDco<AbstractAbilityFX>(portalOrbClearPrefab, 30);
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Source] = new PoolBagDco<AbstractAbilityFX>(portalBuilderSrcPrefab, 30);
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Dest] = new PoolBagDco<AbstractAbilityFX>(portalBuilderDestPrefab, 30);
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PortalBuilderChain] = new PoolBagDco<AbstractAbilityFX>(portalBuilderChainPrefab, 30);
