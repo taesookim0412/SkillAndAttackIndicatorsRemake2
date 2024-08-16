@@ -139,10 +139,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             }
 
             PortalOrb = portalOrb;
-            portalOrb.DisableParticleSystems();
+            portalOrb.DisableSystems();
             
             CrimsonAura = crimsonAura;
-            crimsonAura.DisableParticleSystems();
+            crimsonAura.DisableSystems();
 
             PortalState = PortalState.PortalCreate;
         }
@@ -218,7 +218,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         PlayerClientData.PlayerComponent.gameObject.SetActive(!IsTeleportSource);
                         
                         PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-                        PortalOrb.DisableSystems();
                         PortalState = PortalState.PlayerDespawn;
                     }
                     break;

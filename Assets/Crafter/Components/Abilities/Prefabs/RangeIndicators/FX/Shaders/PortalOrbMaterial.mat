@@ -25,7 +25,6 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHATEST_ON
   - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords:
   - _FLIPBOOKBLENDING_OFF
@@ -101,9 +100,9 @@ Material:
     m_Ints: []
     m_Floats:
     - _AddPrecomputedVelocity: 0
-    - _AlphaClip: 1
+    - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _Blend: 2
+    - _Blend: 0
     - _BlendModePreserveSpecular: 0
     - _BlendOp: 0
     - _BumpScale: 1
@@ -114,15 +113,15 @@ Material:
     - _ClearCoatSmoothness: 0
     - _ColorMode: 0
     - _Cull: 2
-    - _Cutoff: 0.214
+    - _Cutoff: 0.06
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DistortionBlend: 0.5
     - _DistortionEnabled: 0
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0.1
-    - _DstBlend: 1
-    - _DstBlendAlpha: 1
+    - _DstBlend: 10
+    - _DstBlendAlpha: 10
     - _EnvironmentReflections: 0
     - _FlipbookBlending: 0
     - _FlipbookMode: 0
