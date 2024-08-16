@@ -124,6 +124,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             float[] timeRequiredIncrementalSec, float[] timeRequiredIncrementalVelocityMult,
             (Vector3 worldPosition, Vector3 distanceFromPrev, float localXPosFromPrev)[] worldPositionsPerZUnit,
             float[] localXPositionsPerZUnit,
+            int zUnitsPerIndex,
             float elapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, 
             float worldPositionY, out float newWorldPositionY)
         {
@@ -144,7 +145,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 if (elapsedPositionIndexDeltaTime < PartialMathUtil.FLOAT_TOLERANCE && i > 0)
                 {
                     localPositionX = PositionUtil.CalculateClosestMultipleOrClamp(localPositionX, localXPositionsPerZUnit[i - 1], deltaTime, useMaxWhenDtSmall: true);
-                    localPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, (float)(i - 1), deltaTime, useMaxWhenDtSmall: true);
+                    localPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, (i - 1) * zUnitsPerIndex, deltaTime, useMaxWhenDtSmall: true);
                 }
 
                 float indexTimeRequiredSec = timeRequiredIncrementalSec[i];
@@ -202,7 +203,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 float dt = deltaTime * timeRequiredIncrementalVelocityMult[i];
 
                 float newLocalX;
-                float maxNewLocalZ = localPositionZ + dt;
+                float maxNewLocalZ = localPositionZ + (dt * zUnitsPerIndex);
                 float newLocalZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, maxNewLocalZ, deltaTime, useMaxWhenDtSmall);
 
                 //Debug.Log($"{localPosition.z},{maxNewLocalZ}, {fixedDeltaTimeIncrement}, {newLocalZ}");

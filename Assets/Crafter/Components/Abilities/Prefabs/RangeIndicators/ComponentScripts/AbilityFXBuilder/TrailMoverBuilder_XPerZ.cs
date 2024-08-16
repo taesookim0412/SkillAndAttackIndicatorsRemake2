@@ -23,7 +23,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         public float[] LocalXPositionsPerZUnit;
         [HideInInspector]
-        public int LineLength;
+        public int ModifiedLineLength;
+        [HideInInspector]
+        private int ZUnitsPerIndex;
         [HideInInspector]
         public (Vector3 worldPosition, Vector3 distanceFromPrev, float localXPosFromPrev)[] WorldPositionsPerZUnit;
         [HideInInspector]
@@ -50,6 +52,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public void Initialize(ObserverUpdateCache observerUpdateCache,
             ElectricTrail electricTrail,
             int lineLength,
+            int zUnitsPerIndex,
             long[] timeRequiredForZDistances,
             SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem,
             float startPositionX, float startPositionZ, float cosYAngle,
@@ -60,29 +63,32 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             electricTrail.ClearParticleSystems();
 
             ElectricTrail = electricTrail;
-            LineLength = lineLength;
+            int modifiedLineLength = PartialDataTypesUtil.Round((float)lineLength / (float)zUnitsPerIndex);
+            ModifiedLineLength = modifiedLineLength;
+            ZUnitsPerIndex = zUnitsPerIndex;
 
-            if (LocalXPositionsPerZUnit == null || LocalXPositionsPerZUnit.Length != lineLength)
+            if (LocalXPositionsPerZUnit == null || LocalXPositionsPerZUnit.Length != modifiedLineLength)
             {
-                LocalXPositionsPerZUnit = InitializeLocalXPositionsPerZUnit(lineLength);
+                LocalXPositionsPerZUnit = InitializeLocalXPositionsPerIndex(modifiedLineLength);
             }
 
-            WorldPositionsPerZUnit = InitializeWorldPositionsPerZUnit(skillAndAttackIndicatorSystem,
+            WorldPositionsPerZUnit = InitializeWorldPositionsPerIndex(skillAndAttackIndicatorSystem,
                 startPositionX, startPositionZ, 
+                zUnitsPerIndex,
                 cosYAngle: cosYAngle,
                 sinYAngle: sinYAngle);
 
             float[] timeRequiredIncrementalVelocityMult = new float[timeRequiredForZDistances.Length];
             float[] timeRequiredIncrementalSec = new float[timeRequiredForZDistances.Length];
 
-            long prevAccumTimeRequiredForZDistance = timeRequiredForZDistances[0];
+            long prevAccumTimeRequiredForIndex = timeRequiredForZDistances[0];
 
             //float oneSecMillisMultByTimeRequiredDelay = 1000f * TimeRequiredVelocityDelayMult;
             //float timeRequiredVelocityMultDivByMillis = TimeRequiredVelocityDelayMult / 1000f;
             for (int i = 1; i < timeRequiredForZDistances.Length; i++)
             {
                 long timeRequiredAccum = timeRequiredForZDistances[i];
-                long timeRequiredDifference = timeRequiredAccum - prevAccumTimeRequiredForZDistance;
+                long timeRequiredDifference = timeRequiredAccum - prevAccumTimeRequiredForIndex;
                 if (timeRequiredDifference > 0L)
                 {
                     timeRequiredIncrementalVelocityMult[i] = 1000f / timeRequiredDifference;
@@ -93,7 +99,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 }
                 timeRequiredIncrementalSec[i] = timeRequiredDifference * 0.001f;
 
-                prevAccumTimeRequiredForZDistance = timeRequiredAccum;
+                prevAccumTimeRequiredForIndex = timeRequiredAccum;
             }
 
             TimeRequiredIncrementalVelocityMult = timeRequiredIncrementalVelocityMult;
@@ -108,9 +114,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             SinYAngle = sinYAngle;
         }
         protected (Vector3 worldPosition, Vector3 distanceFromPrev,
-                float localXPosFromPrev)[] InitializeWorldPositionsPerZUnit(SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem,
+                float localXPosFromPrev)[] InitializeWorldPositionsPerIndex(SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem,
             float startPositionX,
             float startPositionZ,
+            int zUnitsPerIndex,
             float cosYAngle,
             float sinYAngle)
         {
@@ -129,9 +136,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             for (int i = 1; i < localXPositionsPerZUnit.Length; i++)
             {
                 float localPositionX = localXPositionsPerZUnit[i];
+                float localPositionZ = i * zUnitsPerIndex;
 
-                float rotatedLocalPositionX = i * sinYAngle + localPositionX * cosYAngle;
-                float rotatedLocalPositionZ = i * cosYAngle - localPositionX * sinYAngle;
+                float rotatedLocalPositionX = localPositionZ * sinYAngle + localPositionX * cosYAngle;
+                float rotatedLocalPositionZ = localPositionZ * cosYAngle - localPositionX * sinYAngle;
 
                 float worldPositionX = startPositionX + rotatedLocalPositionX;
                 float worldPositionZ = startPositionZ + rotatedLocalPositionZ;
@@ -150,7 +158,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             return worldPositionsTuple;
         }
 
-        private float[] InitializeLocalXPositionsPerZUnit(int lineLength)
+        private float[] InitializeLocalXPositionsPerIndex(int lineLength)
         {
             float[] xPositions = new float[lineLength];
 
@@ -173,12 +181,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         public void ManualUpdate(float fillProgress)
         {
-            int lineLength = LineLength;
-            float zUnits = fillProgress * lineLength;
+            int modifiedLineLength = ModifiedLineLength;
+            float zUnits = fillProgress * modifiedLineLength;
             int zUnitsIndex = (int)zUnits;
             if (zUnitsIndex > 0)
             {
-                if (zUnitsIndex < lineLength)
+                if (zUnitsIndex < modifiedLineLength)
                 {
                     Vector3 localPosition = LocalPosition;
                     int positionIndex = PositionIndex;
@@ -213,20 +221,20 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     //    ElapsedPositionIndexDeltaTime = 0f;
                     //}
                     //Debug.Log($"{localPosition.z}, {positionIndex}");
-                    if (positionIndex < lineLength)
+                    if (positionIndex < modifiedLineLength)
                     {
                         positionIndex = PositionUtil.MoveTrailPosition(positionIndex, fixedDeltaTime, localPosition.x, localPosition.z,
                             out float newLocalPositionX, out float newLocalPositionZ, TimeRequiredIncrementalSec,
-                            TimeRequiredIncrementalVelocityMult, WorldPositionsPerZUnit, LocalXPositionsPerZUnit,
+                            TimeRequiredIncrementalVelocityMult, WorldPositionsPerZUnit, LocalXPositionsPerZUnit, ZUnitsPerIndex,
                             ElapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, ElectricTrail.transform.position.y, out float newWorldPositionY);
 
                         // Since the position only gets set before the dt, instead of after,
                         // the final position has to be set if the conditions are met
 
-                        if (positionIndex == lineLength)
+                        if (positionIndex == modifiedLineLength)
                         {
                             newLocalPositionX = LocalXPositionsPerZUnit[positionIndex - 1];
-                            newLocalPositionZ = positionIndex - 1;
+                            newLocalPositionZ = (positionIndex - 1) * ZUnitsPerIndex;
                         }
                         float rotatedLocalPositionX = newLocalPositionZ * sinYAngle + newLocalPositionX * cosYAngle;
                         float rotatedLocalPositionZ = newLocalPositionZ * cosYAngle - newLocalPositionX * sinYAngle;
@@ -262,7 +270,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 }
                 else
                 {
-                    PositionIndex = LineLength;
+                    PositionIndex = ModifiedLineLength;
                 }
             }
         }
@@ -276,8 +284,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(TrailMoverBuilder_XPerZ))]
     public class TrailMoverBuilder_XPerZEditor : AbstractEditor<TrailMoverBuilder_XPerZ>
     {
+        public int ZUnitsPerIndex = 5;
         private static readonly int LineLengthUnits = 20;
-        private static readonly long ChargeDuration = 5000L;
+        private static readonly long ChargeDuration = 800L;
         private static readonly float ChargeDurationFloat = (float)ChargeDuration;
 
         private long StartTime;
@@ -295,7 +304,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     ElectricTrail electricTrail = GameObject.Instantiate(electricTrailPrefab, instance.transform);
                     electricTrail.transform.localPosition = Vector3.zero;
                     Vector3 position = instance.transform.position;
-                    long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
+                    long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerModifiedUnit(LineLengthUnits, ChargeDuration, ZUnitsPerIndex);
 
                     float cosYAngle = (float)Math.Cos(0f * Mathf.Deg2Rad);
                     float sinYAngle = (float)Math.Sin(0f * Mathf.Deg2Rad);
@@ -305,7 +314,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         SetObserverUpdateCache();
                         observerUpdateCache = ObserverUpdateCache;
                     }
-                    instance.Initialize(observerUpdateCache, electricTrail, LineLengthUnits, timeRequiredForZDistances, system,
+                    instance.Initialize(observerUpdateCache, electricTrail, LineLengthUnits, ZUnitsPerIndex, timeRequiredForZDistances, system,
                         position.x, position.z, cosYAngle, sinYAngle);
                     TryAddParticleSystem(instance.gameObject);
                     StartTime = observerUpdateCache.UpdateTickTimeFixedUpdate;
