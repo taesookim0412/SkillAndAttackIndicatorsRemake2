@@ -19,6 +19,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [SerializeField]
         public TrailRenderer TrailRenderer;
 
+        [SerializeField]
+        public bool EnableParticleSystemsRequired = false;
         [HideInInspector]
         public bool Active = false;
         [HideInInspector]
@@ -30,6 +32,20 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Active = false;
             Completed = false;
             CompletedStateful = false;
+        }
+        public void EnableSystems()
+        {
+            if (EnableParticleSystemsRequired)
+            {
+                EnableParticleSystems();
+            }
+        }
+        public void DisableSystems()
+        {
+            if (EnableParticleSystemsRequired)
+            {
+                DisableParticleSystems();
+            }
         }
         public void DisableParticleSystems()
         {

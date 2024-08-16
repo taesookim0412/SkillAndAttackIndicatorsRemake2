@@ -12087,6 +12087,7 @@ MonoBehaviour:
   - {fileID: 783743165}
   - {fileID: 2137290862}
   TrailRenderer: {fileID: 0}
+  EnableParticleSystemsRequired: 0
   Active: 0
   Completed: 0
   CompletedStateful: 0
@@ -47867,6 +47868,7 @@ MonoBehaviour:
   VisualEffect: {fileID: 0}
   ParticleSystems: []
   TrailRenderer: {fileID: 0}
+  EnableParticleSystemsRequired: 0
   Active: 0
   Completed: 0
   CompletedStateful: 0
@@ -58422,63 +58424,6 @@ Transform:
   - {fileID: 3302024673268649916}
   m_Father: {fileID: 1025633947657663902}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &5841382644568602411
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4285270805643174588, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.006
-      objectReference: {fileID: 0}
-    - target: {fileID: 4285270805643174588, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4285270805643174588, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.018
-      objectReference: {fileID: 0}
-    - target: {fileID: 4285270805643174588, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4285270805643174588, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4285270805643174588, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4285270805643174588, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4285270805643174588, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4285270805643174588, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4285270805643174588, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6767026591511546960, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
-      propertyPath: m_Name
-      value: BlinkParticles
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 6b737eb789b8f6d459228607f19cdc3a, type: 3}
 --- !u!4 &5850583210882004778
 Transform:
   m_ObjectHideFlags: 0
@@ -59984,5 +59929,4 @@ SceneRoots:
   - {fileID: 3333853737982852103}
   - {fileID: 1052903590}
   - {fileID: 2214021486501745412}
-  - {fileID: 5841382644568602411}
   - {fileID: 3921892260156765936}

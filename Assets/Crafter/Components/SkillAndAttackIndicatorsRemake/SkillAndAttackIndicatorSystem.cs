@@ -170,13 +170,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalBuilder_Dest, out AbstractAbilityFX portalBuilderDestPrefab) &&
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PortalBuilderChain, out AbstractAbilityFX portalBuilderChainPrefab) &&
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.BlinkRibbonTrailRenderer, out AbstractAbilityFX blinkRibbonTrailRendererPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.TrailMoverBuilder_TargetPos, out AbstractAbilityFX trailMoverBuilderTargetPosPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.BlinkParticles, out AbstractAbilityFX blinkParticlesPrefab))
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.TrailMoverBuilder_TargetPos, out AbstractAbilityFX trailMoverBuilderTargetPosPrefab))
             {
-                PoolBagDco<AbstractAbilityFX> blinkParticlesBag = new PoolBagDco<AbstractAbilityFX>(blinkParticlesPrefab, 30);
                 PoolBagDco<AbstractAbilityFX> blinkRibbonTrailRendererBag = new PoolBagDco<AbstractAbilityFX>(blinkRibbonTrailRendererPrefab, 30);
 
-                PoolBagDco<AbstractAbilityFX>[] dashTriggerPoolBag = new PoolBagDco<AbstractAbilityFX>[9];
+                PoolBagDco<AbstractAbilityFX>[] dashTriggerPoolBag = new PoolBagDco<AbstractAbilityFX>[8];
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.CrimsonAuraBlack] = new PoolBagDco<AbstractAbilityFX>(crimsonAuraDarkPrefab, 30);
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PortalOrbClear] = new PoolBagDco<AbstractAbilityFX>(portalOrbClearPrefab, 30);
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Source] = new PoolBagDco<AbstractAbilityFX>(portalBuilderSrcPrefab, 30);
@@ -185,7 +183,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer1] = blinkRibbonTrailRendererBag;
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer2] = blinkRibbonTrailRendererBag;
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.TrailMoverBuilder_TargetPos] = new PoolBagDco<AbstractAbilityFX>(trailMoverBuilderTargetPosPrefab, 30);
-                dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.BlinkParticles] = blinkParticlesBag;
 
                 abilityTriggerFXInstancePools[AbilityTriggerFXType.DashTrigger] = dashTriggerPoolBag;
             }
