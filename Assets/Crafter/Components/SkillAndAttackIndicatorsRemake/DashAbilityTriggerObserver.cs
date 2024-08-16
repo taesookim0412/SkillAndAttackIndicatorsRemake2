@@ -102,7 +102,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     startRotationYCosYAngle: startRotationYCosYAngle,
                     startRotationYSinYAngle: startRotationYSinYAngle,
                     timeRequiredSec: blinkRibbonTrailRequiredDurationSec,
-                    endPositionWorld: TargetPosition);
+                    endPositionWorld: TargetPosition + portalDest.PortalOrbOffsetPosition);
 
                 PlayerClientData = playerClientData;
 

@@ -16,8 +16,8 @@ namespace Assets.Crafter.Components.Constants
         {
             { BlinkRibbonTrailType.Dual, new BlinkRibbonTrailProps(
                 startPositionOffsetsLocal: new Vector3[2] {
-                    new Vector3(0f, 0f, 0f),
-                    new Vector3(0f, 0f, 0f)
+                    new Vector3(0.2f, 0f, 0f),
+                    new Vector3(-0.2f, 0f, 0f)
                 },
                 endPositionOffsetsLocal: new Vector3[2]
                 {
@@ -26,8 +26,8 @@ namespace Assets.Crafter.Components.Constants
                 },
                 startRotationOffsetsLocal: new Vector3[2]
                 {
-                    new Vector3(-180f, 0f, 0f),
-                    new Vector3(-180f, 0f, 0f)
+                    new Vector3(0f, 0f, 0f),
+                    new Vector3(0f, 0f, 0f)
                 },
                 widthMultipliers: new float[2]
                 {
@@ -37,11 +37,11 @@ namespace Assets.Crafter.Components.Constants
                 {
                     new SerializeableArray<Vector3>(new Vector3[3]{
                         new Vector3(0.2f,1.3f,0.11f),
-                        new Vector3(0.775f, 1.3f, 0.23f),
+                        new Vector3(0.45f, 1.3f, 5.6f),
                         new Vector3(0.2f, 1.3f, 9.59f) }),
                     new SerializeableArray<Vector3>(new Vector3[3]{
                         new Vector3(-0.2f,1.3f,0.11f),
-                        new Vector3(-0.775f, 1.3f, 0.23f),
+                        new Vector3(-0.45f, 1.3f, 5.6f),
                         new Vector3(-0.2f, 1.3f, 9.59f) })
                 }
                 )
