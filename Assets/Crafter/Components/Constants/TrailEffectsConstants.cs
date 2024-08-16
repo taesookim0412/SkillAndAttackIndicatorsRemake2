@@ -35,20 +35,14 @@ namespace Assets.Crafter.Components.Constants
                 },
                 trailMarkersLocal: new SerializeableArray<Vector3>[2]
                 {
-                    new SerializeableArray<Vector3>(new Vector3[6]{
-                        new Vector3(0.2f,0.32f,0.11f),
-                        new Vector3(0.775f, 0.38f, 0.23f),
-                        new Vector3(0.24f, 0.32f, 0.42f),
-                        new Vector3(0.42f, 1.37f, 0.55f),
-                        new Vector3(0.2f, 1.938f, 5.98f),
-                        new Vector3(0.2f, 1.8f, 9.59f)}),
-                    new SerializeableArray<Vector3>(new Vector3[6]{
-                        new Vector3(-0.2f,0.32f,0.11f),
-                        new Vector3(-0.775f, 0.38f, 0.23f),
-                        new Vector3(-0.24f, 0.32f, 0.42f),
-                        new Vector3(-0.42f, 1.37f, 0.55f),
-                        new Vector3(-0.2f, 1.938f, 5.98f),
-                        new Vector3(-0.2f, 1.8f, 9.59f)})
+                    new SerializeableArray<Vector3>(new Vector3[3]{
+                        new Vector3(0.2f,1.3f,0.11f),
+                        new Vector3(0.775f, 1.3f, 0.23f),
+                        new Vector3(0.2f, 1.3f, 9.59f) }),
+                    new SerializeableArray<Vector3>(new Vector3[3]{
+                        new Vector3(-0.2f,1.3f,0.11f),
+                        new Vector3(-0.775f, 1.3f, 0.23f),
+                        new Vector3(-0.2f, 1.3f, 9.59f) })
                 }
                 )
             }

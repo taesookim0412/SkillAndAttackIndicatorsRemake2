@@ -38,6 +38,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         }
 
         public void Initialize(ObserverUpdateCache observerUpdateCache,
+            SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem,
+            Vector3 playerStartOffsetPosition,
             BlinkRibbonTrailRenderer[] trails,
             BlinkRibbonTrailProps blinkRibbonTrailProps,
             float startRotationY,
@@ -55,7 +57,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Vector3[] trailStartPositions = new Vector3[trails.Length];
             for (int i = 0; i < trails.Length; i++)
             {
-                Vector3 startPositionOffset = localStartPositionOffsets[i];
+                Vector3 startPositionOffset = localStartPositionOffsets[i] + playerStartOffsetPosition;
                 float startPositionOffsetX = startPositionOffset.x;
                 float startPositionOffsetZ = startPositionOffset.z;
 
@@ -64,9 +66,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                 BlinkRibbonTrailRenderer trail = trails[i];
                 trail.SetTrailRendererWidth(widthMultipliers[i]);
-                Vector3 startPosition = new Vector3(startWorldPosition.x + rotatedLocalPositionX,
-                    startWorldPosition.y + startPositionOffset.y,
-                    startWorldPosition.z + rotatedLocalPositionZ);
+                float worldPositionX = startWorldPosition.x + rotatedLocalPositionX;
+                float worldPositionZ = startWorldPosition.z + rotatedLocalPositionZ;
+                float worldPositionY = skillAndAttackIndicatorSystem.GetTerrainHeight(worldPositionX, worldPositionZ) + startPositionOffset.y;
+
+                Vector3 startPosition = new Vector3(worldPositionX,
+                    worldPositionY,
+                    worldPositionZ);
                 trailStartPositions[i] = startPosition;
                 trail.transform.position = startPosition;
                 trail.TrailRenderer.Clear();
@@ -99,9 +105,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     float rotatedPositionOffsetX = positionOffsetZ * startRotationYSinYAngle + positionOffsetX * startRotationYCosYAngle;
                     float rotatedPositionOffsetZ = positionOffsetZ * startRotationYCosYAngle - positionOffsetX * startRotationYSinYAngle;
 
-                    trailMarkersWorldAndEndPosition[j] = new Vector3(startWorldPosition.x + rotatedPositionOffsetX,
-                        startWorldPosition.y + positionOffset.y,
-                        startWorldPosition.z + rotatedPositionOffsetZ);
+                    float worldPositionX = startWorldPosition.x + rotatedPositionOffsetX;
+                    float worldPositionZ = startWorldPosition.z + rotatedPositionOffsetZ;
+
+                    float worldPositionY = skillAndAttackIndicatorSystem.GetTerrainHeight(worldPositionX, worldPositionZ) + positionOffset.y;
+                    trailMarkersWorldAndEndPosition[j] = new Vector3(worldPositionX,
+                        worldPositionY,
+                        worldPositionZ);
                 }
 
                 // end position is not set yet.
@@ -397,6 +407,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(TrailMoverBuilder_TargetPos))]
     public class TrailMoverBuilder_TargetPosEditor : AbstractEditor<TrailMoverBuilder_TargetPos>
     {
+        public bool StartPositionOverride = false;
+        public Vector3 PlayerStartPositionOffset = new Vector3(0f, 1.2f, 0f);
         public bool EndPositionOverride = false;
         public Vector3 EndPosition;
 
@@ -407,8 +419,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private long StartTime;
         private long LastUpdateTime;
         
-        public void SetEndPositionOverride(Vector3 endPositionOverride)
+        public void SetOverrides(Vector3 playerStartPositionOverride,  Vector3 endPositionOverride)
         {
+            StartPositionOverride = true;
+            PlayerStartPositionOffset = playerStartPositionOverride;
+
             EndPositionOverride = true;
             EndPosition = endPositionOverride;
         }
@@ -446,7 +461,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                                 observerUpdateCache = ObserverUpdateCache;
                             }
 
-                            instance.Initialize(observerUpdateCache, blinkRibbonTrailRenderers, blinkRibbonTrailProps, startRotationY,
+                            instance.Initialize(observerUpdateCache, system, PlayerStartPositionOffset, blinkRibbonTrailRenderers, blinkRibbonTrailProps, startRotationY,
                                 startRotationYCosYAngle, startRotationYSinYAngle,
                                 TimeRequiredSec,
                                 endPositionWorld: endPositionWorld);

@@ -53,7 +53,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             if (TrailEffectsConstants.BlinkRibbonTrailProps.TryGetValue(BlinkRibbonTrailType.Dual, out BlinkRibbonTrailProps blinkRibbonTrailProps) &&
                 Props.SkillAndAttackIndicatorSystem.PlayerCloneInstancePools.TryGetValue(playerClientData.Id, out PlayerCloneInstancePool))
             {
-                
+                // must be casted on the ground.
                 Vector3 playerPosition = playerClientData.PlayerComponent.transform.position;
                 Vector3 playerRotation = playerClientData.PlayerComponent.transform.localEulerAngles;
 
@@ -91,9 +91,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 blinkRibbonTrailRenderer2.transform.localEulerAngles = playerRotation;
 
                 TrailMoverBuilder_TargetPos trailMoverBuilderTargetPos = (TrailMoverBuilder_TargetPos)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.TrailMoverBuilder_TargetPos];
-                trailMoverBuilderTargetPos.transform.position = playerPosition + portalSource.PortalOrbOffsetPosition;
+                trailMoverBuilderTargetPos.transform.position = playerPosition;
                 trailMoverBuilderTargetPos.transform.localEulerAngles = playerRotation;
-                trailMoverBuilderTargetPos.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, new BlinkRibbonTrailRenderer[2] { blinkRibbonTrailRenderer1, blinkRibbonTrailRenderer2 },
+                trailMoverBuilderTargetPos.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, 
+                    Props.SkillAndAttackIndicatorSystem,
+                    portalSource.PortalOrbOffsetPosition,
+                    new BlinkRibbonTrailRenderer[2] { blinkRibbonTrailRenderer1, blinkRibbonTrailRenderer2 },
                     blinkRibbonTrailProps: blinkRibbonTrailProps,
                     startRotationY: startRotationY,
                     startRotationYCosYAngle: startRotationYCosYAngle,
