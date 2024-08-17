@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
@@ -16,22 +15,19 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             return percentage * percentage;
         }
 
-        public static long[] GenerateTimeRequiredForDistancesPerModifiedUnit(int lineLengthUnits, long chargeDuration, int zUnitsPerIndex)
+        public static long[] GenerateTimeRequiredForDistancesPerUnit(int lineLengthUnits, long chargeDuration)
         {
             // iterate the distances
             // find the fillPercentage
             // invert the fillPercentage into time
-            int modifiedLineLengthUnits = PartialDataTypesUtil.Round((float) lineLengthUnits / (float) zUnitsPerIndex);
-
             float lineLengthUnitsFloat = (float)lineLengthUnits;
-            float modifiedLineLengthUnitsFloat = (float)modifiedLineLengthUnits;
 
             float chargeDurationFloat = (float)chargeDuration;
 
             int startDistUnitsIndex = 0;
             long prevChargeDurationIterationTimeRequired = 0L;
 
-            long[] timeRequiredForDistancesPerModifiedUnit = new long[modifiedLineLengthUnits];
+            long[] timeRequiredForDistancesPerUnit = new long[lineLengthUnits];
             for (int i = 0; i < lineLengthUnits; i++)
             {
                 // i = 10, % = 0.33
@@ -39,7 +35,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 // i = 10, fp% = ~0.1089
                 float fillProgress = EaseInOutQuad(lineLengthPercentage);
                 // i = 10, zDist = 0.11 * 30 = 3.3
-                int zDistanceUnitsIndex = (int)(fillProgress * modifiedLineLengthUnits);
+                int zDistanceUnitsIndex = (int)(fillProgress * lineLengthUnits);
                 long timeValue = (long)(lineLengthPercentage * chargeDurationFloat);
                 // i = 10, fill prevIdx to 3.3 (or zDistanceUnits) with timePercentage.
 
@@ -50,9 +46,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 {
                     long interpTimeValue = (long)(prevChargeDurationIterationTimeRequired + timeValueDifference * ((j + 1) / interpLenFloat));
                     int interpIndex = startDistUnitsIndex + j;
-                    if (interpIndex < modifiedLineLengthUnits)
+                    if (interpIndex < lineLengthUnits)
                     {
-                        timeRequiredForDistancesPerModifiedUnit[interpIndex] = interpTimeValue;
+                        timeRequiredForDistancesPerUnit[interpIndex] = interpTimeValue;
                     }
                     else
                     {
@@ -69,25 +65,16 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             }
             // fill the remaining values...
-            if (startDistUnitsIndex < modifiedLineLengthUnits)
+            if (startDistUnitsIndex < lineLengthUnits)
             {
-                long lastValue = startDistUnitsIndex > 0 ? timeRequiredForDistancesPerModifiedUnit[startDistUnitsIndex - 1] : 0L;
-                long timeValueDifference = chargeDuration - lastValue;
-
-                int interpLen = modifiedLineLengthUnits - startDistUnitsIndex;
-                float interpLenFloat = (float)interpLen;
-                for (int j = 0; j < interpLen; j++)
+                long lastValue = startDistUnitsIndex > 0 ? timeRequiredForDistancesPerUnit[startDistUnitsIndex - 1] : 0L;
+                for (int i = startDistUnitsIndex; i < lineLengthUnits; i++)
                 {
-                    long interpTimeValue = (long)(prevChargeDurationIterationTimeRequired + timeValueDifference * ((j + 1) / interpLenFloat));
-                    int interpIndex = startDistUnitsIndex + j;
-                    if (interpIndex < modifiedLineLengthUnits)
-                    {
-                        timeRequiredForDistancesPerModifiedUnit[interpIndex] = interpTimeValue;
-                    }
+                    timeRequiredForDistancesPerUnit[i] = lastValue;
                 }
             }
 
-            return timeRequiredForDistancesPerModifiedUnit;
+            return timeRequiredForDistancesPerUnit;
         }
     }
 }
