@@ -52645,15 +52645,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1059456225161222465, guid: cf05a80abecd0b644b53a5eee97514de, type: 3}
       propertyPath: PositionIndex
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1059456225161222465, guid: cf05a80abecd0b644b53a5eee97514de, type: 3}
       propertyPath: ModifiedLineLength
       value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 1059456225161222465, guid: cf05a80abecd0b644b53a5eee97514de, type: 3}
+      propertyPath: ModifiedLineLengthBuffered
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1059456225161222465, guid: cf05a80abecd0b644b53a5eee97514de, type: 3}
       propertyPath: LocalXPositionsPerZUnit.Array.size
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1059456225161222465, guid: cf05a80abecd0b644b53a5eee97514de, type: 3}
       propertyPath: 'LocalXPositionsPerZUnit.Array.data[3]'
@@ -52712,7 +52716,7 @@ PrefabInstance:
       addedObject: {fileID: 4403507742461153164}
     - targetCorrespondingSourceObject: {fileID: 8448351295477489805, guid: cf05a80abecd0b644b53a5eee97514de, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4403507742461153165}
+      addedObject: {fileID: 4403507742461153168}
   m_SourcePrefab: {fileID: 100100000, guid: cf05a80abecd0b644b53a5eee97514de, type: 3}
 --- !u!1 &4403507742461153163 stripped
 GameObject:
@@ -52796,7 +52800,7 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
---- !u!198 &4403507742461153165
+--- !u!198 &4403507742461153168
 ParticleSystem:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

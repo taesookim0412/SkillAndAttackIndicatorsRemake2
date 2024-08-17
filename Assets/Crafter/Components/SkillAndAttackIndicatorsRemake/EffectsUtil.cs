@@ -23,16 +23,19 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             // invert the fillPercentage into time
             int modifiedLineLengthUnits = PartialDataTypesUtil.Round((float) lineLengthUnits / (float) zUnitsPerIndex);
 
+            // use PlusOne because index 0 is a buffer at position z=0.
+            int modifiedLineLenghtUnitBuffered = modifiedLineLengthUnits + 1;
+
             float lineLengthUnitsFloat = (float)lineLengthUnits;
             float modifiedLineLengthUnitsFloat = (float)modifiedLineLengthUnits;
 
             float chargeDurationFloat = (float)chargeDuration;
 
-            int startDistUnitsIndex = 0;
+            int startDistUnitsIndex = 1;
             long prevChargeDurationIterationTimeRequired = 0L;
 
-            long[] timeRequiredForDistancesPerModifiedUnit = new long[modifiedLineLengthUnits];
-            for (int i = 0; i < lineLengthUnits; i++)
+            long[] timeRequiredForDistancesPerModifiedUnit = new long[modifiedLineLenghtUnitBuffered];
+            for (int i = 1; i < lineLengthUnits + 1; i++)
             {
                 // i = 10, % = 0.33
                 float lineLengthPercentage = i / lineLengthUnitsFloat;
@@ -44,6 +47,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 // i = 10, fill prevIdx to 3.3 (or zDistanceUnits) with timePercentage.
 
                 int interpLen = zDistanceUnitsIndex - startDistUnitsIndex;
+                if (interpLen < 1)
+                {
+                    // interpLen could be negative since startDistUnitsIndex starts at 1.
+                    continue;
+                }
                 float interpLenFloat = (float)interpLen;
                 long timeValueDifference = timeValue - prevChargeDurationIterationTimeRequired;
                 for (int j = 0; j < interpLen; j++)
@@ -69,18 +77,18 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             }
             // fill the remaining values...
-            if (startDistUnitsIndex < modifiedLineLengthUnits)
+            if (startDistUnitsIndex < modifiedLineLenghtUnitBuffered)
             {
                 long lastValue = startDistUnitsIndex > 0 ? timeRequiredForDistancesPerModifiedUnit[startDistUnitsIndex - 1] : 0L;
                 long timeValueDifference = chargeDuration - lastValue;
 
-                int interpLen = modifiedLineLengthUnits - startDistUnitsIndex;
+                int interpLen = modifiedLineLenghtUnitBuffered - startDistUnitsIndex;
                 float interpLenFloat = (float)interpLen;
                 for (int j = 0; j < interpLen; j++)
                 {
                     long interpTimeValue = (long)(prevChargeDurationIterationTimeRequired + timeValueDifference * ((j + 1) / interpLenFloat));
                     int interpIndex = startDistUnitsIndex + j;
-                    if (interpIndex < modifiedLineLengthUnits)
+                    if (interpIndex < modifiedLineLenghtUnitBuffered)
                     {
                         timeRequiredForDistancesPerModifiedUnit[interpIndex] = interpTimeValue;
                     }
