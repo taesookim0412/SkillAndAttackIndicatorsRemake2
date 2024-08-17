@@ -25,8 +25,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [HideInInspector]
         public int ModifiedLineLength;
         [HideInInspector]
-        public int ModifiedLineLengthBuffered;
-        [HideInInspector]
         private int ZUnitsPerIndex;
         [HideInInspector]
         public (Vector3 worldPosition, Vector3 distanceFromPrev, float localXPosFromPrev)[] WorldPositionsPerZUnit;
@@ -66,14 +64,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             ElectricTrail = electricTrail;
             int modifiedLineLength = PartialDataTypesUtil.Round((float)lineLength / (float)zUnitsPerIndex);
-            int modifiedLineLengthBuffered = modifiedLineLength + 1;
             ModifiedLineLength = modifiedLineLength;
-            ModifiedLineLengthBuffered = modifiedLineLengthBuffered;
             ZUnitsPerIndex = zUnitsPerIndex;
 
-            if (LocalXPositionsPerZUnit == null || LocalXPositionsPerZUnit.Length != modifiedLineLengthBuffered)
+            if (LocalXPositionsPerZUnit == null || LocalXPositionsPerZUnit.Length != modifiedLineLength)
             {
-                LocalXPositionsPerZUnit = InitializeLocalXPositionsPerIndex(modifiedLineLengthBuffered);
+                LocalXPositionsPerZUnit = InitializeLocalXPositionsPerIndex(modifiedLineLength);
             }
 
             WorldPositionsPerZUnit = InitializeWorldPositionsPerIndex(skillAndAttackIndicatorSystem,
@@ -111,7 +107,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             LocalPosition = new Vector3(0f, 0f, 0f);
 
-            PositionIndex = 1;
+            PositionIndex = 0;
             ElapsedPositionIndexDeltaTime = 0f;
             StartPosition = transform.position;
             CosYAngle = cosYAngle;
@@ -162,13 +158,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             return worldPositionsTuple;
         }
 
-        private float[] InitializeLocalXPositionsPerIndex(int bufferedModifiedLineLength)
+        private float[] InitializeLocalXPositionsPerIndex(int lineLength)
         {
-            float[] xPositions = new float[bufferedModifiedLineLength];
+            float[] xPositions = new float[lineLength];
 
             xPositions[0] = 0f;
 
-            for (int i = 1; i < bufferedModifiedLineLength; i++)
+            for (int i = 1; i < lineLength; i++)
             {
                 int xPos = i & 1;
 
@@ -185,97 +181,97 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         public void ManualUpdate(float fillProgress)
         {
-            int modifiedLineLengthBuffered = ModifiedLineLengthBuffered;
-            float zUnits = fillProgress * ModifiedLineLength;
+            int modifiedLineLength = ModifiedLineLength;
+            float zUnits = fillProgress * modifiedLineLength;
             int zUnitsIndex = (int)zUnits;
-            if (zUnitsIndex < modifiedLineLengthBuffered)
+            if (zUnitsIndex > 0)
             {
-                Debug.Log($"{fillProgress}: {zUnitsIndex}, {LocalPosition.z}, {PositionIndex}");
-
-                Vector3 localPosition = LocalPosition;
-                int positionIndex = PositionIndex;
-                float fixedDeltaTime = ObserverUpdateCache.UpdateTickTimeFixedUpdateDeltaTimeSec;
-
-                float sinYAngle = SinYAngle;
-                float cosYAngle = CosYAngle;
-
-                //if (localPosition.z >= positionIndex)
-                //{
-                //    //Debug.Log($"{WorldPositionsPerZUnit[positionIndex]}, {transform.position}, {(WorldPositionsPerZUnit[positionIndex].worldPosition - transform.position).magnitude}");
-                //    //TODO1: interp from pos to worldPos with closest dt multiple.
-                //    //transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
-                //    float newLocalX = PositionUtil.CalculateClosestMultipleOrClamp(localPosition.x, LocalXPositionsPerZUnit[positionIndex], fixedDeltaTime);
-                //    float newLocalZ = PositionUtil.CalculateClosestMultipleOrClamp(localPosition.z, positionIndex, fixedDeltaTime);
-
-                //    localPosition.x = newLocalX;
-                //    localPosition.z = newLocalZ;
-
-                //    float rotatedLocalPositionX = newLocalZ * sinYAngle + newLocalX * cosYAngle;
-                //    float rotatedLocalPositionZ = newLocalZ * cosYAngle - newLocalX * sinYAngle;
-
-                //    float worldPositionX = StartPosition.x + rotatedLocalPositionX;
-                //    float worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
-
-                //    transform.position = new Vector3(worldPositionX, WorldPositionsPerZUnit[positionIndex].worldPosition.y, worldPositionZ);
-
-                //    LocalPosition = localPosition;
-
-                //    PositionIndex = ++positionIndex;
-
-                //    ElapsedPositionIndexDeltaTime = 0f;
-                //}
-                //Debug.Log($"{localPosition.z}, {positionIndex}");
-                if (positionIndex < modifiedLineLengthBuffered)
+                if (zUnitsIndex < modifiedLineLength)
                 {
-                    positionIndex = PositionUtil.MoveTrailPosition(positionIndex, fixedDeltaTime, localPosition.x, localPosition.z,
-                        out float newLocalPositionX, out float newLocalPositionZ, TimeRequiredIncrementalSec,
-                        TimeRequiredIncrementalVelocityMult, WorldPositionsPerZUnit, LocalXPositionsPerZUnit, ZUnitsPerIndex,
-                        ElapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, ElectricTrail.transform.position.y, out float newWorldPositionY);
+                    Vector3 localPosition = LocalPosition;
+                    int positionIndex = PositionIndex;
+                    float fixedDeltaTime = ObserverUpdateCache.UpdateTickTimeFixedUpdateDeltaTimeSec;
 
-                    // Since the position only gets set before the dt, instead of after,
-                    // the final position has to be set if the conditions are met
+                    float sinYAngle = SinYAngle;
+                    float cosYAngle = CosYAngle;
 
-                    if (positionIndex == modifiedLineLengthBuffered)
-                    {
-                        newLocalPositionX = LocalXPositionsPerZUnit[positionIndex - 1];
-                        newLocalPositionZ = (positionIndex - 1) * ZUnitsPerIndex;
-                    }
-                    float rotatedLocalPositionX = newLocalPositionZ * sinYAngle + newLocalPositionX * cosYAngle;
-                    float rotatedLocalPositionZ = newLocalPositionZ * cosYAngle - newLocalPositionX * sinYAngle;
-
-                    float worldPositionX = StartPosition.x + rotatedLocalPositionX;
-                    float worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
-
-                    ElectricTrail.transform.position = new Vector3(worldPositionX,
-                        newWorldPositionY, worldPositionZ);
-
-                    localPosition.x = newLocalPositionX;
-                    localPosition.z = newLocalPositionZ;
-                    LocalPosition = localPosition;
-                    //else
+                    //if (localPosition.z >= positionIndex)
                     //{
-                    //    newLocalX = LocalXPositionsPerZUnit[positionIndex];
-                    //    newLocalZ = positionIndex;
+                    //    //Debug.Log($"{WorldPositionsPerZUnit[positionIndex]}, {transform.position}, {(WorldPositionsPerZUnit[positionIndex].worldPosition - transform.position).magnitude}");
                     //    //TODO1: interp from pos to worldPos with closest dt multiple.
-                    //    transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
+                    //    //transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
+                    //    float newLocalX = PositionUtil.CalculateClosestMultipleOrClamp(localPosition.x, LocalXPositionsPerZUnit[positionIndex], fixedDeltaTime);
+                    //    float newLocalZ = PositionUtil.CalculateClosestMultipleOrClamp(localPosition.z, positionIndex, fixedDeltaTime);
+
+                    //    localPosition.x = newLocalX;
+                    //    localPosition.z = newLocalZ;
+
+                    //    float rotatedLocalPositionX = newLocalZ * sinYAngle + newLocalX * cosYAngle;
+                    //    float rotatedLocalPositionZ = newLocalZ * cosYAngle - newLocalX * sinYAngle;
+
+                    //    float worldPositionX = StartPosition.x + rotatedLocalPositionX;
+                    //    float worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
+
+                    //    transform.position = new Vector3(worldPositionX, WorldPositionsPerZUnit[positionIndex].worldPosition.y, worldPositionZ);
+
+                    //    LocalPosition = localPosition;
+
+                    //    PositionIndex = ++positionIndex;
+
+                    //    ElapsedPositionIndexDeltaTime = 0f;
                     //}
-                    //localPosition.x = newLocalX;
-                    //localPosition.z = newLocalZ;
-                    //LocalPosition = localPosition;
+                    //Debug.Log($"{localPosition.z}, {positionIndex}");
+                    if (positionIndex < modifiedLineLength)
+                    {
+                        positionIndex = PositionUtil.MoveTrailPosition(positionIndex, fixedDeltaTime, localPosition.x, localPosition.z,
+                            out float newLocalPositionX, out float newLocalPositionZ, TimeRequiredIncrementalSec,
+                            TimeRequiredIncrementalVelocityMult, WorldPositionsPerZUnit, LocalXPositionsPerZUnit, ZUnitsPerIndex,
+                            ElapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, ElectricTrail.transform.position.y, out float newWorldPositionY);
 
+                        // Since the position only gets set before the dt, instead of after,
+                        // the final position has to be set if the conditions are met
 
+                        if (positionIndex == modifiedLineLength)
+                        {
+                            newLocalPositionX = LocalXPositionsPerZUnit[positionIndex - 1];
+                            newLocalPositionZ = (positionIndex - 1) * ZUnitsPerIndex;
+                        }
+                        float rotatedLocalPositionX = newLocalPositionZ * sinYAngle + newLocalPositionX * cosYAngle;
+                        float rotatedLocalPositionZ = newLocalPositionZ * cosYAngle - newLocalPositionX * sinYAngle;
 
-                    PositionIndex = positionIndex;
-                    ElapsedPositionIndexDeltaTime = newElapsedPositionIndexDeltaTime;
-                    //Debug.Log(PositionIndex);
-                    //Debug.Log(newElapsedPositionIndexDeltaTime);
+                        float worldPositionX = StartPosition.x + rotatedLocalPositionX;
+                        float worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
+
+                        ElectricTrail.transform.position = new Vector3(worldPositionX,
+                            newWorldPositionY, worldPositionZ);
+
+                        localPosition.x = newLocalPositionX;
+                        localPosition.z = newLocalPositionZ;
+                        LocalPosition = localPosition;
+                        //else
+                        //{
+                        //    newLocalX = LocalXPositionsPerZUnit[positionIndex];
+                        //    newLocalZ = positionIndex;
+                        //    //TODO1: interp from pos to worldPos with closest dt multiple.
+                        //    transform.position = WorldPositionsPerZUnit[positionIndex].worldPosition;
+                        //}
+                        //localPosition.x = newLocalX;
+                        //localPosition.z = newLocalZ;
+                        //LocalPosition = localPosition;
+
+                        
+
+                        PositionIndex = positionIndex;
+                        ElapsedPositionIndexDeltaTime = newElapsedPositionIndexDeltaTime;
+                        //Debug.Log(PositionIndex);
+                    }
+                    
+                    //Debug.Log($"{WorldPositionsPerZUnit[positionIndex].distanceFromPrev}, {dt}, {TimeRequiredVelocityMult[positionIndex]}");
                 }
-
-                //Debug.Log($"{WorldPositionsPerZUnit[positionIndex].distanceFromPrev}, {dt}, {TimeRequiredVelocityMult[positionIndex]}");
-            }
-            else
-            {
-                PositionIndex = ModifiedLineLength;
+                else
+                {
+                    PositionIndex = ModifiedLineLength;
+                }
             }
         }
         public override void CleanUpInstance()
