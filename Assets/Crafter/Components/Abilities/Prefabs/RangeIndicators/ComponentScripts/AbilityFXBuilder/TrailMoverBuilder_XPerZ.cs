@@ -67,7 +67,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             int lineLengthBuffered = lineLength + 1;
             LineLengthBuffered = lineLengthBuffered;
 
-            if (LocalXPositionsPerZUnit == null || LocalXPositionsPerZUnit.Length != lineLengthBuffered)
+            if (true || LocalXPositionsPerZUnit == null || LocalXPositionsPerZUnit.Length != lineLengthBuffered)
             {
                 LocalXPositionsPerZUnit = InitializeLocalXPositionsPerZUnit(lineLengthBuffered, zUnitsPerX);
             }
@@ -162,24 +162,28 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             xPositions[0] = 0f;
 
             float xUnitsPerZ = 1f / zUnitsPerX;
+            float xUnitsPerZDoubled = xUnitsPerZ * 2f;
 
             for (int i = 1; i < lineLengthBuffered; i++)
             {
                 int xSequenceIndex = (i - 1) % zUnitsPerX;
                 int xSequence = (int)(Math.Floor((i - 1) / (float)zUnitsPerX));
-                int xDirection = ((xSequence & 1) == 1) ? 1 : -1;
+                int xDirection = ((xSequence & 1) == 1) ? -1 : 1;
                 int xStart;
+                // since it can be doubled from 1 to -1 or it can not be doubled from xS = 0
+                float iterXUnitsPerZ;
                 if (xSequence == 0)
                 {
                     xStart = 0;
+                    iterXUnitsPerZ = xUnitsPerZ;
                 }
                 else
                 {
                     xStart = xDirection * -1;
+                    iterXUnitsPerZ = xUnitsPerZDoubled;
                 }
 
-
-                float xAmount = (xSequenceIndex + 1) * xUnitsPerZ * xDirection;
+                float xAmount = (xSequenceIndex + 1) * iterXUnitsPerZ * xDirection;
                 float xPos = xStart + (xAmount);
                 xPositions[i] = xPos;    
             }
