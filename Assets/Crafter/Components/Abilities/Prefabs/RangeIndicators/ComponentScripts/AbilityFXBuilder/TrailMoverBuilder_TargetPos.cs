@@ -307,7 +307,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                             trailRotationsFullSize[j] = movementRotation;
 
-                            RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(movementRotation);
+                            RotatingCoordinateXYVector3Angles rotatingAngles = new RotatingCoordinateXYVector3Angles(movementRotation);
                             rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward(targetDistance);
                             //Debug.Log($"{i}: {movementRotation}, {directionVector}, {endPosition}, {currentPosition}");
 
@@ -365,15 +365,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 Vector3[] trailRotations = new Vector3[trailPositionsLength];
                 Array.Copy(trailRotationsFullSize, trailRotations, trailPositionsLength);
 
-                // TODO: Fix Rotation averages.
-                PositionUtil.SmoothenTrail_MovingAverageWindow3(trailRotations);
+                PositionUtil.SmoothenRotationsXY_MovingAverageWindow3(trailRotations);
 
                 Vector3[] trailPositions = new Vector3[trailPositionsLength];
                 blinkTrailPosition = trailStartPositions[i];
                 allTrailPositions[i] = trailPositions;
                 for (int j = 0; j < trailPositionsLength; j++) 
                 {
-                    RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(trailRotations[j]);
+                    RotatingCoordinateXYVector3Angles rotatingAngles = new RotatingCoordinateXYVector3Angles(trailRotations[j]);
                     rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward(!(j == stopIndex && useLastPositionTargetDistance) ? targetDistance : lastPositionTargetDistance);
                     // the final position is difficult to set, sometimes it is past the end position.
                     //Debug.Log($"{rotatingAnglesForwardVector}, {rotatingAnglesForwardVector.magnitude}");
@@ -391,7 +390,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     trailPositions[j] = blinkTrailPosition;
                 }
 
-                PositionUtil.SmoothenTrail_MovingAverageWindow3(trailPositions);
+                PositionUtil.SmoothenPositions_MovingAverageWindow3(trailPositions);
             }
 
             return allTrailPositions;

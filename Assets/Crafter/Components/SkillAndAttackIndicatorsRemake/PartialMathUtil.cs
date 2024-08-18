@@ -9,6 +9,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
     public static class PartialMathUtil
     {
+        public const float ONE_THIRD = 1f / 3f;
         public const float FLOAT_TOLERANCE = 0.0001f;
         public const float FLOAT_TOLERANCE_NEGATIVE = -0.0001f;
         public const float PI = 3.14159274F;

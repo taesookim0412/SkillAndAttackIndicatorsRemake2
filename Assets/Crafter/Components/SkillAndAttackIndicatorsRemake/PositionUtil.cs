@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Crafter.Components.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -52,7 +53,57 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
         }
-        public static void SmoothenTrail_MovingAverageWindow3(Vector3[] positions)
+        public static void SmoothenRotationsXY_MovingAverageWindow3(Vector3[] rotations)
+        {
+            if (rotations.Length < 3)
+            {
+                return;
+            }
+
+            int itemsLength = rotations.Length;
+
+            // Vector3s, angles only used for storing temp, doesn't reflect leftX or leftY, and doesn't get replaced.
+            Vector3 left = rotations[0];
+            RotatingCoordinateXYVector3Angles leftAngles = new RotatingCoordinateXYVector3Angles(rotations[0]);
+            Vector3 leftVector = leftAngles.RotateX_Forward();
+            // Apply RotateY inline to leftRotateXVector.
+            float _leftRotateXVectorNewZ = leftVector.z * leftAngles.CosYAngle - leftVector.x * leftAngles.SinYAngle;
+            float _leftRotateXVectorNewX = leftVector.z * leftAngles.SinYAngle + leftVector.x * leftAngles.CosYAngle;
+            leftVector.x = _leftRotateXVectorNewX;
+            leftVector.z = _leftRotateXVectorNewZ;
+
+            Vector3 current = rotations[1];
+            RotatingCoordinateXYVector3Angles currentAngles = new RotatingCoordinateXYVector3Angles(rotations[1]);
+            Vector3 currentVector = currentAngles.RotateX_Forward();
+            // Apply RotateY inline to currentRotateXVector.
+            float _currentRotateXVectorNewZ = currentVector.z * currentAngles.CosYAngle - currentVector.x * currentAngles.SinYAngle;
+            float _currentRotateXVectorNewX = currentVector.z * currentAngles.SinYAngle + currentVector.x * currentAngles.CosYAngle;
+            currentVector.x = _currentRotateXVectorNewX;
+            currentVector.z = _currentRotateXVectorNewZ;
+
+            for (int i = 1; i < itemsLength - 1; i++)
+            {
+                Vector3 right = rotations[i + 1];
+                RotatingCoordinateXYVector3Angles rightAngles = new RotatingCoordinateXYVector3Angles(right);
+                Vector3 rightVector = rightAngles.RotateX_Forward();
+                // Apply RotateY inline to rightRotateXVector.
+                float _rightRotateXVectorNewZ = rightVector.z * rightAngles.CosYAngle - rightVector.x * rightAngles.SinYAngle;
+                float _rightRotateXVectorNewX = rightVector.z * rightAngles.SinYAngle + rightVector.x * rightAngles.CosYAngle;
+                rightVector.x = _rightRotateXVectorNewX;
+                rightVector.z = _rightRotateXVectorNewZ;
+
+                currentVector.x = (leftVector.x + currentVector.x + rightVector.x) * PartialMathUtil.ONE_THIRD;
+                currentVector.y = (leftVector.y + currentVector.y + rightVector.y) * PartialMathUtil.ONE_THIRD;
+                currentVector.z = (leftVector.z + currentVector.z + rightVector.z) * PartialMathUtil.ONE_THIRD;
+
+                // important for Vector3: replace the struct.
+                rotations[i] = currentVector.LookRotationPitchYaw();
+
+                leftVector = currentVector;
+                currentVector = rightVector;
+            }
+        }
+        public static void SmoothenPositions_MovingAverageWindow3(Vector3[] positions)
         {
             if (positions.Length < 3)
             {
