@@ -51,6 +51,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         // ... hardcoded
         private static readonly int LineLengthUnits = 20;
+        private static readonly int ZUnitsPerX = 5;
         // Also used for adding ArcPathFromCloneOffset
         private static readonly int PortalSpotOffsetUnits = 2;
         private static readonly int UnitsPerPortalSpot = 5;
@@ -88,8 +89,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
-
-        private long[] TimeRequiredForDistancesPerUnit;
 
         //private Vector3 PreviousTerrainProjectorPosition;
         //private float PreviousRotationY;
@@ -211,8 +210,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             ObserverStatus = ObserverStatus.Remove;
                             return;
                     }
-
-                    TimeRequiredForDistancesPerUnit = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
 
                     if (AbilityIndicatorFXTypes != null)
                     {
@@ -544,7 +541,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             //TODO: Cache this somehow.
             long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
 
-            trailMoverXPerZ.Initialize(Props.ObserverUpdateCache, electricTrail, lineLengthUnits, timeRequiredForZDistances,
+            trailMoverXPerZ.Initialize(Props.ObserverUpdateCache, electricTrail, lineLengthUnits, ZUnitsPerX, timeRequiredForZDistances,
                 Props.SkillAndAttackIndicatorSystem, startPositionX, startPositionZ, cosYAngle, sinYAngle);
 
             return (dashParticles, electricTrail, trailMoverXPerZ, portalSpotsPassed, 1, -1);

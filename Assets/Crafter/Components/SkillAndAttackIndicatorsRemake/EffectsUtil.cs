@@ -20,18 +20,21 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             // iterate the distances
             // find the fillPercentage
             // invert the fillPercentage into time
+
+            int bufferedLineLengthUnits = lineLengthUnits + 1;
+
             float lineLengthUnitsFloat = (float)lineLengthUnits;
 
             float chargeDurationFloat = (float)chargeDuration;
 
-            int startDistUnitsIndex = 0;
+            int startDistUnitsIndex = 1;
             long prevChargeDurationIterationTimeRequired = 0L;
 
-            long[] timeRequiredForDistancesPerUnit = new long[lineLengthUnits];
-            for (int i = 0; i < lineLengthUnits; i++)
+            long[] timeRequiredForDistancesPerUnit = new long[bufferedLineLengthUnits];
+            for (int i = 1; i < bufferedLineLengthUnits; i++)
             {
                 // i = 10, % = 0.33
-                float lineLengthPercentage = i / lineLengthUnitsFloat;
+                float lineLengthPercentage = (i - 1) / lineLengthUnitsFloat;
                 // i = 10, fp% = ~0.1089
                 float fillProgress = EaseInOutQuad(lineLengthPercentage);
                 // i = 10, zDist = 0.11 * 30 = 3.3
@@ -40,13 +43,17 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 // i = 10, fill prevIdx to 3.3 (or zDistanceUnits) with timePercentage.
 
                 int interpLen = zDistanceUnitsIndex - startDistUnitsIndex;
+                if (interpLen < 1)
+                {
+                    continue;
+                }
                 float interpLenFloat = (float)interpLen;
                 long timeValueDifference = timeValue - prevChargeDurationIterationTimeRequired;
                 for (int j = 0; j < interpLen; j++)
                 {
                     long interpTimeValue = (long)(prevChargeDurationIterationTimeRequired + timeValueDifference * ((j + 1) / interpLenFloat));
                     int interpIndex = startDistUnitsIndex + j;
-                    if (interpIndex < lineLengthUnits)
+                    if (interpIndex < bufferedLineLengthUnits)
                     {
                         timeRequiredForDistancesPerUnit[interpIndex] = interpTimeValue;
                     }
@@ -65,12 +72,21 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             }
             // fill the remaining values...
-            if (startDistUnitsIndex < lineLengthUnits)
+            if (startDistUnitsIndex < bufferedLineLengthUnits)
             {
                 long lastValue = startDistUnitsIndex > 0 ? timeRequiredForDistancesPerUnit[startDistUnitsIndex - 1] : 0L;
-                for (int i = startDistUnitsIndex; i < lineLengthUnits; i++)
+                long timeValueDifference = chargeDuration - lastValue;
+                int interpLen = bufferedLineLengthUnits - startDistUnitsIndex;
+
+                float interpLenFloat = (float)interpLen;
+                for (int j = 0; j < interpLen; j++)
                 {
-                    timeRequiredForDistancesPerUnit[i] = lastValue;
+                    long interpTimeValue = (long)(prevChargeDurationIterationTimeRequired + timeValueDifference * ((j + 1) / interpLenFloat));
+                    int interpIndex = startDistUnitsIndex + j;
+                    if (interpIndex < bufferedLineLengthUnits)
+                    {
+                        timeRequiredForDistancesPerUnit[interpIndex] = interpTimeValue;
+                    }
                 }
             }
 
