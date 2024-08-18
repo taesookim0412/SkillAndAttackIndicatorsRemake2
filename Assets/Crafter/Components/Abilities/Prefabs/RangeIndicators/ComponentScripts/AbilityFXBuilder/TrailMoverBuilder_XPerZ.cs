@@ -67,7 +67,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             int lineLengthBuffered = lineLength + 1;
             LineLengthBuffered = lineLengthBuffered;
 
-            if (true || LocalXPositionsPerZUnit == null || LocalXPositionsPerZUnit.Length != lineLengthBuffered)
+            if (LocalXPositionsPerZUnit == null || LocalXPositionsPerZUnit.Length != lineLengthBuffered)
             {
                 LocalXPositionsPerZUnit = InitializeLocalXPositionsPerZUnit(lineLengthBuffered, zUnitsPerX);
             }
