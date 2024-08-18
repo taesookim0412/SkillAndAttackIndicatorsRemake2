@@ -58,21 +58,21 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 if (elapsedTime <= EndTime)
                 {
-                    if (!PortalSource.Completed)
-                    {
-                        if (!PortalSource.Active)
-                        {
-                            PortalSource.gameObject.SetActive(true);
-                        }
-                        PortalSource.ManualUpdate();
-                    }
-                    else if (!TrailForPortals.Completed)
+                    if (!TrailForPortals.Completed)
                     {
                         if (!TrailForPortals.Active)
                         {
                             TrailForPortals.gameObject.SetActive(true);
                         }
                         TrailForPortals.ManualUpdate();
+                    }
+                    else if (!PortalSource.Completed)
+                    {
+                        if (!PortalSource.Active)
+                        {
+                            PortalSource.gameObject.SetActive(true);
+                        }
+                        PortalSource.ManualUpdate();
                     }
                     else if (!PortalDest.Completed)
                     {
@@ -98,13 +98,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             if (!Completed)
             {
-                if (!PortalSource.Completed)
-                {
-                    PortalSource.Complete();
-                }
                 if (!TrailForPortals.Completed)
                 {
                     TrailForPortals.Complete();
+                }
+                if (!PortalSource.Completed)
+                {
+                    PortalSource.Complete();
                 }
                 if (!PortalDest.Completed)
                 {

@@ -233,7 +233,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 bool useLastPositionTargetDistance = false;
                 float lastPositionTargetDistance = targetDistance;
 
-                Vector3[] trailRotations = new Vector3[positions];
+                Vector3[] trailRotationsFullSize = new Vector3[positions];
                 for (int j = 0; j < positions; j++)
                 {
                     if (trailMarkerIndex < trailMarkers.Length)
@@ -258,6 +258,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                                 {
                                     lastPositionTargetDistance = destPositionDistance;
                                     useLastPositionTargetDistance = true;
+                                    destPositionReached = true;
                                 }
 
                                 // dp = v * dt
@@ -304,7 +305,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             //movementRotation.y = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.y, maxMovementRotationY, elapsedDeltaTime);
                             //movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
 
-                            trailRotations[j] = movementRotation;
+                            trailRotationsFullSize[j] = movementRotation;
 
                             RotatingCoordinateVector3Angles rotatingAngles = new RotatingCoordinateVector3Angles(movementRotation);
                             rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward(targetDistance);
@@ -359,9 +360,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     }
                 }
 
-                PositionUtil.SmoothenTrail_MovingAverageWindow3(trailRotations);
-
                 int trailPositionsLength = stopIndex + 1;
+
+                Vector3[] trailRotations = new Vector3[trailPositionsLength];
+                Array.Copy(trailRotationsFullSize, trailRotations, trailPositionsLength);
+
+                // TODO: Fix Rotation averages.
+                PositionUtil.SmoothenTrail_MovingAverageWindow3(trailRotations);
 
                 Vector3[] trailPositions = new Vector3[trailPositionsLength];
                 blinkTrailPosition = trailStartPositions[i];
