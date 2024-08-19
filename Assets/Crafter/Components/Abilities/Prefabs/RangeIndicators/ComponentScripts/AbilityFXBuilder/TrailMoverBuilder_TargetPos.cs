@@ -226,7 +226,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 int trailMarkerIndex = 0;
                 int stopIndex = positions - 1;
 
-                float velocity = 35f;
+                float velocity = 80f;
                 float targetDistance = timestepDeltaTime * velocity;
                 float rotationSpeed = 0.8f;
 
