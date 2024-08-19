@@ -18,6 +18,7 @@ using Unity.VisualScripting;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder;
 using Assets.Crafter.Components.Systems.Observers;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder.Chains;
+using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFX;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
@@ -81,7 +82,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
         private (DashParticles[] dashParticles,
-            ElectricTrail electricTrail,
+            WaterTrail waterTrail,
             TrailMoverBuilder_XPerZ trailMoverXPerZ,
             bool[] portalSpotsPassed,
             int numElectricTrailRendererPositions,
@@ -334,7 +335,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         {
                             case AbilityIndicatorFXType.DashParticles:
                                 PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.DashParticles];
-                                PoolBagDco<AbstractAbilityFX> electricTrailPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.ElectricTrail];
+                                PoolBagDco<AbstractAbilityFX> waterTrailPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.WaterTrail];
                                 PoolBagDco<AbstractAbilityFX> trailMoverXPerZPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ];
 
                                 foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
@@ -342,9 +343,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                                     dashParticlesPool.ReturnPooled(dashParticles);
                                 }
 
-                                ElectricTrail electricTrail = DashParticlesItems.electricTrail;
-                                electricTrail.CleanUpInstance();
-                                electricTrailPool.ReturnPooled(electricTrail);
+                                WaterTrail waterTrail = DashParticlesItems.waterTrail;
+                                waterTrail.CleanUpInstance();
+                                waterTrailPool.ReturnPooled(waterTrail);
 
                                 TrailMoverBuilder_XPerZ trailMoverXPerZ = DashParticlesItems.trailMoverXPerZ;
                                 trailMoverXPerZ.CleanUpInstance();
@@ -455,7 +456,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
 
         private (DashParticles[] dashParticles,
-            ElectricTrail electricTrail,
+            WaterTrail waterTrail,
             TrailMoverBuilder_XPerZ trailMoverXPerZ,
             bool[] portalSpotsPassed,
             int numElectricTrailRendererPositions,
@@ -532,8 +533,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
             Vector3 startPosition = dashParticles[0].transform.position;
-            PoolBagDco<AbstractAbilityFX> electricTrailInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.ElectricTrail];
-            ElectricTrail electricTrail = (ElectricTrail) electricTrailInstancePool.InstantiatePooled(null);
+            PoolBagDco<AbstractAbilityFX> waterTrailInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.WaterTrail];
+            WaterTrail waterTrail = (WaterTrail) waterTrailInstancePool.InstantiatePooled(null);
             
             PoolBagDco<AbstractAbilityFX> trailMoverBuilderXPerZInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ];
             TrailMoverBuilder_XPerZ trailMoverXPerZ = (TrailMoverBuilder_XPerZ)trailMoverBuilderXPerZInstancePool.InstantiatePooled(startPosition);
@@ -541,10 +542,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             //TODO: Cache this somehow.
             long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
 
-            trailMoverXPerZ.Initialize(Props.ObserverUpdateCache, electricTrail, lineLengthUnits, ZUnitsPerX, timeRequiredForZDistances,
+            trailMoverXPerZ.Initialize(Props.ObserverUpdateCache, waterTrail, lineLengthUnits, ZUnitsPerX, timeRequiredForZDistances,
                 Props.SkillAndAttackIndicatorSystem, startPositionX, startPositionZ, cosYAngle, sinYAngle);
 
-            return (dashParticles, electricTrail, trailMoverXPerZ, portalSpotsPassed, 1, -1);
+            return (dashParticles, waterTrail, trailMoverXPerZ, portalSpotsPassed, 1, -1);
         }
         //private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
         //    float startPositionX, float startPositionZ,
@@ -1039,7 +1040,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     public enum DashParticlesFXTypeInstancePools
     {
         DashParticles,
-        ElectricTrail,
+        WaterTrail,
         TrailMoverBuilder_XPerZ,
     }
     public enum AbilityFXComponentType
@@ -1049,6 +1050,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         ArcPath_Small_Floating,
         ElectricTrail,
         ElectricTrailRenderer,
+        WaterTrail,
         ShockAura,
         CrimsonAuraBlack,
         PortalOrbClear,

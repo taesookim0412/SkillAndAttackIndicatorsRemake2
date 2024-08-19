@@ -229,6 +229,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 {
                     localPositionX = PositionUtil.CalculateClosestMultipleOrClamp(localPositionX, localXPositionsPerZUnit[i - 1], deltaTime, useMaxWhenDtSmall: true);
                     localPositionZ = PositionUtil.CalculateClosestMultipleOrClamp(localPositionZ, (float)(i - 1), deltaTime, useMaxWhenDtSmall: true);
+                    worldPositionY = worldPositionsPerZUnit[i - 1].worldPosition.y;
                 }
 
                 float indexTimeRequiredSec = timeRequiredIncrementalSec[i];

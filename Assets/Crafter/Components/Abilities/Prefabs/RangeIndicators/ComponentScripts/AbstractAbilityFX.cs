@@ -21,11 +21,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         [SerializeField]
         public bool EnableParticleSystemsRequired = false;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public bool Active = false;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public bool Completed = false;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public bool CompletedStateful = false;
         protected void Initialize()
         {

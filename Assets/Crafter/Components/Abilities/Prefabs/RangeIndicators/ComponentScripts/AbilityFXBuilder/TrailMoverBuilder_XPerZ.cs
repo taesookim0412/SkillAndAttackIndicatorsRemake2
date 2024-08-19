@@ -1,4 +1,5 @@
-﻿using Assets.Crafter.Components.Editors.ComponentScripts;
+﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFX;
+using Assets.Crafter.Components.Editors.ComponentScripts;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using Assets.Crafter.Components.Systems.Observers;
 using System;
@@ -18,7 +19,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         //private static readonly float TimeRequiredVelocityDelayMult = 1f;
 
         [NonSerialized]
-        public ElectricTrail ElectricTrail;
+        public WaterTrail Trail;
 
         [NonSerialized, HideInInspector]
         public float[] LocalXPositionsPerZUnit;
@@ -50,7 +51,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         }
 
         public void Initialize(ObserverUpdateCache observerUpdateCache,
-            ElectricTrail electricTrail,
+            WaterTrail waterTrail,
             int lineLength,
             int zUnitsPerX,
             long[] timeRequiredForZDistances,
@@ -59,10 +60,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float sinYAngle)
         {
             base.Initialize(observerUpdateCache);
-            electricTrail.transform.position = new Vector3(startPositionX, skillAndAttackIndicatorSystem.GetTerrainHeight(startPositionX, startPositionZ) + TrailRendererYOffset, startPositionZ);
-            electricTrail.ClearParticleSystems();
+            waterTrail.transform.position = new Vector3(startPositionX, skillAndAttackIndicatorSystem.GetTerrainHeight(startPositionX, startPositionZ) + TrailRendererYOffset, startPositionZ);
 
-            ElectricTrail = electricTrail;
+            // Clear previous trails.
+            waterTrail.ClearParticleSystems();
+
+            Trail = waterTrail;
             LineLength = lineLength;
             int lineLengthBuffered = lineLength + 1;
             LineLengthBuffered = lineLengthBuffered;
@@ -238,7 +241,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     positionIndex = PositionUtil.MoveTrailPosition(positionIndex, fixedDeltaTime, localPosition.x, localPosition.z,
                         out float newLocalPositionX, out float newLocalPositionZ, TimeRequiredIncrementalSec,
                         TimeRequiredIncrementalVelocityMult, WorldPositionsPerZUnit, LocalXPositionsPerZUnit,
-                        ElapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, ElectricTrail.transform.position.y, out float newWorldPositionY);
+                        ElapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, Trail.transform.position.y, out float newWorldPositionY);
 
                     // Since the position only gets set before the dt, instead of after,
                     // the final position has to be set if the conditions are met
@@ -254,7 +257,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     float worldPositionX = StartPosition.x + rotatedLocalPositionX;
                     float worldPositionZ = StartPosition.z + rotatedLocalPositionZ;
 
-                    ElectricTrail.transform.position = new Vector3(worldPositionX,
+                    Trail.transform.position = new Vector3(worldPositionX,
                         newWorldPositionY, worldPositionZ);
 
                     localPosition.x = newLocalPositionX;
@@ -287,7 +290,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         }
         public override void CleanUpInstance()
         {
-            ElectricTrail = null;
+            Trail = null;
             WorldPositionsPerZUnit = null;
         }
     }
@@ -307,13 +310,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
             if (system != null)
             {
-                string electricTrailType = AbilityFXComponentType.ElectricTrail.ToString();
-                ElectricTrail electricTrailPrefab = (ElectricTrail) system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == electricTrailType);
+                string waterTrailType = AbilityFXComponentType.WaterTrail.ToString();
+                WaterTrail waterTrailPrefab = (WaterTrail) system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == waterTrailType);
 
-                if (electricTrailPrefab != null)
+                if (waterTrailPrefab != null)
                 {
-                    ElectricTrail electricTrail = GameObject.Instantiate(electricTrailPrefab, instance.transform);
-                    electricTrail.transform.localPosition = Vector3.zero;
+                    WaterTrail waterTrail = GameObject.Instantiate(waterTrailPrefab, instance.transform);
+                    waterTrail.transform.localPosition = Vector3.zero;
                     Vector3 position = instance.transform.position;
                     long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
 
@@ -325,7 +328,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         SetObserverUpdateCache();
                         observerUpdateCache = ObserverUpdateCache;
                     }
-                    instance.Initialize(observerUpdateCache, electricTrail, LineLengthUnits, ZUnitsPerX, timeRequiredForZDistances, system,
+                    instance.Initialize(observerUpdateCache, waterTrail, LineLengthUnits, ZUnitsPerX, timeRequiredForZDistances, system,
                         position.x, position.z, cosYAngle, sinYAngle);
                     TryAddParticleSystem(instance.gameObject);
                     StartTime = observerUpdateCache.UpdateTickTimeFixedUpdate;
@@ -351,7 +354,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         protected override void EditorDestroy()
         {
             StartTime = default;
-            GameObject.DestroyImmediate(Instance.ElectricTrail.gameObject);
+            GameObject.DestroyImmediate(Instance.Trail.gameObject);
             Instance.transform.position = Instance.WorldPositionsPerZUnit[0].worldPosition;
             Instance.CleanUpInstance();
         }
