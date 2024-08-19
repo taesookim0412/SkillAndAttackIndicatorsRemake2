@@ -233,7 +233,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 bool useLastPositionTargetDistance = false;
                 float lastPositionTargetDistance = targetDistance;
 
-                Vector3[] trailRotationsFullSize = new Vector3[positions];
+                Vector3[] trailForwardVectorsNormalizedFullSize = new Vector3[positions];
                 for (int j = 0; j < positions; j++)
                 {
                     if (trailMarkerIndex < trailMarkers.Length)
@@ -305,12 +305,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             //movementRotation.y = PositionUtil.CalculateClosestMultipleOrClamp(movementRotation.y, maxMovementRotationY, elapsedDeltaTime);
                             //movementRotation.y = movementRotation.y + rotationYDifference * easeTimePercentage;
 
-                            trailRotationsFullSize[j] = movementRotation;
-
                             RotatingCoordinateXYVector3Angles rotatingAngles = new RotatingCoordinateXYVector3Angles(movementRotation);
-                            rotatingAnglesForwardVector = rotatingAngles.RotateXY_Forward(targetDistance);
+                            Vector3 rotatingAnglesForwardVectorNormalized = rotatingAngles.RotateXY_Forward();
                             //Debug.Log($"{i}: {movementRotation}, {directionVector}, {endPosition}, {currentPosition}");
 
+                            trailForwardVectorsNormalizedFullSize[j] = rotatingAnglesForwardVectorNormalized;
+
+                            rotatingAnglesForwardVector = rotatingAnglesForwardVectorNormalized * targetDistance;
                             // this will be short because the total distance is not curved so it needs to be faster ( mult by 5 ).
                             //float targetVelocity = totalDirectionDistance * timeRequiredSecReciprocal * 5f;
                             //float dtxTargetVelocity = trailElapsedDeltaTime * targetVelocity;
@@ -362,10 +363,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                 int trailPositionsLength = stopIndex + 1;
 
-                Vector3[] trailRotations = new Vector3[trailPositionsLength];
-                Array.Copy(trailRotationsFullSize, trailRotations, trailPositionsLength);
+                Vector3[] trailForwardVectorsNormalized = new Vector3[trailPositionsLength];
+                Array.Copy(trailForwardVectorsNormalizedFullSize, trailForwardVectorsNormalized, trailPositionsLength);
 
-                PositionUtil.SmoothenRotationsXY_MovingAverageWindow3(trailRotations);
+                Vector3[] trailRotations = PositionUtil.SmoothenForwardVectors_MovingAverageWindow3_ToRotations(trailForwardVectorsNormalized);
 
                 Vector3[] trailPositions = new Vector3[trailPositionsLength];
                 blinkTrailPosition = trailStartPositions[i];

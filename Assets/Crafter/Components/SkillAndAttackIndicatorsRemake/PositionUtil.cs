@@ -53,55 +53,38 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
         }
-        public static void SmoothenRotationsXY_MovingAverageWindow3(Vector3[] rotations)
+        public static Vector3[] SmoothenForwardVectors_MovingAverageWindow3_ToRotations(Vector3[] forwardVectors)
         {
-            if (rotations.Length < 3)
+            int itemsLength = forwardVectors.Length;
+            Vector3[] rotations = new Vector3[itemsLength];
+            rotations[0] = forwardVectors[0].LookRotationPitchYaw();
+            if (itemsLength < 3)
             {
-                return;
+                for (int i = 1; i < itemsLength; i++)
+                {
+                    rotations[i] = forwardVectors[i].LookRotationPitchYaw();
+                }
+                return rotations;
             }
 
-            int itemsLength = rotations.Length;
-
-            // Vector3s, angles only used for storing temp, doesn't reflect leftX or leftY, and doesn't get replaced.
-            Vector3 left = rotations[0];
-            RotatingCoordinateXYVector3Angles leftAngles = new RotatingCoordinateXYVector3Angles(rotations[0]);
-            Vector3 leftVector = leftAngles.RotateX_Forward();
-            // Apply RotateY inline to leftRotateXVector.
-            float _leftRotateXVectorNewZ = leftVector.z * leftAngles.CosYAngle - leftVector.x * leftAngles.SinYAngle;
-            float _leftRotateXVectorNewX = leftVector.z * leftAngles.SinYAngle + leftVector.x * leftAngles.CosYAngle;
-            leftVector.x = _leftRotateXVectorNewX;
-            leftVector.z = _leftRotateXVectorNewZ;
-
-            Vector3 current = rotations[1];
-            RotatingCoordinateXYVector3Angles currentAngles = new RotatingCoordinateXYVector3Angles(rotations[1]);
-            Vector3 currentVector = currentAngles.RotateX_Forward();
-            // Apply RotateY inline to currentRotateXVector.
-            float _currentRotateXVectorNewZ = currentVector.z * currentAngles.CosYAngle - currentVector.x * currentAngles.SinYAngle;
-            float _currentRotateXVectorNewX = currentVector.z * currentAngles.SinYAngle + currentVector.x * currentAngles.CosYAngle;
-            currentVector.x = _currentRotateXVectorNewX;
-            currentVector.z = _currentRotateXVectorNewZ;
+            Vector3 left = forwardVectors[0];
+            Vector3 current = forwardVectors[1];
 
             for (int i = 1; i < itemsLength - 1; i++)
             {
-                Vector3 right = rotations[i + 1];
-                RotatingCoordinateXYVector3Angles rightAngles = new RotatingCoordinateXYVector3Angles(right);
-                Vector3 rightVector = rightAngles.RotateX_Forward();
-                // Apply RotateY inline to rightRotateXVector.
-                float _rightRotateXVectorNewZ = rightVector.z * rightAngles.CosYAngle - rightVector.x * rightAngles.SinYAngle;
-                float _rightRotateXVectorNewX = rightVector.z * rightAngles.SinYAngle + rightVector.x * rightAngles.CosYAngle;
-                rightVector.x = _rightRotateXVectorNewX;
-                rightVector.z = _rightRotateXVectorNewZ;
+                Vector3 right = forwardVectors[i + 1];
 
-                currentVector.x = (leftVector.x + currentVector.x + rightVector.x) * PartialMathUtil.ONE_THIRD;
-                currentVector.y = (leftVector.y + currentVector.y + rightVector.y) * PartialMathUtil.ONE_THIRD;
-                currentVector.z = (leftVector.z + currentVector.z + rightVector.z) * PartialMathUtil.ONE_THIRD;
+                current.x = (left.x + current.x + right.x) / 3;
+                current.y = (left.y + current.y + right.y) / 3;
+                current.z = (left.z + current.z + right.z) / 3;
 
-                // important for Vector3: replace the struct.
-                rotations[i] = currentVector.LookRotationPitchYaw();
-
-                leftVector = currentVector;
-                currentVector = rightVector;
+                rotations[i] = current.LookRotationPitchYaw();
+                left = current;
+                current = right;
             }
+
+            rotations[itemsLength - 1] = forwardVectors[itemsLength - 1].LookRotationPitchYaw();
+            return rotations;
         }
         public static void SmoothenPositions_MovingAverageWindow3(Vector3[] positions)
         {
@@ -129,6 +112,56 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 current = right;
             }
         }
+        // Useful if no optimization is possible (by sending a forward vector instead).
+        // Usually, you should be able to send the forward vectors instead.
+        //public static void SmoothenRotationsXY_MovingAverageWindow3(Vector3[] rotations)
+        //{
+        //    if (rotations.Length < 3)
+        //    {
+        //        return;
+        //    }
+
+        //    int itemsLength = rotations.Length;
+
+        //    // Angles only used for storing temp, doesn't reflect leftX or leftY, and doesn't get replaced.
+        //    RotatingCoordinateXYVector3Angles leftAngles = new RotatingCoordinateXYVector3Angles(rotations[0]);
+        //    Vector3 leftVector = leftAngles.RotateX_Forward();
+        //    // Apply RotateY inline to leftRotateXVector.
+        //    float _leftRotateXVectorNewZ = leftVector.z * leftAngles.CosYAngle - leftVector.x * leftAngles.SinYAngle;
+        //    float _leftRotateXVectorNewX = leftVector.z * leftAngles.SinYAngle + leftVector.x * leftAngles.CosYAngle;
+        //    leftVector.x = _leftRotateXVectorNewX;
+        //    leftVector.z = _leftRotateXVectorNewZ;
+
+        //    RotatingCoordinateXYVector3Angles currentAngles = new RotatingCoordinateXYVector3Angles(rotations[1]);
+        //    Vector3 currentVector = currentAngles.RotateX_Forward();
+        //    // Apply RotateY inline to currentRotateXVector.
+        //    float _currentRotateXVectorNewZ = currentVector.z * currentAngles.CosYAngle - currentVector.x * currentAngles.SinYAngle;
+        //    float _currentRotateXVectorNewX = currentVector.z * currentAngles.SinYAngle + currentVector.x * currentAngles.CosYAngle;
+        //    currentVector.x = _currentRotateXVectorNewX;
+        //    currentVector.z = _currentRotateXVectorNewZ;
+
+        //    for (int i = 1; i < itemsLength - 1; i++)
+        //    {
+        //        RotatingCoordinateXYVector3Angles rightAngles = new RotatingCoordinateXYVector3Angles(rotations[i + 1]);
+        //        Vector3 rightVector = rightAngles.RotateX_Forward();
+        //        // Apply RotateY inline to rightRotateXVector.
+        //        float _rightRotateXVectorNewZ = rightVector.z * rightAngles.CosYAngle - rightVector.x * rightAngles.SinYAngle;
+        //        float _rightRotateXVectorNewX = rightVector.z * rightAngles.SinYAngle + rightVector.x * rightAngles.CosYAngle;
+        //        rightVector.x = _rightRotateXVectorNewX;
+        //        rightVector.z = _rightRotateXVectorNewZ;
+
+        //        currentVector.x = (leftVector.x + currentVector.x + rightVector.x) * PartialMathUtil.ONE_THIRD;
+        //        currentVector.y = (leftVector.y + currentVector.y + rightVector.y) * PartialMathUtil.ONE_THIRD;
+        //        currentVector.z = (leftVector.z + currentVector.z + rightVector.z) * PartialMathUtil.ONE_THIRD;
+
+        //        // important for Vector3: replace the struct.
+        //        rotations[i] = currentVector.LookRotationPitchYaw();
+
+        //        leftVector = currentVector;
+        //        currentVector = rightVector;
+        //    }
+        //}
+
         //// incorrect code. TODO: Remove.
         //public static float CalculateClosestMultipleOrClamp(float value, float maxValue, float positiveMultiple,
         //    out float remainingPositiveMultiple,
