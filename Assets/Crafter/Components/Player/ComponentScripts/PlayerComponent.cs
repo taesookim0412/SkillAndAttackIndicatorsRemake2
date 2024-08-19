@@ -28,8 +28,8 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
         [NonSerialized, HideInInspector]
         public Material[] Materials;
-        [NonSerialized, HideInInspector]
-        public PlayerComponentCloneItems PlayerComponentCloneItems;
+        //[NonSerialized, HideInInspector]
+        //public PlayerComponentCloneItems PlayerComponentCloneItems;
 
         private void InitializeMaterials()
         {
@@ -68,10 +68,14 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
             return playerComponentInstance;
         }
-        public void OnCloneFXInit(ObserverUpdateCache observerUpdateCache)
+        public void OnCloneFXInit()
         {
-            PlayerComponentCloneItems = new PlayerComponentCloneItems(observerUpdateCache);
-            SetCloneFXOpacity(0f);
+            //PlayerComponentCloneItems = new PlayerComponentCloneItems(observerUpdateCache);
+            // Since Materials is NonSerialized, it must be re-created after the first pool item is created.
+            if (Materials == null)
+            {
+                InitializeMaterials();
+            }
         }
         public void SetCloneFXOpacity(float opacity)
         {
@@ -82,16 +86,16 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         }
     }
 
-    public class PlayerComponentCloneItems
-    {
-        public TimerStructDco_Observer AnimationTimer = new TimerStructDco_Observer(25L);
-        public bool AnimationTimerCompleted = false;
-        public bool AnimationTimerSet = false;
-        public bool AnimationStarted = false;
+    //public class PlayerComponentCloneItems
+    //{
+    //    public TimerStructDco_Observer AnimationTimer = new TimerStructDco_Observer(25L);
+    //    public bool AnimationTimerCompleted = false;
+    //    public bool AnimationTimerSet = false;
+    //    public bool AnimationStarted = false;
 
-        public PlayerComponentCloneItems(ObserverUpdateCache observerUpdateCache)
-        {
-            AnimationTimer.ObserverUpdateCache = observerUpdateCache;
-        }
-    }
+    //    public PlayerComponentCloneItems(ObserverUpdateCache observerUpdateCache)
+    //    {
+    //        AnimationTimer.ObserverUpdateCache = observerUpdateCache;
+    //    }
+    //}
 }

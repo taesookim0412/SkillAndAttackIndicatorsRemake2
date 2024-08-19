@@ -63,6 +63,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 PlayerComponent playerTransparentClone = PlayerCloneInstancePool.InstantiatePooled(playerPosition);
                 playerTransparentClone.transform.localEulerAngles = playerRotation;
+                playerTransparentClone.OnCloneFXInit();
                 PlayerTransparentClone = playerTransparentClone;
 
                 CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.CrimsonAuraBlack];
