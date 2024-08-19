@@ -36,11 +36,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public int TerrainRenderingLayer;
         [SerializeField]
         public Terrain Terrain;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private bool TerrainValuesCached = false;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private Vector3 TerrainStart = Vector3.zero;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private Vector3 TerrainSize = Vector3.one;
         [SerializeField]
         public MonoBehaviour[] Projectors;
@@ -49,34 +49,34 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         [SerializeField]
         public PlayerComponent PlayerComponent;
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public PlayerClientData PlayerClientData;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public Camera Camera;
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private ObserverUpdateProps ObserverUpdateProps;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private ObserverUpdateCache ObserverUpdateCache;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public SkillAndAttackIndicatorObserverProps SkillAndAttackIndicatorObserverProps;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public List<SkillAndAttackIndicatorObserver> SkillAndAttackIndicatorObservers = new List<SkillAndAttackIndicatorObserver>();
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public DashAbilityTriggerObserverProps DashAbilityTriggerObserverProps;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public List<DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>> DashAbilityTriggerObservers = new List<DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>>();
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>> ProjectorInstancePools;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public Dictionary<AbilityIndicatorFXType, PoolBagDco<AbstractAbilityFX>[]> AbilityIndicatorFXInstancePools;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public Dictionary<AbilityTriggerFXType, PoolBagDco<AbstractAbilityFX>[]> AbilityTriggerFXInstancePools;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public Dictionary<Guid, PoolBagDco<PlayerComponent>> PlayerCloneInstancePools;
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public Guid PlayerGuid = Guid.NewGuid();
         public void Awake()
         {

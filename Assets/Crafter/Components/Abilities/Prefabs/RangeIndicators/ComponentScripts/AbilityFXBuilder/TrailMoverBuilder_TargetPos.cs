@@ -22,15 +22,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     {
         [NonSerialized]
         public BlinkRibbonTrailRenderer[] Trails;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private BlinkRibbonTrailProps TrailProps;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private Vector3[][] TrailPositions;
 
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private float ElapsedTimeSec;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private float TimeRequiredSec;
 
         public override void ManualAwake()

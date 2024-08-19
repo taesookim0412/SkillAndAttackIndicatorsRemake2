@@ -10,8 +10,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 {
     public abstract class AbstractAbilityFXBuilder : AbstractAbilityFX
     {
-        [NonSerialized]
+        [NonSerialized, HideInInspector]
         protected ObserverUpdateCache ObserverUpdateCache;
+        [NonSerialized, HideInInspector]
         protected bool AwakeInitialized = false;
         protected void Initialize(ObserverUpdateCache observerUpdateCache)
         {

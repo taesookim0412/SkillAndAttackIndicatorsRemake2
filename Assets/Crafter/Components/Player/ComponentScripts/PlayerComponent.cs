@@ -26,9 +26,9 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         [SerializeField]
         public Animator Animator;
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public Material[] Materials;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         public PlayerComponentCloneItems PlayerComponentCloneItems;
 
         private void InitializeMaterials()

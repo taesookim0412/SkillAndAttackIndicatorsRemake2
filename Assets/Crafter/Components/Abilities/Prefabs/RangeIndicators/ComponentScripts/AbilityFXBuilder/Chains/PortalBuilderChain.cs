@@ -22,9 +22,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized]
         public TrailMoverBuilder_TargetPos TrailForPortals;
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private long StartTime;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private long EndTime;
 
         public override void ManualAwake()

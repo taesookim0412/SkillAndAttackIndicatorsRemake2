@@ -47,10 +47,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public bool IsTeleportSource;
 
         // incompatible with onvalidate
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private float RequiredDurationMult;
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private Vector3 PortalScaleDifference;
 
         public override void ManualAwake()
@@ -85,15 +85,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             ManualAwake();
         }
 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private PortalState PortalState; 
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private TimerStructDco_Observer PortalScaleTimer;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private TimerStructDco_Observer PlayerOpacityTimer;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private TimerStructDco_Observer PlayerOpaqueTimer;
-        [HideInInspector]
+        [NonSerialized, HideInInspector]
         private bool RequiredDurationsModified = false;
 
         //public string DebugLogRequiredDurations()
