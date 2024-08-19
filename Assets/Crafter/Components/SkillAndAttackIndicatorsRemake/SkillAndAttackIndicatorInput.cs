@@ -18,33 +18,33 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public void OnAbility1(InputValue value)
         {
             return;
-            SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Arc,
-                AbilityProjectorMaterialType.First,
-                AbilityIndicatorCastType.ShowDuringCast,
-                null);
+            //SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.ArcProjector,
+            //    AbilityProjectorMaterialType.First,
+            //    AbilityIndicatorCastType.ShowDuringCast,
+            //    null);
         }
         public void OnAbility2(InputValue value)
         {
             return;
-            SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Circle,
-                AbilityProjectorMaterialType.First,
-                AbilityIndicatorCastType.ShowDuringCast,
-                null);
+            //SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.CircleProjector,
+            //    AbilityProjectorMaterialType.First,
+            //    AbilityIndicatorCastType.ShowDuringCast,
+            //    null);
         }
         public void OnAbility3(InputValue value)
         {
-            SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.Line,
-                AbilityProjectorMaterialType.First,
+            SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.LineProjector,
+                AbilityProjectorMaterialType.DashAbilityLineMaterial,
                 AbilityIndicatorCastType.ShowDuringCast,
                 new AbilityIndicatorFXType[1] { AbilityIndicatorFXType.DashParticles });
         }
         public void OnAbility4(InputValue value)
         {
             return;
-            SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.ScatterLine,
-                AbilityProjectorMaterialType.First,
-                AbilityIndicatorCastType.ShowDuringCast,
-                null);
+            //SkillAndAttackIndicatorSystem.TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType.ScatterLinesProjector,
+            //    AbilityProjectorMaterialType.First,
+            //    AbilityIndicatorCastType.ShowDuringCast,
+            //    null);
         }
     }
 }

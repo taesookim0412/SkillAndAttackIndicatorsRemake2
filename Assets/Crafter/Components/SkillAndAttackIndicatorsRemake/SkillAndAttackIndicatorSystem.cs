@@ -1,11 +1,13 @@
 ﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFX;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder;
+using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.Projectors;
 using Assets.Crafter.Components.Constants;
 using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Models.dpo.TrailEffectsDpo;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.Systems.Observers;
+using DTT.AreaOfEffectRegions;
 using StarterAssets;
 using System;
 using System.Collections.Generic;
@@ -33,8 +35,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         [SerializeField]
         public LayerMask TerrainLayer;
         [SerializeField]
-        public int TerrainRenderingLayer;
-        [SerializeField]
         public Terrain Terrain;
         [NonSerialized, HideInInspector]
         private bool TerrainValuesCached = false;
@@ -43,7 +43,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         [NonSerialized, HideInInspector]
         private Vector3 TerrainSize = Vector3.one;
         [SerializeField]
-        public MonoBehaviour[] Projectors;
+        public AbstractProjector[] Projectors;
+        [SerializeField]
+        public Material[] LineProjectorMaterials;
         [SerializeField]
         public AbstractAbilityFX[] AbilityFXComponentPrefabs;
         [SerializeField]
@@ -68,7 +70,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public List<DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>> DashAbilityTriggerObservers = new List<DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>>();
 
         [NonSerialized, HideInInspector]
-        public Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>> ProjectorInstancePools;
+        public Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<AbstractProjector>>> ProjectorInstancePools;
         [NonSerialized, HideInInspector]
         public Dictionary<AbilityIndicatorFXType, PoolBagDco<AbstractAbilityFX>[]> AbilityIndicatorFXInstancePools;
         [NonSerialized, HideInInspector]
@@ -97,26 +99,25 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             DashAbilityTriggerObservers = new List<DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>>();
 
-            Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>> projectorInstancePools = new
-                Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>>(
+            Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<AbstractProjector>>> projectorInstancePools = new
+                Dictionary<AbilityProjectorType, Dictionary<AbilityProjectorMaterialType, PoolBagDco<AbstractProjector>>>(
                     SkillAndAttackIndicatorObserver.AbilityProjectorTypeNamesLength);
 
-            int projectorIndex = 0;
-            foreach (string projectorTypeNameString in SkillAndAttackIndicatorObserver.AbilityProjectorTypeNames)
+            string lineProjectorTypeString = AbilityProjectorType.LineProjector.ToString();
+
+            MonoBehaviour lineRegionProjectorPrefab = Projectors.FirstOrDefault(prefab => prefab.name == lineProjectorTypeString);
+            Dictionary<AbilityProjectorMaterialType, PoolBagDco<AbstractProjector>> lineMaterialsDict = new Dictionary<AbilityProjectorMaterialType, PoolBagDco<AbstractProjector>>(LineProjectorMaterials.Length);
+            foreach (Material lineProjectorMaterial in LineProjectorMaterials)
             {
-                AbilityProjectorType abilityProjectorType = Enum.Parse<AbilityProjectorType>(projectorTypeNameString);
+                AbilityProjectorMaterialType abilityProjectorMaterialType = Enum.Parse<AbilityProjectorMaterialType>(lineProjectorMaterial.name);
 
-                Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>> projectorTypeDict = new
-                    Dictionary<AbilityProjectorMaterialType, PoolBagDco<MonoBehaviour>>(SkillAndAttackIndicatorObserver.AbilityProjectorMaterialTypeNamesLength);
-                foreach (string projectTypeMaterialString in SkillAndAttackIndicatorObserver.AbilityProjectorMaterialTypeNames)
-                {
-                    AbilityProjectorMaterialType materialType = Enum.Parse<AbilityProjectorMaterialType>(projectTypeMaterialString);
+                LineProjector lineProjectorInstance = (LineProjector) GameObject.Instantiate(lineRegionProjectorPrefab, null);
+                lineProjectorInstance.Projector.material = lineProjectorMaterial;
+                lineProjectorInstance.gameObject.SetActive(false);
 
-                    projectorTypeDict[materialType] = new PoolBagDco<MonoBehaviour>(Projectors[projectorIndex++], 30);
-                }
-
-                projectorInstancePools[abilityProjectorType] = projectorTypeDict;
+                lineMaterialsDict[abilityProjectorMaterialType] = new PoolBagDco<AbstractProjector>(lineProjectorInstance, 10);
             }
+            projectorInstancePools[AbilityProjectorType.LineProjector] = lineMaterialsDict;
 
             ProjectorInstancePools = projectorInstancePools;
 

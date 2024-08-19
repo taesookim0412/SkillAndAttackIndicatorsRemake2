@@ -19,6 +19,7 @@ using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScrip
 using Assets.Crafter.Components.Systems.Observers;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder.Chains;
 using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFX;
+using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.Projectors;
 
 namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 {
@@ -35,6 +36,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     }
     public class SkillAndAttackIndicatorObserver
     {
+        private const float ProjectorTerrainHeightDifferenceGrace = 30f;
+
         public static readonly string[] AbilityProjectorTypeNames = Enum.GetNames(typeof(AbilityProjectorType));
         public static readonly int AbilityProjectorTypeNamesLength = AbilityProjectorTypeNames.Length;
         public static readonly string[] AbilityProjectorMaterialTypeNames = Enum.GetNames(typeof(AbilityProjectorMaterialType));
@@ -46,11 +49,13 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private static readonly Random Random = new Random();
         private static readonly float RadiusHalfDivMult = 1 / 2f;
+
         // The orthographic length is based on a radius so it is half the desired length.
         // Then, it must be multiplied by half again because it is a "half-length" in the documentation.
         // private static readonly float OrthographicRadiusHalfDivMult = 1 / 4f;
 
         // ... hardcoded
+        private static readonly Vector3 DashAbilityScale = new Vector3(2f, 0f, 20f);
         private static readonly int LineLengthUnits = 20;
         private static readonly int ZUnitsPerX = 5;
         // Also used for adding ArcPathFromCloneOffset
@@ -70,16 +75,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public readonly Guid PlayerGuid;
 
         private bool ProjectorSet = false;
-        private PoolBagDco<MonoBehaviour> ProjectorInstancePool;
+        private PoolBagDco<AbstractProjector> ProjectorInstancePool;
         private PoolBagDco<AbstractAbilityFX>[][] AbilityFXInstancePools;
-        private MonoBehaviour ProjectorMonoBehaviour;
+        private AbstractProjector ProjectorInstance;
         private PlayerComponent PlayerComponent;
         private PoolBagDco<PlayerComponent> PlayerCloneInstancePool;
-
-        private SRPArcRegionProjector ArcRegionProjectorRef;
-        private SRPCircleRegionProjector CircleRegionProjectorRef;
-        private SRPLineRegionProjector LineRegionProjectorRef;
-        private SRPScatterLineRegionProjector ScatterLineRegionProjectorRef;
 
         private (DashParticles[] dashParticles,
             WaterTrail waterTrail,
@@ -125,77 +125,16 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     Props.SkillAndAttackIndicatorSystem.PlayerCloneInstancePools.TryGetValue(PlayerGuid, out PlayerCloneInstancePool))))
                 {
                     // 3 texture option indices.
-                    ProjectorMonoBehaviour = ProjectorInstancePool.InstantiatePooled(null);
-
+                    AbstractProjector projectorInstance = ProjectorInstancePool.InstantiatePooled(null);
+                    ProjectorInstance = projectorInstance;
                     // Create the projector.
-
+                    Vector3 playerPosition = Props.SkillAndAttackIndicatorSystem.PlayerComponent.transform.position;
+                    Vector3 playerRotation = Props.SkillAndAttackIndicatorSystem.PlayerComponent.transform.localEulerAngles;
                     // hard coded lengths that need to be used in fx too.
-
-                    Vector3 terrainProjectorPosition = GetTerrainProjectorPosition();
-                    float playerRotation = GetThirdPersonControllerRotation();
-
-                    switch (AbilityProjectorType)
-                    {
-                        case AbilityProjectorType.Arc:
-
-                            SRPArcRegionProjector arcRegionProjector = ProjectorMonoBehaviour.GetComponent<SRPArcRegionProjector>();
-                            arcRegionProjector.Radius = 70;
-                            //arcRegionProjector.SetIgnoreLayers(Props.SkillAndAttackIndicatorSystem.ProjectorIgnoreLayersMask);
-
-                            arcRegionProjector.GenerateProjector();
-
-                            ArcRegionProjectorRef = arcRegionProjector;
-                            break;
-                        case AbilityProjectorType.Circle:
-                            SRPCircleRegionProjector circleRegionProjector = ProjectorMonoBehaviour.GetComponent<SRPCircleRegionProjector>();
-                            circleRegionProjector.Radius = 70;
-
-                            //circleRegionProjector.SetIgnoreLayers(Props.SkillAndAttackIndicatorSystem.ProjectorIgnoreLayersMask);
-                            circleRegionProjector.GenerateProjector();
-
-                            CircleRegionProjectorRef = circleRegionProjector;
-                            break;
-                        case AbilityProjectorType.Line:
-                            SRPLineRegionProjector lineRegionProjector = ProjectorMonoBehaviour.GetComponent<SRPLineRegionProjector>();
-
-                            // multiply it by the orthographicRadiusHalfDivMultiplier
-                            //float orthographicLength = lineLengthUnits * OrthographicRadiusHalfDivMult;
-                            lineRegionProjector.Length = LineLengthUnits * RadiusHalfDivMult;
-
-                            //lineRegionProjector.SetIgnoreLayers(Props.SkillAndAttackIndicatorSystem.ProjectorIgnoreLayersMask);
-                            lineRegionProjector.GenerateProjector();
-                            lineRegionProjector.SetTerrainLayer(Props.SkillAndAttackIndicatorSystem.TerrainRenderingLayer);
-                            lineRegionProjector.Angle = playerRotation;
-                            lineRegionProjector.Depth = 100f;
-                            lineRegionProjector.Width = 2f;
-
-                            // this should be done after, not within generateprojector...
-                            lineRegionProjector.UpdateProjectors();
-
-                            LineRegionProjectorRef = lineRegionProjector;
-                            break;
-                        case AbilityProjectorType.ScatterLine:
-                            SRPScatterLineRegionProjector scatterLineRegionProjector = ProjectorMonoBehaviour.GetComponent<SRPScatterLineRegionProjector>();
-                            scatterLineRegionProjector.Length = 70;
-                            scatterLineRegionProjector.Add(3);
-
-                            scatterLineRegionProjector.GenerateProjector();
-
-                            ScatterLineRegionProjectorRef = scatterLineRegionProjector;
-                            // SetIgnoreLayers not supported with the current scatterlineregionprojector...
-                            break;
-                        default:
-                            ObserverStatus = ObserverStatus.Remove;
-                            return;
-                    }
-
-                    ProjectorMonoBehaviour.transform.position = terrainProjectorPosition;
-                    //PreviousTerrainProjectorPosition = terrainProjectorPosition;
-                    //PreviousRotationY = playerRotation;
 
                     switch (AbilityProjectorMaterialType)
                     {
-                        case AbilityProjectorMaterialType.First:
+                        case AbilityProjectorMaterialType.DashAbilityLineMaterial:
                             ChargeDuration = 800L;
                             ChargeDurationSecondsFloat = 800 * 0.001f;
                             break;
@@ -212,6 +151,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             return;
                     }
 
+                    float minHeight = 0f;
+                    float maxHeight = 0f;
                     if (AbilityIndicatorFXTypes != null)
                     {
                         for (int i = 0; i < AbilityIndicatorFXTypes.Length; i++)
@@ -221,14 +162,67 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             {
                                 case AbilityIndicatorFXType.DashParticles:
                                     DashParticlesItems = CreateDashParticlesItems(LineLengthUnits,
-                                        terrainProjectorPosition.x, terrainProjectorPosition.z, GetThirdPersonControllerRotation(),
-                                        i);
+                                        playerPosition.x, playerPosition.z, playerRotation.y,
+                                        i, out minHeight, out maxHeight);
                                     break;
                             }
                         }
                     }
 
+                    float projectorStartY = maxHeight + ProjectorTerrainHeightDifferenceGrace;
+                    float requiredProjectorYHeight = maxHeight - minHeight + (2 * ProjectorTerrainHeightDifferenceGrace);
+                    Vector3 projectorSize = DashAbilityScale;
+                    projectorSize.y = requiredProjectorYHeight;
 
+                    Vector3 projectorPosition = playerPosition;
+                    projectorPosition.y = projectorStartY;
+
+                    switch (AbilityProjectorType)
+                    {
+                        case AbilityProjectorType.ArcProjector:
+
+                            SRPArcRegionProjector arcRegionProjector = projectorInstance.GetComponent<SRPArcRegionProjector>();
+                            arcRegionProjector.Radius = 70;
+                            //arcRegionProjector.SetIgnoreLayers(Props.SkillAndAttackIndicatorSystem.ProjectorIgnoreLayersMask);
+
+                            arcRegionProjector.GenerateProjector();
+
+                            throw new NotImplementedException();
+                            //ArcRegionProjectorRef = arcRegionProjector;
+                            break;
+                        case AbilityProjectorType.CircleProjector:
+                            SRPCircleRegionProjector circleRegionProjector = projectorInstance.GetComponent<SRPCircleRegionProjector>();
+                            circleRegionProjector.Radius = 70;
+
+                            //circleRegionProjector.SetIgnoreLayers(Props.SkillAndAttackIndicatorSystem.ProjectorIgnoreLayersMask);
+                            circleRegionProjector.GenerateProjector();
+
+                            throw new NotImplementedException();
+                            //CircleRegionProjectorRef = circleRegionProjector;
+                            break;
+                        case AbilityProjectorType.LineProjector:
+                            LineProjector lineProjector = (LineProjector)projectorInstance;
+
+                            lineProjector.Initialize(projectorSize);
+                            break;
+                        case AbilityProjectorType.ScatterLinesProjector:
+                            SRPScatterLineRegionProjector scatterLineRegionProjector = projectorInstance.GetComponent<SRPScatterLineRegionProjector>();
+                            scatterLineRegionProjector.Length = 70;
+                            scatterLineRegionProjector.Add(3);
+
+                            scatterLineRegionProjector.GenerateProjector();
+
+                            throw new NotImplementedException();
+                            //ScatterLineRegionProjectorRef = scatterLineRegionProjector;
+                            // SetIgnoreLayers not supported with the current scatterlineregionprojector...
+                            break;
+                        default:
+                            ObserverStatus = ObserverStatus.Remove;
+                            return;
+                    }
+
+                    projectorInstance.transform.position = projectorPosition;
+                    projectorInstance.transform.localEulerAngles = playerRotation;
 
                     ProjectorSet = true;
                     LastTickTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
@@ -249,12 +243,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 float newFillProgress = 0f;
                 switch (AbilityProjectorType)
                 {
-                    case AbilityProjectorType.Arc:
+                    case AbilityProjectorType.ArcProjector:
                         break;
-                    case AbilityProjectorType.Circle:
+                    case AbilityProjectorType.CircleProjector:
                         break;
 
-                    case AbilityProjectorType.Line:
+                    case AbilityProjectorType.LineProjector:
                         if (PreviousChargeDurationFloatPercentage < 1f)
                         {
                             float chargeDurationPercentage = ElapsedTimeSecondsFloat / ChargeDurationSecondsFloat;
@@ -262,8 +256,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                             if (chargeDurationPercentage > PreviousChargeDurationFloatPercentage)
                             {
                                 newFillProgress = EffectsUtil.EaseInOutQuad(chargeDurationPercentage);
-                                LineRegionProjectorRef.FillProgress = newFillProgress;
-                                LineRegionProjectorRef.UpdateProjectors();
+                                ProjectorInstance.ManualUpdate(newFillProgress);
                                 PreviousChargeDurationFloatPercentage = chargeDurationPercentage;
                             }
                             else
@@ -273,7 +266,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         }
                         break;
 
-                    case AbilityProjectorType.ScatterLine:
+                    case AbilityProjectorType.ScatterLinesProjector:
 
                         break;
 
@@ -325,7 +318,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             {
                 Props.SkillAndAttackIndicatorSystem.AddDashAbilityTriggerObserver(DashParticlesItems.dashParticles[DashParticlesItems.dashParticles.Length - 1].transform.position);
 
-                ProjectorInstancePool.ReturnPooled(ProjectorMonoBehaviour);
+                ProjectorInstancePool.ReturnPooled(ProjectorInstance);
                 if (AbilityIndicatorFXTypes != null)
                 {
                     for (int i = 0; i < AbilityIndicatorFXTypes.Length; i++)
@@ -462,7 +455,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             int numElectricTrailRendererPositions,
             int lastArcPathsIndex) CreateDashParticlesItems(int lineLengthUnits,
             float startPositionX, float startPositionZ,
-            float yRotation, int abilityFXIndex)
+            float yRotation, int abilityFXIndex,
+            out float minHeight, out float maxHeight)
         {
             int numPortalSpots = (int)Math.Floor((lineLengthUnits - PortalSpotOffsetUnits) / (float)UnitsPerPortalSpot);
 
@@ -481,6 +475,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.DashParticles];
 
+            float positiony0 = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+            minHeight = positiony0;
+            maxHeight = positiony0;
             float previousPositionY = 0f;
             float prevXAnglei0 = 0f;
             float prevXAnglei1 = 0f;
@@ -490,6 +487,18 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 // set inactive when created.
                 dashParticlesComponent.gameObject.SetActive(false);
                 float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+
+                if (i > 0)
+                {
+                    if (positionY > maxHeight)
+                    {
+                        maxHeight = positionY;
+                    }
+                    if (positionY < minHeight)
+                    {
+                        minHeight = positionY;
+                    }
+                }
 
                 AnimationCurve yVelocityAnimCurve = CreateTerrainYVelocityAnimationCurve(
                     unitsPerKeyframe: 0.05f,
@@ -828,23 +837,23 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         //        (2 - (float)Math.Pow(2, -20 * percentage + 10)) / 2;
         //}
         
-        private Vector3 GetTerrainProjectorPosition()
-        {
-            if (Props.SkillAndAttackIndicatorSystem.PlayerComponent != null)
-            {
-                Vector3 playerPosition = Props.SkillAndAttackIndicatorSystem.PlayerComponent.transform.position;
-                return new Vector3(playerPosition.x, playerPosition.y + 50f, playerPosition.z);
-            }
-            else
-            {
-                //if (EventSystem.current.IsPointerOverGameObject() || !_isMouseOverGameWindow || IsPointerOverUIElement(GetEventSystemRaycastResults()))
-                //    return _anchorPoint.transform.position;
-                Ray ray = Props.SkillAndAttackIndicatorSystem.Camera.ScreenPointToRay(Input.mousePosition);
-                return Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Props.SkillAndAttackIndicatorSystem.TerrainLayer) ?
-                    hit.point + new Vector3(0, 50, 0)
-                    : new Vector3(0, 50, 0);
-            }
-        }
+        //private Vector3 GetTerrainProjectorPosition()
+        //{
+        //    if (Props.SkillAndAttackIndicatorSystem.PlayerComponent != null)
+        //    {
+        //        Vector3 playerPosition = Props.SkillAndAttackIndicatorSystem.PlayerComponent.transform.position;
+        //        return new Vector3(playerPosition.x, playerPosition.y + 50f, playerPosition.z);
+        //    }
+        //    else
+        //    {
+        //        //if (EventSystem.current.IsPointerOverGameObject() || !_isMouseOverGameWindow || IsPointerOverUIElement(GetEventSystemRaycastResults()))
+        //        //    return _anchorPoint.transform.position;
+        //        Ray ray = Props.SkillAndAttackIndicatorSystem.Camera.ScreenPointToRay(Input.mousePosition);
+        //        return Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, Props.SkillAndAttackIndicatorSystem.TerrainLayer) ?
+        //            hit.point + new Vector3(0, 50, 0)
+        //            : new Vector3(0, 50, 0);
+        //    }
+        //}
         public void TriggerDoubleCast()
         {
             throw new NotImplementedException();
@@ -1018,14 +1027,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     }
     public enum AbilityProjectorType
     {
-        Arc,
-        Circle,
-        Line,
-        ScatterLine,
+        ArcProjector,
+        CircleProjector,
+        LineProjector,
+        ScatterLinesProjector,
     }
     public enum AbilityProjectorMaterialType
     {
-        First
+        DashAbilityLineMaterial
     }
     public enum AbilityIndicatorCastType
     {
