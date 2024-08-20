@@ -23,7 +23,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             DecalProjector projector = Projector;
 
             projector.size = projectorSize;
-            projector.pivot = new Vector3(0f, -1 * (projectorSize.y * 0.5f), projectorSize.z * 0.5f);
+            projector.pivot = new Vector3(0f, projectorSize.y * 0.5f, projectorSize.z * 0.5f);
             projector.material.SetFloat(FillProgressShaderID, 0f);
         }
 

@@ -171,8 +171,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                     float projectorStartY = maxHeight + ProjectorTerrainHeightDifferenceGrace;
                     float requiredProjectorYHeight = maxHeight - minHeight + (2 * ProjectorTerrainHeightDifferenceGrace);
-                    Vector3 projectorSize = DashAbilityScale;
-                    projectorSize.y = requiredProjectorYHeight;
+                    Vector3 abilityScale = DashAbilityScale;
+                    Vector3 projectorSize = new Vector3(abilityScale.x, abilityScale.z, requiredProjectorYHeight);
 
                     Vector3 projectorPosition = playerPosition;
                     projectorPosition.y = projectorStartY;
@@ -251,7 +251,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     case AbilityProjectorType.LineProjector:
                         if (PreviousChargeDurationFloatPercentage < 1f)
                         {
-                            float chargeDurationPercentage = ElapsedTimeSecondsFloat / ChargeDurationSecondsFloat;
+                            float chargeDurationPercentage = Mathf.Clamp01(ElapsedTimeSecondsFloat / ChargeDurationSecondsFloat);
 
                             if (chargeDurationPercentage > PreviousChargeDurationFloatPercentage)
                             {
@@ -351,7 +351,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 ObserverStatus = ObserverStatus.Remove;
             }
         }
-
 
         //private long[] GenerateTimeRequiredForDistancesPerUnit()
         //{

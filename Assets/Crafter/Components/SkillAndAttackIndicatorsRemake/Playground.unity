@@ -37945,6 +37945,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7143649564485824405, guid: 3caf3f8ae20361240b86509eaec969b3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: a761f9529b493b547960f6d0d559b7fb, type: 2}
     - target: {fileID: 7748628602481844150, guid: 3caf3f8ae20361240b86509eaec969b3, type: 3}
       propertyPath: m_Name
       value: CrowFlyingPlane
@@ -48825,7 +48829,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1558067401574921292, guid: 7860be253d342fa4fb2e04d83c9dedf2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.38
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 1558067401574921292, guid: 7860be253d342fa4fb2e04d83c9dedf2, type: 3}
       propertyPath: m_LocalPosition.z
@@ -48862,18 +48866,6 @@ PrefabInstance:
     - target: {fileID: 2127899206938270386, guid: 7860be253d342fa4fb2e04d83c9dedf2, type: 3}
       propertyPath: m_Name
       value: LineProjector
-      objectReference: {fileID: 0}
-    - target: {fileID: 2815393034904510174, guid: 7860be253d342fa4fb2e04d83c9dedf2, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.733
-      objectReference: {fileID: 0}
-    - target: {fileID: 5420131760215265275, guid: 7860be253d342fa4fb2e04d83c9dedf2, type: 3}
-      propertyPath: m_Size.y
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 5420131760215265275, guid: 7860be253d342fa4fb2e04d83c9dedf2, type: 3}
-      propertyPath: m_Offset.y
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

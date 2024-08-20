@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: DashAbilityLineMaterial
-  m_Shader: {fileID: -6465566751694194690, guid: 093094988dc4e5e4ab5cf82fb3ed4c15, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 46906899ab7c1994e95009d0913622be, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -29,7 +29,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 1999
   stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
@@ -115,7 +115,7 @@ Material:
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _FadeAmount: 0.1
-    - _FillProgress: 0.2
+    - _FillProgress: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
