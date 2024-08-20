@@ -172,7 +172,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     float projectorStartY = maxHeight + ProjectorTerrainHeightDifferenceGrace;
                     float requiredProjectorYHeight = maxHeight - minHeight + (2 * ProjectorTerrainHeightDifferenceGrace);
                     Vector3 abilityScale = DashAbilityScale;
-                    Vector3 projectorSize = new Vector3(abilityScale.x, abilityScale.z, requiredProjectorYHeight);
 
                     Vector3 projectorPosition = playerPosition;
                     projectorPosition.y = projectorStartY;
@@ -203,7 +202,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                         case AbilityProjectorType.LineProjector:
                             LineProjector lineProjector = (LineProjector)projectorInstance;
 
-                            lineProjector.Initialize(projectorSize);
+                            lineProjector.Initialize(abilityScale, requiredProjectorYHeight);
                             break;
                         case AbilityProjectorType.ScatterLinesProjector:
                             SRPScatterLineRegionProjector scatterLineRegionProjector = projectorInstance.GetComponent<SRPScatterLineRegionProjector>();

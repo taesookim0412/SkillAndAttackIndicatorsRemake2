@@ -18,10 +18,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         /// </summary>
         private static readonly int FillProgressShaderID = Shader.PropertyToID("_FillProgress");
 
-        public void Initialize(Vector3 projectorSize)
+        public void Initialize(Vector3 abilityScale, float requiredProjectorYHeight)
         {
-            DecalProjector projector = Projector;
+            Vector3 projectorSize = new Vector3(abilityScale.x, abilityScale.z, requiredProjectorYHeight);
 
+            DecalProjector projector = Projector;
             projector.size = projectorSize;
             projector.pivot = new Vector3(0f, projectorSize.y * 0.5f, projectorSize.z * 0.5f);
             projector.material.SetFloat(FillProgressShaderID, 0f);
