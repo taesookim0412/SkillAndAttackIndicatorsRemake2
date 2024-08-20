@@ -419,6 +419,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         private TrailMoverBuilder_TargetPosEditor_Props Props;
 
+        private bool BakeTrailMesh = false;
+        private bool BakeTrailMeshReinitCompleted = false;
+        private bool BakeTrailMeshCompleted = false;
+
         private float TimeRequiredSec = 1f;
 
         private long StartTime;
@@ -472,6 +476,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                                 endPositionWorld: endPositionWorld);
                             TryAddParticleSystem(instance.gameObject);
                             StartTime = observerUpdateCache.UpdateTickTimeFixedUpdate;
+                            BakeTrailMeshReinitCompleted = true;
                             return true;
                         }
                     }
@@ -621,6 +626,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     Props.BlinkRibbonTrailProps = blinkRibbonTrailProps;
                     EditorDestroy();
                 }
+
+                EditorGUI.BeginChangeCheck();
+                BakeTrailMesh = GUILayout.Toggle(BakeTrailMesh, "Bake Trail Mesh");
+                if (EditorGUI.EndChangeCheck())
+                {
+                    BakeTrailMeshReinitCompleted = false;
+                    EditorDestroy();
+                }
             }
 
         }
@@ -629,7 +642,33 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             Instance.ManualUpdate();
 
+            TrySaveBakedTrailMesh();
+
             LastUpdateTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+        }
+        protected void TrySaveBakedTrailMesh()
+        {
+            if (BakeTrailMesh && Instance.Completed && BakeTrailMeshReinitCompleted && !BakeTrailMeshCompleted)
+            {
+                // complete it first so when the file name is being inquired the manual update does not open another panel.
+                BakeTrailMeshCompleted = true;
+                string trailName = EditorUtility.SaveFilePanelInProject("Save trails as mesh prefix", $"Trail_TargetPos_{Props.PropsIndex}", "", "", "Assets/Crafter/Components/VFX/Trails/Meshes");
+
+                if (trailName.Length > 0)
+                {
+                    var trails = Instance.Trails;
+
+                    for (int i = 0; i < trails.Length; i++)
+                    {
+                        BlinkRibbonTrailRenderer trail = trails[i];
+                        Mesh trailMesh = new Mesh();
+                        trail.TrailRenderer.BakeMesh(trailMesh, useTransform: false);
+                        AssetDatabase.CreateAsset(trailMesh, $"{trailName}_{i}.asset");
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.Refresh();
+                    }
+                }
+            }
         }
 
         protected override void EditorDestroy()
@@ -643,6 +682,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     GameObject.DestroyImmediate(trails[i].gameObject);
                 }
             }
+            BakeTrailMeshCompleted = false;
             Instance.CleanUpInstance();
         }
     }

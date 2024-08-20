@@ -36,8 +36,6 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             if (GUILayout.Button("Restart"))
             {
                 OnDisable();
-                ParticleSystem particleSystem = Instance.GetComponent<ParticleSystem>();
-                GameObject.DestroyImmediate(particleSystem);
             }
         }
         protected void Initialize(ObserverUpdateCache observerUpdateCache)
