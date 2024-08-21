@@ -31,7 +31,7 @@ namespace Assets.Crafter.Components.Constants
                 },
                 widthMultipliers: new float[2]
                 {
-                    0.15f, 0.15f
+                    0.85f, 0.85f
                 },
                 trailMarkersLocal: new SerializeableArray<Vector3>[2]
                 {
