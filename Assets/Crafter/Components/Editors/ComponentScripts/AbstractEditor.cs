@@ -98,15 +98,19 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
 
         protected void TryAddParticleSystem(GameObject instance)
         {
-            if (instance.GetComponent<ParticleSystem>() == null)
+            ParticleSystem particleSystem = instance.GetComponent<ParticleSystem>();
+            if (particleSystem == null)
             {
-                ParticleSystem particleSystem = instance.AddComponent<ParticleSystem>();
+                particleSystem = instance.AddComponent<ParticleSystem>();
                 ParticleSystem.EmissionModule emissionModule = particleSystem.emission;
                 emissionModule.enabled = false;
 
                 ParticleSystem.ShapeModule shapeModule = particleSystem.shape;
                 shapeModule.enabled = false;
             }
+            particleSystem.Stop();
+            particleSystem.Simulate(0.0f, true, true);
+            particleSystem.Play();
         }
         protected void WarnFixedUpdateTimeChanged()
         {

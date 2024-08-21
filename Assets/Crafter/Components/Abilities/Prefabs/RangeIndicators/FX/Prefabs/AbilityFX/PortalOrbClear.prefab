@@ -19533,7 +19533,7 @@ ParticleSystemRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -1
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -19542,7 +19542,7 @@ ParticleSystemRenderer:
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
   m_LengthScale: 2
-  m_SortingFudge: 3
+  m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
   m_RenderAlignment: 0
@@ -24496,9 +24496,6 @@ MonoBehaviour:
   - {fileID: 3617166983912101687}
   TrailRenderer: {fileID: 0}
   EnableParticleSystemsRequired: 1
-  Active: 0
-  Completed: 0
-  CompletedStateful: 0
 --- !u!1 &7318312804683901247
 GameObject:
   m_ObjectHideFlags: 0
@@ -24540,7 +24537,7 @@ ParticleSystem:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7318312804683901247}
   serializedVersion: 8
-  lengthInSec: 0.1
+  lengthInSec: 0.05
   simulationSpeed: 1
   stopAction: 0
   cullingMode: 1
@@ -25103,7 +25100,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 10
+    maxNumParticles: 5
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -25530,7 +25527,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 1
-      repeatInterval: 0.02
+      repeatInterval: 0.01
       probability: 1
   SizeModule:
     enabled: 0

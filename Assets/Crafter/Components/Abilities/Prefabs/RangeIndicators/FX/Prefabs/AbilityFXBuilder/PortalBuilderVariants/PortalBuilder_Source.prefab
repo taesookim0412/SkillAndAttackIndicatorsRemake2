@@ -110,11 +110,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: PortalOrbOffsetPosition.z
-      value: -0.3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
       propertyPath: CrimsonAuraOffsetPosition.y
       value: 0.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 2397041588141178177, guid: f44262dd09b7b75498ca7e02dedf81fd, type: 3}
+      propertyPath: EnableParticleSystemsRequired
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

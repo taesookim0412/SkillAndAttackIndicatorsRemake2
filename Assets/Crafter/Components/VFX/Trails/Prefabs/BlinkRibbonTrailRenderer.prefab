@@ -57,7 +57,7 @@ TrailRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 83b8176c701642d4fb8bb424de2e2419, type: 2}
+  - {fileID: 2100000, guid: 0b33cd9c22136774e905f78b01e77a0f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -165,6 +165,3 @@ MonoBehaviour:
   ParticleSystems: []
   TrailRenderer: {fileID: 4999382771056782900}
   EnableParticleSystemsRequired: 0
-  Active: 0
-  Completed: 0
-  CompletedStateful: 0
