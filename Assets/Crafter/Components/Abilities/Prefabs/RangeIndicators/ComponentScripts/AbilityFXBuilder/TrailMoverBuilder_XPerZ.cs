@@ -24,6 +24,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized, HideInInspector]
         public float[] LocalXPositionsPerZUnit;
         [NonSerialized, HideInInspector]
+        public float TotalXUnits;
+        [NonSerialized, HideInInspector]
         public int LineLength;
         [NonSerialized, HideInInspector]
         public int LineLengthBuffered;
@@ -54,6 +56,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             WaterTrail waterTrail,
             int lineLength,
             int zUnitsPerX,
+            float totalXUnits,
             long[] timeRequiredForZDistances,
             SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem,
             float startPositionX, float startPositionZ, float cosYAngle,
@@ -70,9 +73,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             int lineLengthBuffered = lineLength + 1;
             LineLengthBuffered = lineLengthBuffered;
 
-            if (LocalXPositionsPerZUnit == null || LocalXPositionsPerZUnit.Length != lineLengthBuffered)
+            if (LocalXPositionsPerZUnit == null || LocalXPositionsPerZUnit.Length != lineLengthBuffered || Math.Abs(TotalXUnits - totalXUnits) > PartialMathUtil.FLOAT_TOLERANCE)
             {
-                LocalXPositionsPerZUnit = InitializeLocalXPositionsPerZUnit(lineLengthBuffered, zUnitsPerX);
+                LocalXPositionsPerZUnit = InitializeLocalXPositionsPerZUnit(lineLengthBuffered, zUnitsPerX, totalXUnits);
+                TotalXUnits = totalXUnits;
             }
 
             WorldPositionsPerZUnit = InitializeWorldPositionsPerZUnit(skillAndAttackIndicatorSystem,
@@ -158,13 +162,16 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             return worldPositionsTuple;
         }
 
-        private float[] InitializeLocalXPositionsPerZUnit(int lineLengthBuffered, int zUnitsPerX)
+        private float[] InitializeLocalXPositionsPerZUnit(int lineLengthBuffered, int zUnitsPerX, float totalXUnits)
         {
             float[] xPositions = new float[lineLengthBuffered];
 
             xPositions[0] = 0f;
 
-            float xUnitsPerZ = 1f / zUnitsPerX;
+            float halfXUnits = totalXUnits * 0.5f;
+            float halfXUnitsNegative = -1f * halfXUnits;
+
+            float xUnitsPerZ = halfXUnits / zUnitsPerX;
             float xUnitsPerZDoubled = xUnitsPerZ * 2f;
 
             for (int i = 1; i < lineLengthBuffered; i++)
@@ -172,17 +179,17 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 int xSequenceIndex = (i - 1) % zUnitsPerX;
                 int xSequence = (int)(Math.Floor((i - 1) / (float)zUnitsPerX));
                 int xDirection = ((xSequence & 1) == 1) ? -1 : 1;
-                int xStart;
+                float xStart;
                 // since it can be doubled from 1 to -1 or it can not be doubled from xS = 0
                 float iterXUnitsPerZ;
                 if (xSequence == 0)
                 {
-                    xStart = 0;
+                    xStart = 0f;
                     iterXUnitsPerZ = xUnitsPerZ;
                 }
                 else
                 {
-                    xStart = xDirection * -1;
+                    xStart = xDirection * halfXUnitsNegative;
                     iterXUnitsPerZ = xUnitsPerZDoubled;
                 }
 
@@ -299,6 +306,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class TrailMoverBuilder_XPerZEditor : AbstractEditor<TrailMoverBuilder_XPerZ>
     {
         private static readonly int ZUnitsPerX = 5;
+        private static readonly float TotalXUnits = 0.2f;
         private static readonly int LineLengthUnits = 20;
         private static readonly long ChargeDuration = 800L;
         private static readonly float ChargeDurationFloat = (float)ChargeDuration;
@@ -328,7 +336,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         SetObserverUpdateCache();
                         observerUpdateCache = ObserverUpdateCache;
                     }
-                    instance.Initialize(observerUpdateCache, waterTrail, LineLengthUnits, ZUnitsPerX, timeRequiredForZDistances, system,
+                    instance.Initialize(observerUpdateCache, waterTrail, LineLengthUnits, ZUnitsPerX, TotalXUnits, timeRequiredForZDistances, system,
                         position.x, position.z, cosYAngle, sinYAngle);
                     TryAddParticleSystem(instance.gameObject);
                     StartTime = observerUpdateCache.UpdateTickTimeFixedUpdate;

@@ -56,6 +56,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         // ... hardcoded
         private static readonly Vector3 DashAbilityScale = new Vector3(2f, 0f, 20f);
+        private static readonly float TrailXPerZ_TotalXUnits = 0.2f;
         private static readonly int LineLengthUnits = 20;
         private static readonly int ZUnitsPerX = 5;
         // Also used for adding ArcPathFromCloneOffset
@@ -549,7 +550,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             //TODO: Cache this somehow.
             long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
 
-            trailMoverXPerZ.Initialize(Props.ObserverUpdateCache, waterTrail, lineLengthUnits, ZUnitsPerX, timeRequiredForZDistances,
+            trailMoverXPerZ.Initialize(Props.ObserverUpdateCache, waterTrail, lineLengthUnits, ZUnitsPerX, TrailXPerZ_TotalXUnits, timeRequiredForZDistances,
                 Props.SkillAndAttackIndicatorSystem, startPositionX, startPositionZ, cosYAngle, sinYAngle);
 
             return (dashParticles, waterTrail, trailMoverXPerZ, portalSpotsPassed, 1, -1);
