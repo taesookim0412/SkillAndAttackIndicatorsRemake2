@@ -1,4 +1,8 @@
-﻿using NUnit.Framework.Internal;
+﻿using Assets.Crafter.Components.Models;
+using DTT.Utils.Extensions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NUnit.Framework.Internal;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +14,7 @@ using UnityEditor;
 using UnityEditor.ShaderGraph;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
+using UnityEngine.Rendering;
 using static UnityEngine.Rendering.DebugUI;
 
 #if UNITY_EDITOR
@@ -17,28 +22,29 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
 {
     public class ShaderGraphPreviewEditorWindow : EditorWindow
     {
-        private static Dictionary<ShaderType, (string propertyName, ShaderProperty propertyType)[]> ShaderGraphPropertiesDict = new Dictionary<ShaderType, (string propertyName, ShaderProperty propertyType)[]>(1)
+        private static readonly string[] ShaderTypeEnumNames = Enum.GetNames(typeof(ShaderType));
+        private static Dictionary<ShaderType, (string propertyName, ShaderPropertyType propertyType)[]> ShaderGraphPropertiesDict = new Dictionary<ShaderType, (string propertyName, ShaderPropertyType propertyType)[]>(1)
         {
-            { ShaderType.TrailAdvanced, new (string propertyName, ShaderProperty propertyType)[13] {
-                ("_BaseColor", ShaderProperty.Texture2D),
-                ("_BaseColorTiling", ShaderProperty.Vector2),
-                ("_BaseColorAddSpeed", ShaderProperty.Vector2),
-                ("_WindSpeed", ShaderProperty.Vector1),
-                ("_DistortionSpeed", ShaderProperty.Vector2),
-                ("_Distortion", ShaderProperty.Texture2D),
-                ("_Color_01", ShaderProperty.Color),
-                ("_Color_02", ShaderProperty.Color),
-                ("_ErosionSpeed", ShaderProperty.Vector1),
-                ("_Erosion", ShaderProperty.Texture2D),
-                ("_ColorMaskSpeed", ShaderProperty.Vector2),
-                ("_ColorMask", ShaderProperty.Texture2D),
-                ("_ErosionMultiply", ShaderProperty.Vector1)
+            { ShaderType.TrailAdvanced, new (string propertyName, ShaderPropertyType propertyType)[13] {
+                ("_BaseColor", ShaderPropertyType.Texture),
+                ("_BaseColorTiling", ShaderPropertyType.Vector),
+                ("_BaseColorAddSpeed", ShaderPropertyType.Vector),
+                ("_WindSpeed", ShaderPropertyType.Float),
+                ("_DistortionSpeed", ShaderPropertyType.Vector),
+                ("_Distortion", ShaderPropertyType.Texture),
+                ("_Color_01", ShaderPropertyType.Color),
+                ("_Color_02", ShaderPropertyType.Color),
+                ("_ErosionSpeed", ShaderPropertyType.Float),
+                ("_Erosion", ShaderPropertyType.Texture),
+                ("_ColorMaskSpeed", ShaderPropertyType.Vector),
+                ("_ColorMask", ShaderPropertyType.Texture),
+                ("_ErosionMultiply", ShaderPropertyType.Float)
             } }
         };
 
         private Shader Shader;
         private Material Material;
-        private string ShaderTypeString;
+        private ShaderType SelectedShaderType;
 
         [MenuItem("Tools/Shader Graph Editor")]
         public static void ShowWindow()
@@ -51,14 +57,14 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
             // Shader Graph field
             Shader = (Shader)EditorGUILayout.ObjectField("Shader Graph", Shader, typeof(Shader), false);
             Material = (Material)EditorGUILayout.ObjectField("Material", Material, typeof(Material), false);
-            ShaderTypeString = EditorGUILayout.TextField("Shader Type String", ShaderTypeString);
+            SelectedShaderType = (ShaderType)EditorGUILayout.Popup("ShaderType", (int)SelectedShaderType, ShaderTypeEnumNames);
 
             // Button to apply the changes
             if (GUILayout.Button("Update Shader Graph Property Values"))
             {
-                if (Enum.TryParse<ShaderType>(ShaderTypeString, out ShaderType shaderType))
+                if (SelectedShaderType != ShaderType.Unset)
                 {
-                    UpdateShaderGraphProperties(Shader, Material, shaderType);
+                    UpdateShaderGraphProperties(Shader, Material, SelectedShaderType);
                 }
                 else
                 {
@@ -66,9 +72,10 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                 }
             }
         }
+
         private void UpdateShaderGraphProperties(Shader shader, Material material, ShaderType shaderType)
         {
-            (string propertyName, ShaderProperty propertyType)[] shaderGraphProperties = ShaderGraphPropertiesDict[shaderType];
+            (string propertyName, ShaderPropertyType propertyType)[] shaderGraphProperties = ShaderGraphPropertiesDict[shaderType];
 
             string path = Path.Combine(Directory.GetCurrentDirectory(), AssetDatabase.GetAssetPath(shader));
 
@@ -78,52 +85,145 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                 return;
             }
 
-            // Read the Shader Graph file as text
-            string shaderGraphText = File.ReadAllText(path);
-
             // Read the material properties
-            (string propertyName, ShaderProperty propertyType, object value)[] materialProperties = GetMaterialProperties(material, shaderGraphProperties);
+            (string propertyName, ShaderPropertyType propertyType, object value)[] materialProperties = GetMaterialProperties(material, shaderGraphProperties);
 
-            foreach ((string propertyName, ShaderProperty propertyType, object value) in materialProperties)
+            foreach ((string propertyName, ShaderPropertyType propertyType, object value) in materialProperties)
             {
-                Debug.Log($"{propertyName}, {propertyType}, {value}");
+                Debug.Log($"{propertyName}, {value}");
             }
-            // Modify the Shader Graph text
-            //foreach (var property in properties)
-            //{
-            //    var propertyName = property.name;
-            //    var propertyValue = property.value;
+            // Read the Shader Graph file as text
+            string[] shaderGraphText = File.ReadLines(path).ToArray();
 
-            //    // Modify the Shader Graph text based on property type
-            //    shaderGraphText = ModifyPropertyInShaderGraph(shaderGraphText, propertyName, propertyValue);
-            //}
+            // Step 2: Split the file into individual JSON objects based on unique identifiers
+            List<JObject> jObjects = ParseJsonStrings(shaderGraphText);
 
-            //// Save the modified Shader Graph file
-            //File.WriteAllText(path, shaderGraphText);
-            //AssetDatabase.Refresh();
+            foreach ((string propertyName, ShaderPropertyType propertyType, object value) in materialProperties)
+            {
+                JObject propertyJObject = jObjects.FirstOrDefault(jObject => jObject["m_Name"]?.ToString() == propertyName);
+
+                switch (propertyType)
+                {
+                    case ShaderPropertyType.Float:
+                        propertyJObject["m_Value"] = (float)value;
+                        break;
+                    case ShaderPropertyType.Vector:
+                        propertyJObject["m_Value"] = ((Vector4)value).ToJObject();
+                        break;
+                    case ShaderPropertyType.Color:
+                        propertyJObject["m_Value"] = ((Color)value).ToJObject();
+                        break;
+                    case ShaderPropertyType.Texture:
+                        Texture texture = (Texture)value;
+                        if (texture != null)
+                        {
+                            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(texture, out string guid, out long fileId))
+                            {
+                                JObject textureJObject = new JObject()
+                                {
+                                    ["fileID"] = fileId,
+                                    ["guid"] = guid,
+                                    ["type"] = 3
+                                };
+
+                                JObject serializedTextureJObject = new JObject()
+                                {
+                                    ["texture"] = textureJObject
+                                };
+
+                                propertyJObject["m_Value"]["m_SerializedTexture"] = serializedTextureJObject.ToString(Formatting.None);
+                            }
+                            else
+                            {
+                                Debug.LogError("Failed to get texture id.");
+                            }
+                        }
+                        else
+                        {
+                            propertyJObject["m_Value"]["m_SerializedTexture"] = "{\"texture\":{\"instanceID\":0}}";
+                        }
+                        
+                        
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+            string[] results = new string[jObjects.Count];
+            for (int i = 0; i < jObjects.Count; i++)
+            {
+                using (StringWriter stringWriter = new StringWriter())
+                {
+                    using (JsonTextWriter jsonTextWriter = new JsonTextWriter(stringWriter))
+                    {
+                        jsonTextWriter.Formatting = Formatting.Indented;
+                        jsonTextWriter.Indentation = 4;
+                        jObjects[i].WriteTo(jsonTextWriter);
+                        results[i] = stringWriter.ToString();
+                    }
+                }
+            }
+
+            File.WriteAllText(path, string.Join("\n\n", results));
         }
-        private (string propertyName, ShaderProperty propertyType, object value)[] GetMaterialProperties(Material material,
-            (string propertyName, ShaderProperty propertyType)[] shaderGraphProperties)
+        public List<JObject> ParseJsonStrings(string[] text)
         {
-            (string propertyName, ShaderProperty propertyType, object value)[] items = new (string propertyName, ShaderProperty propertyType, object value)[shaderGraphProperties.Length];
+            List<JObject> jsonObjects = new List<JObject>();
+            StringBuilder currentObject = new StringBuilder();
+            int braceCount = 0;
+
+            foreach (string line in text)
+            {
+                bool addObject = false;
+                foreach (char c in line)
+                {
+                    if (c == '{')
+                    {
+                        braceCount++;
+                    }
+                    else if (c == '}')
+                    {
+                        if (--braceCount == 0)
+                        {
+                            addObject = true;
+                        }
+                    }
+                }
+
+                currentObject.AppendLine(line);
+
+                if (addObject)
+                {
+                    string jObjectString = currentObject.ToString();
+                    jsonObjects.Add(JObject.Parse(jObjectString));
+                    currentObject.Clear();
+                }
+            }
+
+            return jsonObjects;
+        }
+        private (string propertyName, ShaderPropertyType propertyType, object value)[] GetMaterialProperties(Material material,
+            (string propertyName, ShaderPropertyType propertyType)[] shaderGraphProperties)
+        {
+            (string propertyName, ShaderPropertyType propertyType, object value)[] items = new (string propertyName, ShaderPropertyType propertyType, object value)[shaderGraphProperties.Length];
 
             for (int i = 0; i < shaderGraphProperties.Length; i++)
             {
-                (string propertyName, ShaderProperty propertyType) = shaderGraphProperties[i];
+                (string propertyName, ShaderPropertyType propertyType) = shaderGraphProperties[i];
 
                 object value;
                 switch (propertyType)
                 {
-                    case ShaderProperty.Vector1:
+                    case ShaderPropertyType.Float:
                         value = material.GetFloat(propertyName);
                         break;
-                    case ShaderProperty.Vector2:
+                    case ShaderPropertyType.Vector:
                         value = material.GetVector(propertyName);
                         break;
-                    case ShaderProperty.Color:
+                    case ShaderPropertyType.Color:
                         value = material.GetColor(propertyName);
                         break;
-                    case ShaderProperty.Texture2D:
+                    case ShaderPropertyType.Texture:
                         value = material.GetTexture(propertyName);
                         break;
                     default:
@@ -134,6 +234,21 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
             }
             return items;
         }
+
+
+        // Modify the Shader Graph text
+        //foreach (var property in properties)
+        //{
+        //    var propertyName = property.name;
+        //    var propertyValue = property.value;
+
+        //    // Modify the Shader Graph text based on property type
+        //    shaderGraphText = ModifyPropertyInShaderGraph(shaderGraphText, propertyName, propertyValue);
+        //}
+
+        //// Save the modified Shader Graph file
+        //File.WriteAllText(path, shaderGraphText);
+        //AssetDatabase.Refresh();
 
         //private void SetShaderGraphProperty(Shader shaderGraph, string propertyName, float value)
         //{
@@ -247,14 +362,8 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
 
         internal enum ShaderType
         {
+            Unset,
             TrailAdvanced
-        }
-        internal enum ShaderProperty
-        {
-            Vector1,
-            Vector2,
-            Color,
-            Texture2D
         }
     }
 

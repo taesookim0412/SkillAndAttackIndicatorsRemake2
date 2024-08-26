@@ -79,7 +79,7 @@ Material:
     - _ErosionSpeed: 0.25
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _WindSpeed: -7
+    - _WindSpeed: -10
     m_Colors:
     - _BaseColorAddSpeed: {r: 0.5, g: 0, b: 0, a: 0}
     - _BaseColorTiling: {r: 0.5, g: 1, b: 0, a: 0}

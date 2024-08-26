@@ -1,0 +1,16 @@
+{
+    "name": "NewtonsoftJson",
+    "rootNamespace": "",
+    "references": [
+        "GUID:02b8911cdffd4084cadd0cee7f4a127d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
