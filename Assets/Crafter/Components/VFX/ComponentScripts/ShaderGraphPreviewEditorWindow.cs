@@ -25,20 +25,24 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
         private static readonly string[] ShaderTypeEnumNames = Enum.GetNames(typeof(ShaderType));
         private static Dictionary<ShaderType, (string propertyName, ShaderPropertyType propertyType)[]> ShaderGraphPropertiesDict = new Dictionary<ShaderType, (string propertyName, ShaderPropertyType propertyType)[]>(1)
         {
-            { ShaderType.TrailAdvanced, new (string propertyName, ShaderPropertyType propertyType)[13] {
+            { ShaderType.TrailAdvanced, new (string propertyName, ShaderPropertyType propertyType)[17] {
                 ("_BaseColor", ShaderPropertyType.Texture),
                 ("_BaseColorTiling", ShaderPropertyType.Vector),
                 ("_BaseColorAddSpeed", ShaderPropertyType.Vector),
-                ("_WindSpeed", ShaderPropertyType.Float),
-                ("_DistortionSpeed", ShaderPropertyType.Vector),
-                ("_Distortion", ShaderPropertyType.Texture),
+                ("_BaseColorMultiply", ShaderPropertyType.Float),
+                ("_ColorMask", ShaderPropertyType.Texture),
+                ("_ColorMaskScale", ShaderPropertyType.Vector),
+                ("_ColorMaskSpeed", ShaderPropertyType.Vector),
                 ("_Color_01", ShaderPropertyType.Color),
                 ("_Color_02", ShaderPropertyType.Color),
-                ("_ErosionSpeed", ShaderPropertyType.Float),
+                ("_Distortion", ShaderPropertyType.Texture),
+                ("_DistortionScale", ShaderPropertyType.Vector),
+                ("_DistortionSpeed", ShaderPropertyType.Vector),
+                ("_DistortionMultiplyTenths", ShaderPropertyType.Float),
                 ("_Erosion", ShaderPropertyType.Texture),
-                ("_ColorMaskSpeed", ShaderPropertyType.Vector),
-                ("_ColorMask", ShaderPropertyType.Texture),
-                ("_ErosionMultiply", ShaderPropertyType.Float)
+                ("_ErosionSpeed", ShaderPropertyType.Float),
+                ("_ErosionMultiply", ShaderPropertyType.Float),
+                ("_WindSpeed", ShaderPropertyType.Float),
             } }
         };
 

@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: TrailAdvancedMaterial
+  m_Name: TrailAdvancedWaterMaterial
   m_Shader: {fileID: -6465566751694194690, guid: 744a7366530c17f4fa41222dd597a8cc, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -72,8 +72,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _BaseColorAddSpeed: 0.5
-    - _BaseColorMultiply: 0.6
+    - _BaseColorMultiply: 1
+    - _ColorMaskMultiply: 1
     - _ColorSpeed: 0.3
+    - _DistortionMultiplyTenths: 0.5
     - _ErosionMultiply: 0
     - _ErosionPower: 1
     - _ErosionSpeed: 0.25
@@ -82,12 +84,15 @@ Material:
     - _WindSpeed: -7
     m_Colors:
     - _BaseColorAddSpeed: {r: 0.5, g: 0, b: 0, a: 0}
+    - _BaseColorScale: {r: 1, g: 1, b: 0, a: 0}
     - _BaseColorTiling: {r: 0.5, g: 1, b: 0, a: 0}
     - _Color: {r: 0, g: 0.32043308, b: 1, a: 0}
+    - _ColorMaskScale: {r: 1, g: 1, b: 0, a: 0}
     - _ColorMaskSpeed: {r: -0.2, g: -0.1, b: 0, a: 0}
     - _ColorSpeed: {r: -0.2, g: -0.1, b: 0, a: 0}
-    - _Color_01: {r: 0, g: 0.32043308, b: 1, a: 0}
+    - _Color_01: {r: 0.101960786, g: 0.4, b: 1, a: 0}
     - _Color_02: {r: 0.101960786, g: 0.8509804, b: 1, a: 0}
+    - _DistortionScale: {r: 1, g: 1, b: 0, a: 0}
     - _DistortionSpeed: {r: 0.3, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
