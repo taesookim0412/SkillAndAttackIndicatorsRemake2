@@ -131,33 +131,33 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     Vector3 playerRotation = Props.SkillAndAttackIndicatorSystem.PlayerComponent.transform.localEulerAngles;
                     // hard coded lengths that need to be used in fx too.
 
-                    switch (AbilityProjectorMaterialType)
-                    {
-                        case AbilityProjectorMaterialType.DashAbilityLineMaterial:
-                            ChargeDuration = 800L;
-                            ChargeDurationSecondsFloat = 800 * 0.001f;
-                            break;
-                        //case AbilityProjectorMaterialType.Second:
-                        //    ChargeDuration = 5000L;
-                        //    ChargeDurationSecondsFloat = 5000 * 0.001f;
-                        //    break;
-                        //case AbilityProjectorMaterialType.Third:
-                        //    ChargeDuration = 7000L;
-                        //    ChargeDurationSecondsFloat = 7000 * 0.001f;
-                        //    break;
-                        default:
-                            ObserverStatus = ObserverStatus.Remove;
-                            return;
-                    }
-
                     float minHeight = 0f;
                     float maxHeight = 0f;
+
+                    float playerRotationYRad = playerRotation.y * Mathf.Deg2Rad;
+                    float cosYAngle = (float)Math.Cos(playerRotationYRad);
+                    float sinYAngle = (float)Math.Sin(playerRotationYRad);
+
+                    bool heightsFoundEarly = false;
                     switch (AbilityIndicatorFXType)
                     {
                         case AbilityIndicatorFXType.DashPortalAbility:
+                            ChargeDuration = 800L;
+                            ChargeDurationSecondsFloat = 800 * 0.001f;
+                            TriggerCreateDelay = 400L;
                             DashTargetPosition = CreateDashTargetPosition(LineLengthUnits,
-                                playerPosition.x, playerPosition.z, playerRotation.y);
+                                playerPosition.x, playerPosition.z,
+                                cosYAngle: cosYAngle,
+                                sinYAngle: sinYAngle);
                             break;
+                    }
+
+                    if (!heightsFoundEarly)
+                    {
+                        FindTerrainMinMaxHeights(LineLengthUnits, playerPosition.x, playerPosition.z,
+                            cosYAngle: cosYAngle,
+                            sinYAngle: sinYAngle,
+                            out minHeight, out maxHeight);
                     }
 
                     float projectorStartY = maxHeight + ProjectorTerrainHeightDifferenceGrace;
@@ -332,6 +332,41 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
         }
 
+        private void FindTerrainMinMaxHeights(int lineLengthUnits,
+            float startPositionX,
+            float startPositionZ,
+            float cosYAngle,
+            float sinYAngle,
+            out float minHeight, out float maxHeight)
+        {
+            float worldRotatedPositionX = startPositionX;
+            float worldRotatedPositionZ = startPositionZ;
+
+            float positiony0 = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+            minHeight = positiony0;
+            maxHeight = positiony0;
+
+            for (int i = 0; i < lineLengthUnits; i++)
+            {
+                float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+
+                if (i > 0)
+                {
+                    if (positionY > maxHeight)
+                    {
+                        maxHeight = positionY;
+                    }
+                    if (positionY < minHeight)
+                    {
+                        minHeight = positionY;
+                    }
+                }
+
+                worldRotatedPositionX += sinYAngle;
+                worldRotatedPositionZ += cosYAngle;
+            }
+        }
+
         private void UpdateEarlyTriggerAbility()
         {
             if (!TriggerCreated && ElapsedTime > TriggerCreateDelay)
@@ -438,11 +473,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private Vector3 CreateDashTargetPosition(int lineLengthUnits,
             float startPositionX, float startPositionZ,
-            float yRotation)
+            float cosYAngle,
+            float sinYAngle
+            )
         {
-            float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
-            float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
-
             float targetPositionOffsetX = lineLengthUnits * sinYAngle;
             float targetPositionOffsetZ = lineLengthUnits * cosYAngle;
 
