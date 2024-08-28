@@ -72,23 +72,21 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public readonly AbilityProjectorType AbilityProjectorType;
         public readonly AbilityProjectorMaterialType AbilityProjectorMaterialType;
         public readonly AbilityIndicatorCastType AbilityIndicatorCastType;
-        public readonly AbilityIndicatorFXType[] AbilityIndicatorFXTypes;
+        public readonly AbilityIndicatorFXType AbilityIndicatorFXType;
         public readonly Guid PlayerGuid;
 
         private bool ProjectorSet = false;
         private PoolBagDco<AbstractProjector> ProjectorInstancePool;
-        private PoolBagDco<AbstractAbilityFX>[][] AbilityFXInstancePools;
+        private PoolBagDco<AbstractAbilityFX>[] AbilityFXInstancePools;
         private AbstractProjector ProjectorInstance;
         private PlayerComponent PlayerComponent;
         private PoolBagDco<PlayerComponent> PlayerCloneInstancePool;
 
-        private (DashParticles[] dashParticles,
-            WaterTrail waterTrail,
-            TrailMoverBuilder_XPerZ trailMoverXPerZ,
-            bool[] portalSpotsPassed,
-            int numElectricTrailRendererPositions,
-            int lastArcPathsIndex) DashParticlesItems;
+        private bool TriggerCreated = false;
+        private long TriggerCreateDelay = 0L;
 
+        private Vector3 DashTargetPosition;
+        
         private long ChargeDuration;
         private float ChargeDurationSecondsFloat;
 
@@ -102,14 +100,14 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         public SkillAndAttackIndicatorObserver(AbilityProjectorType abilityProjectorType,
             AbilityProjectorMaterialType abilityProjectorMaterialType, AbilityIndicatorCastType abilityIndicatorCastType,
-            AbilityIndicatorFXType[] abilityIndicatorFXTypes,
+            AbilityIndicatorFXType abilityIndicatorFXType,
             SkillAndAttackIndicatorObserverProps skillAndAttackIndicatorObserverProps
             )
         {
             AbilityProjectorType = abilityProjectorType;
             AbilityProjectorMaterialType = abilityProjectorMaterialType;
             AbilityIndicatorCastType = abilityIndicatorCastType;
-            AbilityIndicatorFXTypes = abilityIndicatorFXTypes;
+            AbilityIndicatorFXType = abilityIndicatorFXType;
             PlayerGuid = skillAndAttackIndicatorObserverProps.SkillAndAttackIndicatorSystem.PlayerGuid;
 
             Props = skillAndAttackIndicatorObserverProps;
@@ -121,9 +119,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             {
                 if (Props.SkillAndAttackIndicatorSystem.ProjectorInstancePools.TryGetValue(AbilityProjectorType, out var abilityMaterialTypesDict) &&
                     abilityMaterialTypesDict.TryGetValue(AbilityProjectorMaterialType, out ProjectorInstancePool) &&
-                    (AbilityIndicatorFXTypes == null ||
-                    (Props.SkillAndAttackIndicatorSystem.AbilityIndicatorFXInstancePools.TryGetValuesAll(AbilityIndicatorFXTypes, out AbilityFXInstancePools) &&
-                    Props.SkillAndAttackIndicatorSystem.PlayerCloneInstancePools.TryGetValue(PlayerGuid, out PlayerCloneInstancePool))))
+                    Props.SkillAndAttackIndicatorSystem.AbilityIndicatorFXInstancePools.TryGetValue(AbilityIndicatorFXType, out AbilityFXInstancePools))
+                    //(TryGetValuesAll(AbilityIndicatorFXTypes, out AbilityFXInstancePools) &&
+                    //Props.SkillAndAttackIndicatorSystem.PlayerCloneInstancePools.TryGetValue(PlayerGuid, out PlayerCloneInstancePool))))
                 {
                     // 3 texture option indices.
                     AbstractProjector projectorInstance = ProjectorInstancePool.InstantiatePooled(null);
@@ -154,20 +152,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                     float minHeight = 0f;
                     float maxHeight = 0f;
-                    if (AbilityIndicatorFXTypes != null)
+                    switch (AbilityIndicatorFXType)
                     {
-                        for (int i = 0; i < AbilityIndicatorFXTypes.Length; i++)
-                        {
-                            AbilityIndicatorFXType abilityFXType = AbilityIndicatorFXTypes[i];
-                            switch (abilityFXType)
-                            {
-                                case AbilityIndicatorFXType.DashParticles:
-                                    DashParticlesItems = CreateDashParticlesItems(LineLengthUnits,
-                                        playerPosition.x, playerPosition.z, playerRotation.y,
-                                        i, out minHeight, out maxHeight);
-                                    break;
-                            }
-                        }
+                        case AbilityIndicatorFXType.DashPortalAbility:
+                            DashTargetPosition = CreateDashTargetPosition(LineLengthUnits,
+                                playerPosition.x, playerPosition.z, playerRotation.y);
+                            break;
                     }
 
                     float projectorStartY = maxHeight + ProjectorTerrainHeightDifferenceGrace;
@@ -274,81 +264,80 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 //Vector3 terrainProjectorPosition = GetTerrainProjectorPosition();
                 //float playerRotation = GetThirdPersonControllerRotation();
-                
+
                 //ProjectorMonoBehaviour.transform.position = terrainProjectorPosition;
 
                 //Vector3 previousProjectorRotation = ProjectorMonoBehaviour.transform.localEulerAngles;
                 //ProjectorMonoBehaviour.transform.localEulerAngles = new Vector3(previousProjectorRotation.x, playerRotation, previousProjectorRotation.z);
 
-                if (AbilityIndicatorFXTypes != null)
-                {
-                    //float rotationDifference = playerRotation - PreviousRotationY;
-                    //if (rotationDifference < -10f || rotationDifference > 10f ||
-                    //    (PreviousTerrainProjectorPosition - terrainProjectorPosition).magnitude > 0.03f)
-                    //{
-                    //    foreach (AbilityIndicatorFXType abilityFXType in AbilityIndicatorFXTypes)
-                    //    {
-                    //        switch (abilityFXType)
-                    //        {
-                    //            case AbilityIndicatorFXType.DashParticles:
-                    //                UpdateDashParticlesItemsPositions(LineLengthUnits, terrainProjectorPosition.x, terrainProjectorPosition.z, playerRotation,
-                    //                    fillProgress: newFillProgress);
-                    //                break;
-                    //        }
-                    //    }
-                        
-                    //    PreviousTerrainProjectorPosition = terrainProjectorPosition;
-                    //    PreviousRotationY = playerRotation;
-                    //}
+                //float rotationDifference = playerRotation - PreviousRotationY;
+                //if (rotationDifference < -10f || rotationDifference > 10f ||
+                //    (PreviousTerrainProjectorPosition - terrainProjectorPosition).magnitude > 0.03f)
+                //{
+                //    foreach (AbilityIndicatorFXType abilityFXType in AbilityIndicatorFXTypes)
+                //    {
+                //        switch (abilityFXType)
+                //        {
+                //            case AbilityIndicatorFXType.DashParticles:
+                //                UpdateDashParticlesItemsPositions(LineLengthUnits, terrainProjectorPosition.x, terrainProjectorPosition.z, playerRotation,
+                //                    fillProgress: newFillProgress);
+                //                break;
+                //        }
+                //    }
 
-                    foreach (AbilityIndicatorFXType abilityFXType in AbilityIndicatorFXTypes)
-                    {
-                        switch (abilityFXType)
-                        {
-                            case AbilityIndicatorFXType.DashParticles:
-                                UpdateDashParticlesItems(LineLengthUnits, newFillProgress);
-                                break;
-                        }
-                    }
-                    // every update
+                //    PreviousTerrainProjectorPosition = terrainProjectorPosition;
+                //    PreviousRotationY = playerRotation;
+                //}
+                switch (AbilityIndicatorFXType)
+                {
+                    case AbilityIndicatorFXType.DashPortalAbility:
+                        UpdateEarlyTriggerAbility();
+                        break;
                 }
             }
 
             if (ElapsedTime > ChargeDuration)
             {
-                Props.SkillAndAttackIndicatorSystem.AddDashAbilityTriggerObserver(DashParticlesItems.dashParticles[DashParticlesItems.dashParticles.Length - 1].transform.position);
-
-                ProjectorInstancePool.ReturnPooled(ProjectorInstance);
-                if (AbilityIndicatorFXTypes != null)
+                if (!TriggerCreated)
                 {
-                    for (int i = 0; i < AbilityIndicatorFXTypes.Length; i++)
-                    {
-                        PoolBagDco<AbstractAbilityFX>[] abilityFXInstancePool = AbilityFXInstancePools[i];
-                        switch (AbilityIndicatorFXTypes[i])
-                        {
-                            case AbilityIndicatorFXType.DashParticles:
-                                PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.DashParticles];
-                                PoolBagDco<AbstractAbilityFX> waterTrailPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.WaterTrail];
-                                PoolBagDco<AbstractAbilityFX> trailMoverXPerZPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ];
-
-                                foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
-                                {
-                                    dashParticlesPool.ReturnPooled(dashParticles);
-                                }
-
-                                WaterTrail waterTrail = DashParticlesItems.waterTrail;
-                                waterTrail.CleanUpInstance();
-                                waterTrailPool.ReturnPooled(waterTrail);
-
-                                TrailMoverBuilder_XPerZ trailMoverXPerZ = DashParticlesItems.trailMoverXPerZ;
-                                trailMoverXPerZ.CleanUpInstance();
-                                trailMoverXPerZPool.ReturnPooled(trailMoverXPerZ);
-                                break;
-                        }
-                    }
+                    Props.SkillAndAttackIndicatorSystem.AddDashAbilityTriggerObserver(DashTargetPosition);
                 }
 
+                ProjectorInstancePool.ReturnPooled(ProjectorInstance);
+
+                //PoolBagDco<AbstractAbilityFX>[] abilityFXInstancePool = AbilityFXInstancePools[i];
+                //switch (AbilityIndicatorFXTypes[i])
+                //{
+                //    case AbilityIndicatorFXType.DashPortalAbility:
+                //        PoolBagDco<AbstractAbilityFX> dashParticlesPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.DashParticles];
+                //        PoolBagDco<AbstractAbilityFX> waterTrailPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.WaterTrail];
+                //        PoolBagDco<AbstractAbilityFX> trailMoverXPerZPool = abilityFXInstancePool[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ];
+
+                //        foreach (DashParticles dashParticles in DashParticlesItems.dashParticles)
+                //        {
+                //            dashParticlesPool.ReturnPooled(dashParticles);
+                //        }
+
+                //        WaterTrail waterTrail = DashParticlesItems.waterTrail;
+                //        waterTrail.CleanUpInstance();
+                //        waterTrailPool.ReturnPooled(waterTrail);
+
+                //        TrailMoverBuilder_XPerZ trailMoverXPerZ = DashParticlesItems.trailMoverXPerZ;
+                //        trailMoverXPerZ.CleanUpInstance();
+                //        trailMoverXPerZPool.ReturnPooled(trailMoverXPerZ);
+                //        break;
+                //}
+
                 ObserverStatus = ObserverStatus.Remove;
+            }
+        }
+
+        private void UpdateEarlyTriggerAbility()
+        {
+            if (!TriggerCreated && ElapsedTime > TriggerCreateDelay)
+            {
+                Props.SkillAndAttackIndicatorSystem.AddDashAbilityTriggerObserver(DashTargetPosition);
+                TriggerCreated = true;
             }
         }
 
@@ -447,114 +436,235 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             return 0f;
         }
 
-        private (DashParticles[] dashParticles,
-            WaterTrail waterTrail,
-            TrailMoverBuilder_XPerZ trailMoverXPerZ,
-            bool[] portalSpotsPassed,
-            int numElectricTrailRendererPositions,
-            int lastArcPathsIndex) CreateDashParticlesItems(int lineLengthUnits,
+        private Vector3 CreateDashTargetPosition(int lineLengthUnits,
             float startPositionX, float startPositionZ,
-            float yRotation, int abilityFXIndex,
-            out float minHeight, out float maxHeight)
+            float yRotation)
         {
-            int numPortalSpots = (int)Math.Floor((lineLengthUnits - PortalSpotOffsetUnits) / (float)UnitsPerPortalSpot);
-
-            DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
-            bool[] portalSpotsPassed = new bool[numPortalSpots];
-
             float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
             float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
 
-            Vector3 yRotationVector = new Vector3(0f, yRotation, 0f);
+            float targetPositionOffsetX = lineLengthUnits * sinYAngle;
+            float targetPositionOffsetZ = lineLengthUnits * cosYAngle;
 
-            float worldRotatedPositionX = startPositionX;
-            float worldRotatedPositionZ = startPositionZ;
+            float worldRotatedPositionX = startPositionX + targetPositionOffsetX;
+            float worldRotatedPositionZ = startPositionZ + targetPositionOffsetZ;
 
-            PoolBagDco<AbstractAbilityFX>[] dashParticlesTypeFXPools = AbilityFXInstancePools[abilityFXIndex];
+            float targetPositionWorldY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
 
-            PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.DashParticles];
-
-            float positiony0 = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
-            minHeight = positiony0;
-            maxHeight = positiony0;
-            float previousPositionY = 0f;
-            float prevXAnglei0 = 0f;
-            float prevXAnglei1 = 0f;
-            for (int i = 0; i < lineLengthUnits; i++)
-            {
-                DashParticles dashParticlesComponent = (DashParticles)dashParticlesInstancePool.InstantiatePooled(null);
-                // set inactive when created.
-                dashParticlesComponent.gameObject.SetActive(false);
-                float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
-
-                if (i > 0)
-                {
-                    if (positionY > maxHeight)
-                    {
-                        maxHeight = positionY;
-                    }
-                    if (positionY < minHeight)
-                    {
-                        minHeight = positionY;
-                    }
-                }
-
-                AnimationCurve yVelocityAnimCurve = CreateTerrainYVelocityAnimationCurve(
-                    unitsPerKeyframe: 0.05f,
-                    worldStartRotatedPositionX: worldRotatedPositionX,
-                    positionY: positionY,
-                    worldStartRotatedPositionZ: worldRotatedPositionZ,
-                    cosYAngle: cosYAngle,
-                    sinYAngle: sinYAngle);
-
-                float xAngle;
-                if (i > 1)
-                {
-                    xAngle = (((float)Math.Atan((positionY - previousPositionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei0 + prevXAnglei1) / 3f;
-                }
-                else if (i == 1)
-                {
-                    float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
-                    xAngle = (((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei1) / 2f;
-                }
-                else
-                {
-                    float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
-                    xAngle = ((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f);
-                }
-
-                dashParticlesComponent.SetYVelocityAnimationCurve(yVelocityAnimCurve);
-                dashParticlesComponent.SetXAngle(xAngle);
-
-                dashParticlesComponent.transform.position = new Vector3(worldRotatedPositionX,
-                    positionY,
-                    worldRotatedPositionZ);
-                dashParticlesComponent.transform.localEulerAngles = yRotationVector;
-
-                dashParticles[i] = dashParticlesComponent;
-
-                worldRotatedPositionX += sinYAngle;
-                worldRotatedPositionZ += cosYAngle;
-                previousPositionY = positionY;
-                prevXAnglei0 = prevXAnglei1;
-                prevXAnglei1 = xAngle;
-            }
-
-            Vector3 startPosition = dashParticles[0].transform.position;
-            PoolBagDco<AbstractAbilityFX> waterTrailInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.WaterTrail];
-            WaterTrail waterTrail = (WaterTrail) waterTrailInstancePool.InstantiatePooled(null);
-            
-            PoolBagDco<AbstractAbilityFX> trailMoverBuilderXPerZInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ];
-            TrailMoverBuilder_XPerZ trailMoverXPerZ = (TrailMoverBuilder_XPerZ)trailMoverBuilderXPerZInstancePool.InstantiatePooled(startPosition);
-
-            //TODO: Cache this somehow.
-            long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
-
-            trailMoverXPerZ.Initialize(Props.ObserverUpdateCache, waterTrail, lineLengthUnits, ZUnitsPerX, TrailXPerZ_TotalXUnits, timeRequiredForZDistances,
-                Props.SkillAndAttackIndicatorSystem, startPositionX, startPositionZ, cosYAngle, sinYAngle);
-
-            return (dashParticles, waterTrail, trailMoverXPerZ, portalSpotsPassed, 1, -1);
+            return new Vector3(worldRotatedPositionX, targetPositionWorldY, worldRotatedPositionZ);
         }
+    //    private (Vector3 finalPosition) CreateDashParticlesItems(int lineLengthUnits,
+    //float startPositionX, float startPositionZ,
+    //float yRotation, int abilityFXIndex,
+    //out float minHeight, out float maxHeight)
+    //    {
+    //        int numPortalSpots = (int)Math.Floor((lineLengthUnits - PortalSpotOffsetUnits) / (float)UnitsPerPortalSpot);
+
+        //        DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
+        //        bool[] portalSpotsPassed = new bool[numPortalSpots];
+
+        //        float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
+        //        float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
+
+        //        Vector3 yRotationVector = new Vector3(0f, yRotation, 0f);
+
+        //        float worldRotatedPositionX = startPositionX;
+        //        float worldRotatedPositionZ = startPositionZ;
+
+        //        PoolBagDco<AbstractAbilityFX>[] dashParticlesTypeFXPools = AbilityFXInstancePools[abilityFXIndex];
+
+        //        PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.DashParticles];
+
+        //        float positiony0 = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+        //        minHeight = positiony0;
+        //        maxHeight = positiony0;
+        //        float previousPositionY = 0f;
+        //        float prevXAnglei0 = 0f;
+        //        float prevXAnglei1 = 0f;
+        //        for (int i = 0; i < lineLengthUnits; i++)
+        //        {
+        //            DashParticles dashParticlesComponent = (DashParticles)dashParticlesInstancePool.InstantiatePooled(null);
+        //            // set inactive when created.
+        //            dashParticlesComponent.gameObject.SetActive(false);
+        //            float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+
+        //            if (i > 0)
+        //            {
+        //                if (positionY > maxHeight)
+        //                {
+        //                    maxHeight = positionY;
+        //                }
+        //                if (positionY < minHeight)
+        //                {
+        //                    minHeight = positionY;
+        //                }
+        //            }
+
+        //            AnimationCurve yVelocityAnimCurve = CreateTerrainYVelocityAnimationCurve(
+        //                unitsPerKeyframe: 0.05f,
+        //                worldStartRotatedPositionX: worldRotatedPositionX,
+        //                positionY: positionY,
+        //                worldStartRotatedPositionZ: worldRotatedPositionZ,
+        //                cosYAngle: cosYAngle,
+        //                sinYAngle: sinYAngle);
+
+        //            float xAngle;
+        //            if (i > 1)
+        //            {
+        //                xAngle = (((float)Math.Atan((positionY - previousPositionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei0 + prevXAnglei1) / 3f;
+        //            }
+        //            else if (i == 1)
+        //            {
+        //                float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
+        //                xAngle = (((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei1) / 2f;
+        //            }
+        //            else
+        //            {
+        //                float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
+        //                xAngle = ((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f);
+        //            }
+
+        //            dashParticlesComponent.SetYVelocityAnimationCurve(yVelocityAnimCurve);
+        //            dashParticlesComponent.SetXAngle(xAngle);
+
+        //            dashParticlesComponent.transform.position = new Vector3(worldRotatedPositionX,
+        //                positionY,
+        //                worldRotatedPositionZ);
+        //            dashParticlesComponent.transform.localEulerAngles = yRotationVector;
+
+        //            dashParticles[i] = dashParticlesComponent;
+
+        //            worldRotatedPositionX += sinYAngle;
+        //            worldRotatedPositionZ += cosYAngle;
+        //            previousPositionY = positionY;
+        //            prevXAnglei0 = prevXAnglei1;
+        //            prevXAnglei1 = xAngle;
+        //        }
+
+        //        Vector3 startPosition = dashParticles[0].transform.position;
+        //        PoolBagDco<AbstractAbilityFX> waterTrailInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.WaterTrail];
+        //        WaterTrail waterTrail = (WaterTrail)waterTrailInstancePool.InstantiatePooled(null);
+
+        //        PoolBagDco<AbstractAbilityFX> trailMoverBuilderXPerZInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ];
+        //        TrailMoverBuilder_XPerZ trailMoverXPerZ = (TrailMoverBuilder_XPerZ)trailMoverBuilderXPerZInstancePool.InstantiatePooled(startPosition);
+
+        //        //TODO: Cache this somehow.
+        //        long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
+
+        //        trailMoverXPerZ.Initialize(Props.ObserverUpdateCache, waterTrail, lineLengthUnits, ZUnitsPerX, TrailXPerZ_TotalXUnits, timeRequiredForZDistances,
+        //            Props.SkillAndAttackIndicatorSystem, startPositionX, startPositionZ, cosYAngle, sinYAngle);
+
+        //        return (dashParticles, waterTrail, trailMoverXPerZ, portalSpotsPassed, 1, -1);
+        //    }
+
+        //private (DashParticles[] dashParticles,
+        //    WaterTrail waterTrail,
+        //    TrailMoverBuilder_XPerZ trailMoverXPerZ,
+        //    bool[] portalSpotsPassed,
+        //    int numElectricTrailRendererPositions,
+        //    int lastArcPathsIndex) CreateDashParticlesItems(int lineLengthUnits,
+        //    float startPositionX, float startPositionZ,
+        //    float yRotation, int abilityFXIndex,
+        //    out float minHeight, out float maxHeight)
+        //{
+        //    int numPortalSpots = (int)Math.Floor((lineLengthUnits - PortalSpotOffsetUnits) / (float)UnitsPerPortalSpot);
+
+        //    DashParticles[] dashParticles = new DashParticles[lineLengthUnits];
+        //    bool[] portalSpotsPassed = new bool[numPortalSpots];
+
+        //    float cosYAngle = (float)Math.Cos(yRotation * Mathf.Deg2Rad);
+        //    float sinYAngle = (float)Math.Sin(yRotation * Mathf.Deg2Rad);
+
+        //    Vector3 yRotationVector = new Vector3(0f, yRotation, 0f);
+
+        //    float worldRotatedPositionX = startPositionX;
+        //    float worldRotatedPositionZ = startPositionZ;
+
+        //    PoolBagDco<AbstractAbilityFX>[] dashParticlesTypeFXPools = AbilityFXInstancePools[abilityFXIndex];
+
+        //    PoolBagDco<AbstractAbilityFX> dashParticlesInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.DashParticles];
+
+        //    float positiony0 = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+        //    minHeight = positiony0;
+        //    maxHeight = positiony0;
+        //    float previousPositionY = 0f;
+        //    float prevXAnglei0 = 0f;
+        //    float prevXAnglei1 = 0f;
+        //    for (int i = 0; i < lineLengthUnits; i++)
+        //    {
+        //        DashParticles dashParticlesComponent = (DashParticles)dashParticlesInstancePool.InstantiatePooled(null);
+        //        // set inactive when created.
+        //        dashParticlesComponent.gameObject.SetActive(false);
+        //        float positionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX, worldRotatedPositionZ);
+
+        //        if (i > 0)
+        //        {
+        //            if (positionY > maxHeight)
+        //            {
+        //                maxHeight = positionY;
+        //            }
+        //            if (positionY < minHeight)
+        //            {
+        //                minHeight = positionY;
+        //            }
+        //        }
+
+        //        AnimationCurve yVelocityAnimCurve = CreateTerrainYVelocityAnimationCurve(
+        //            unitsPerKeyframe: 0.05f,
+        //            worldStartRotatedPositionX: worldRotatedPositionX,
+        //            positionY: positionY,
+        //            worldStartRotatedPositionZ: worldRotatedPositionZ,
+        //            cosYAngle: cosYAngle,
+        //            sinYAngle: sinYAngle);
+
+        //        float xAngle;
+        //        if (i > 1)
+        //        {
+        //            xAngle = (((float)Math.Atan((positionY - previousPositionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei0 + prevXAnglei1) / 3f;
+        //        }
+        //        else if (i == 1)
+        //        {
+        //            float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
+        //            xAngle = (((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f) + prevXAnglei1) / 2f;
+        //        }
+        //        else
+        //        {
+        //            float nextPositionY = Props.SkillAndAttackIndicatorSystem.GetTerrainHeight(worldRotatedPositionX + sinYAngle, worldRotatedPositionZ + cosYAngle);
+        //            xAngle = ((float)Math.Atan((nextPositionY - positionY)) * Mathf.Rad2Deg * -1f);
+        //        }
+
+        //        dashParticlesComponent.SetYVelocityAnimationCurve(yVelocityAnimCurve);
+        //        dashParticlesComponent.SetXAngle(xAngle);
+
+        //        dashParticlesComponent.transform.position = new Vector3(worldRotatedPositionX,
+        //            positionY,
+        //            worldRotatedPositionZ);
+        //        dashParticlesComponent.transform.localEulerAngles = yRotationVector;
+
+        //        dashParticles[i] = dashParticlesComponent;
+
+        //        worldRotatedPositionX += sinYAngle;
+        //        worldRotatedPositionZ += cosYAngle;
+        //        previousPositionY = positionY;
+        //        prevXAnglei0 = prevXAnglei1;
+        //        prevXAnglei1 = xAngle;
+        //    }
+
+        //    Vector3 startPosition = dashParticles[0].transform.position;
+        //    PoolBagDco<AbstractAbilityFX> waterTrailInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.WaterTrail];
+        //    WaterTrail waterTrail = (WaterTrail) waterTrailInstancePool.InstantiatePooled(null);
+
+        //    PoolBagDco<AbstractAbilityFX> trailMoverBuilderXPerZInstancePool = dashParticlesTypeFXPools[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ];
+        //    TrailMoverBuilder_XPerZ trailMoverXPerZ = (TrailMoverBuilder_XPerZ)trailMoverBuilderXPerZInstancePool.InstantiatePooled(startPosition);
+
+        //    //TODO: Cache this somehow.
+        //    long[] timeRequiredForZDistances = EffectsUtil.GenerateTimeRequiredForDistancesPerUnit(LineLengthUnits, ChargeDuration);
+
+        //    trailMoverXPerZ.Initialize(Props.ObserverUpdateCache, waterTrail, lineLengthUnits, ZUnitsPerX, TrailXPerZ_TotalXUnits, timeRequiredForZDistances,
+        //        Props.SkillAndAttackIndicatorSystem, startPositionX, startPositionZ, cosYAngle, sinYAngle);
+
+        //    return (dashParticles, waterTrail, trailMoverXPerZ, portalSpotsPassed, 1, -1);
+        //}
         //private void UpdateDashParticlesItemsPositions(int lineLengthUnits,
         //    float startPositionX, float startPositionZ,
         //    float yRotation, float fillProgress)
@@ -619,7 +729,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         //    Vector3[] worldElectricTrailRendererPositions = new Vector3[DashParticlesItems.numElectricTrailRendererPositions];
         //    worldElectricTrailRendererPositions[0] = dashParticlesArray[0].transform.position;
-            
+
         //    for (int i = 1; i < worldElectricTrailRendererPositions.Length; i++)
         //    {
         //        int portalSpotIndex = Math.Clamp(PortalSpotOffsetUnits + ((i - 1) * UnitsPerPortalSpot), 0, lineLengthUnits - 1);
@@ -631,148 +741,148 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         //}
 
-        private void UpdateDashParticlesItems(int lineLengthUnits, float fillProgress)
-        {
-            bool activePassed = false;
-            DashParticles[] dashParticlesArray = DashParticlesItems.dashParticles;
+        //private void UpdateDashParticlesItems(int lineLengthUnits, float fillProgress)
+        //{
+        //    bool activePassed = false;
+        //    DashParticles[] dashParticlesArray = DashParticlesItems.dashParticles;
 
-            if (fillProgress > 0.1f)
-            {
-                for (int i = 0; i < lineLengthUnits; i++)
-                {
-                    float lineLengthPercentage = (float)i / LineLengthUnits;
-                    (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, lineLengthPercentage);
-                    DashParticles dashParticles = dashParticlesArray[i];
-                    if (dashParticles.gameObject.activeSelf != active)
-                    {
-                        dashParticles.gameObject.SetActive(active);
-                    }
-                    if (active)
-                    {
-                        if (!activePassed)
-                        {
-                            activePassed = true;
-                        }
-                    }
-                    else
-                    {
-                        if (activePassed)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
+        //    if (fillProgress > 0.1f)
+        //    {
+        //        for (int i = 0; i < lineLengthUnits; i++)
+        //        {
+        //            float lineLengthPercentage = (float)i / LineLengthUnits;
+        //            (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, lineLengthPercentage);
+        //            DashParticles dashParticles = dashParticlesArray[i];
+        //            if (dashParticles.gameObject.activeSelf != active)
+        //            {
+        //                dashParticles.gameObject.SetActive(active);
+        //            }
+        //            if (active)
+        //            {
+        //                if (!activePassed)
+        //                {
+        //                    activePassed = true;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                if (activePassed)
+        //                {
+        //                    break;
+        //                }
+        //            }
+        //        }
+        //    }
 
-            activePassed = false;
-            bool[] portalSpotsPassed = DashParticlesItems.portalSpotsPassed;
-            for (int i = portalSpotsPassed.Length - 1; i >= 0; i--)
-            {
-                int particlesIndex = Math.Clamp(PortalSpotOffsetUnits + (i * UnitsPerPortalSpot), 0, lineLengthUnits - 1);
-                float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
+        //    activePassed = false;
+        //    bool[] portalSpotsPassed = DashParticlesItems.portalSpotsPassed;
+        //    for (int i = portalSpotsPassed.Length - 1; i >= 0; i--)
+        //    {
+        //        int particlesIndex = Math.Clamp(PortalSpotOffsetUnits + (i * UnitsPerPortalSpot), 0, lineLengthUnits - 1);
+        //        float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
 
-                (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, lineLengthPercentage);
+        //        (bool active, float opacity) = CalculateDashParticlesOpacity(fillProgress, lineLengthPercentage);
 
-                if (active && !portalSpotsPassed[i])
-                {
-                    if (DashParticlesItems.lastArcPathsIndex < i)
-                    {
-                        //Vector3 portalSpotPosition = dashParticlesArray[particlesIndex].transform.position;
-                        //DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(portalSpotPosition.x,
-                        //    portalSpotPosition.y + TrailRendererYOffset, portalSpotPosition.z);
-                        DashParticlesItems.numElectricTrailRendererPositions = i + 2;
-                        DashParticlesItems.lastArcPathsIndex = i;
-                    }
-                    portalSpotsPassed[i] = true;
-                }
+        //        if (active && !portalSpotsPassed[i])
+        //        {
+        //            if (DashParticlesItems.lastArcPathsIndex < i)
+        //            {
+        //                //Vector3 portalSpotPosition = dashParticlesArray[particlesIndex].transform.position;
+        //                //DashParticlesItems.electricTrailRenderer.transform.position = new Vector3(portalSpotPosition.x,
+        //                //    portalSpotPosition.y + TrailRendererYOffset, portalSpotPosition.z);
+        //                DashParticlesItems.numElectricTrailRendererPositions = i + 2;
+        //                DashParticlesItems.lastArcPathsIndex = i;
+        //            }
+        //            portalSpotsPassed[i] = true;
+        //        }
 
-                if (!activePassed)
-                {
-                    if (active)
-                    {
-                        activePassed = true;
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
+        //        if (!activePassed)
+        //        {
+        //            if (active)
+        //            {
+        //                activePassed = true;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            break;
+        //        }
+        //    }
 
-            DashParticlesItems.trailMoverXPerZ.ManualUpdate(fillProgress);
+        //    DashParticlesItems.trailMoverXPerZ.ManualUpdate(fillProgress);
 
-            //long elapsedTime = ElapsedTime;
+        //    //long elapsedTime = ElapsedTime;
 
-            //PortalBuilderChain[] portalBuilderChains = DashParticlesItems.portalBuilderChains;
-            ////if (timer > 1/3 * requiredDurations[0]) {}
-            //for (int i = 0; i < playerClones.Length; i++)
-            //{
-            //    if (portalBuilderChains[i].UpdatePortals(elapsedTime))
-            //    {
-            //        break;
-            //    }
-            //}
+        //    //PortalBuilderChain[] portalBuilderChains = DashParticlesItems.portalBuilderChains;
+        //    ////if (timer > 1/3 * requiredDurations[0]) {}
+        //    //for (int i = 0; i < playerClones.Length; i++)
+        //    //{
+        //    //    if (portalBuilderChains[i].UpdatePortals(elapsedTime))
+        //    //    {
+        //    //        break;
+        //    //    }
+        //    //}
 
-            //CrimsonAuraBlack[] crimsonAurasArray = DashParticlesItems.crimsonAuras;
-            //PortalOrbPurple[] portalOrbsArray = DashParticlesItems.portalOrbs;
+        //    //CrimsonAuraBlack[] crimsonAurasArray = DashParticlesItems.crimsonAuras;
+        //    //PortalOrbPurple[] portalOrbsArray = DashParticlesItems.portalOrbs;
 
-            //activePassed = false;
-            //for (int i = playerClones.Length - 1; i >= 0; i--)
-            //{
-            //    int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
-            //    float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
+        //    //activePassed = false;
+        //    //for (int i = playerClones.Length - 1; i >= 0; i--)
+        //    //{
+        //    //    int particlesIndex = Math.Clamp(CloneOffsetUnits + (i * UnitsPerClone), 0, lineLengthUnits - 1);
+        //    //    float lineLengthPercentage = (float)particlesIndex / LineLengthUnits;
 
-            //    (bool fullCloneOpacity, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
+        //    //    (bool fullCloneOpacity, float cloneOpacity) = CalculatePlayerCloneOpacity(fillProgress, lineLengthPercentage);
 
-            //    PlayerClientData playerCloneClientData = playerClones[i];
-            //    PlayerComponent playerClone = playerCloneClientData.PlayerComponent;
-            //    if (!activePassed)
-            //    {
-            //        if (fullCloneOpacity)
-            //        {
-            //            activePassed = true;
-            //        }
+        //    //    PlayerClientData playerCloneClientData = playerClones[i];
+        //    //    PlayerComponent playerClone = playerCloneClientData.PlayerComponent;
+        //    //    if (!activePassed)
+        //    //    {
+        //    //        if (fullCloneOpacity)
+        //    //        {
+        //    //            activePassed = true;
+        //    //        }
 
-            //        if (cloneOpacity > 0.2f)
-            //        {
-            //            playerClone.SetCloneFXOpacity(cloneOpacity);
-            //            if (!playerClone.gameObject.activeSelf)
-            //            {
-            //                playerClone.gameObject.SetActive(true);
-            //            }
-            //            if (!playerClone.PlayerComponentCloneItems.AnimationStarted)
-            //            {
-            //                playerCloneClientData.PlayWalkingState();
-            //                playerClone.PlayerComponentCloneItems.AnimationStarted = true;
-            //            }
-            //        }
+        //    //        if (cloneOpacity > 0.2f)
+        //    //        {
+        //    //            playerClone.SetCloneFXOpacity(cloneOpacity);
+        //    //            if (!playerClone.gameObject.activeSelf)
+        //    //            {
+        //    //                playerClone.gameObject.SetActive(true);
+        //    //            }
+        //    //            if (!playerClone.PlayerComponentCloneItems.AnimationStarted)
+        //    //            {
+        //    //                playerCloneClientData.PlayWalkingState();
+        //    //                playerClone.PlayerComponentCloneItems.AnimationStarted = true;
+        //    //            }
+        //    //        }
 
-            //    }
-            //    else if (!playerClone.PlayerComponentCloneItems.AnimationTimerCompleted)
-            //    {
-            //        if (!playerClone.PlayerComponentCloneItems.AnimationTimerSet)
-            //        {
-            //            // temp, set based on hardcoded timer instead of motion duration...
-            //            playerClone.PlayerComponentCloneItems.AnimationTimer.LastCheckedTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-            //            playerClone.PlayerComponentCloneItems.AnimationTimerSet = true;
-            //        }
-            //        else if (playerClone.PlayerComponentCloneItems.AnimationTimer.IsTimeElapsed_FixedUpdateThread())
-            //        {
-            //            playerClone.PlayerComponentCloneItems.AnimationTimerCompleted = true;
-            //            playerClone.Animator.StopPlayback();
-            //            playerClone.gameObject.SetActive(false);
-            //        }
-            //        else
-            //        {
-            //            float timerPercentage = playerClone.PlayerComponentCloneItems.AnimationTimer.RemainingDurationPercentage();
-            //            playerClone.SetCloneFXOpacity(1f - timerPercentage);
-            //            //Debug.Log($"{i}, {1f - timerPercentage}");
-            //        }
-            //    }
-            //}
-            
-            // set opacity...
-        }
+        //    //    }
+        //    //    else if (!playerClone.PlayerComponentCloneItems.AnimationTimerCompleted)
+        //    //    {
+        //    //        if (!playerClone.PlayerComponentCloneItems.AnimationTimerSet)
+        //    //        {
+        //    //            // temp, set based on hardcoded timer instead of motion duration...
+        //    //            playerClone.PlayerComponentCloneItems.AnimationTimer.LastCheckedTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+        //    //            playerClone.PlayerComponentCloneItems.AnimationTimerSet = true;
+        //    //        }
+        //    //        else if (playerClone.PlayerComponentCloneItems.AnimationTimer.IsTimeElapsed_FixedUpdateThread())
+        //    //        {
+        //    //            playerClone.PlayerComponentCloneItems.AnimationTimerCompleted = true;
+        //    //            playerClone.Animator.StopPlayback();
+        //    //            playerClone.gameObject.SetActive(false);
+        //    //        }
+        //    //        else
+        //    //        {
+        //    //            float timerPercentage = playerClone.PlayerComponentCloneItems.AnimationTimer.RemainingDurationPercentage();
+        //    //            playerClone.SetCloneFXOpacity(1f - timerPercentage);
+        //    //            //Debug.Log($"{i}, {1f - timerPercentage}");
+        //    //        }
+        //    //    }
+        //    //}
+
+        //    // set opacity...
+        //}
 
         private (bool active, float opacity) CalculateDashParticlesOpacity(float fillProgress, float lineLengthPercentage)
         {
@@ -1043,13 +1153,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     public enum AbilityIndicatorFXType
     {
         None,
-        DashParticles
+        DashPortalAbility
     }
     public enum DashParticlesFXTypeInstancePools
     {
-        DashParticles,
-        WaterTrail,
-        TrailMoverBuilder_XPerZ,
     }
     public enum AbilityFXComponentType
     {

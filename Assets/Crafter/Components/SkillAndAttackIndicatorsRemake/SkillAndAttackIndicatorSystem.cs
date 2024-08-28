@@ -135,17 +135,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             Dictionary<AbilityIndicatorFXType, PoolBagDco<AbstractAbilityFX>[]> abilityIndicatorFXInstancePools = new Dictionary<AbilityIndicatorFXType, PoolBagDco<AbstractAbilityFX>[]>(
                     SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
 
-            if (abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.DashParticles, out AbstractAbilityFX dashParticlesPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.WaterTrail, out AbstractAbilityFX waterTrailPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.TrailMoverBuilder_XPerZ, out AbstractAbilityFX trailMoverBuilderXPerZPrefab))
-            {
-                PoolBagDco<AbstractAbilityFX>[] dashParticlesPoolBag = new PoolBagDco<AbstractAbilityFX>[3];
-                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.DashParticles] = new PoolBagDco<AbstractAbilityFX>(dashParticlesPrefab, 30);
-                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.WaterTrail] = new PoolBagDco<AbstractAbilityFX>(waterTrailPrefab, 30);
-                dashParticlesPoolBag[(int)DashParticlesFXTypeInstancePools.TrailMoverBuilder_XPerZ] = new PoolBagDco<AbstractAbilityFX>(trailMoverBuilderXPerZPrefab, 30);
-
-                abilityIndicatorFXInstancePools[AbilityIndicatorFXType.DashParticles] = dashParticlesPoolBag;
-            }
+            abilityIndicatorFXInstancePools[AbilityIndicatorFXType.DashPortalAbility] = new PoolBagDco<AbstractAbilityFX>[0];
 
             AbilityIndicatorFXInstancePools = abilityIndicatorFXInstancePools;
 
@@ -263,7 +253,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public void TriggerSkillAndAttackIndicatorObserver(AbilityProjectorType abilityProjectorType,
             AbilityProjectorMaterialType abilityProjectorMaterialType,
             AbilityIndicatorCastType abilityIndicatorCastType,
-            AbilityIndicatorFXType[] abilityFXTypes)
+            AbilityIndicatorFXType abilityFXType)
         {
             bool attemptTriggerUpdate;
             switch (abilityIndicatorCastType)
@@ -295,7 +285,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 SkillAndAttackIndicatorObserver skillAndAttackIndicatorObserver = new SkillAndAttackIndicatorObserver(abilityProjectorType,
                     abilityProjectorMaterialType,
                     abilityIndicatorCastType,
-                    abilityFXTypes,
+                    abilityFXType,
                     SkillAndAttackIndicatorObserverProps);
 
                 SkillAndAttackIndicatorObservers.Add(skillAndAttackIndicatorObserver);
