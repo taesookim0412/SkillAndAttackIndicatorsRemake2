@@ -1,4 +1,5 @@
-﻿using Assets.Crafter.Components.Models;
+﻿using Assets.Crafter.Components.Editors.ComponentScripts;
+using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using Assets.Crafter.Components.Systems.Observers;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 
 namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder
@@ -58,7 +60,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         }
 
         [NonSerialized, HideInInspector]
-        protected PlayerBlinkState PlayerBlinkState;
+        public PlayerBlinkState PlayerBlinkState;
         [NonSerialized, HideInInspector]
         private TimerStructDco_Observer PlayerOpacityTimer;
         [NonSerialized, HideInInspector]
@@ -143,9 +145,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     PlayerTransparentClone.SetCloneFXOpacity(playerTransparentCloneOpacity);
 
                     PlayerOpacityTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-                    PlayerBlinkState = PlayerBlinkState.PlayerOpaque;
+                    PlayerBlinkState = PlayerBlinkState.PlayerOpacity;
                     break;
-                case PlayerBlinkState.PlayerOpaque:
+                case PlayerBlinkState.PlayerOpacity:
                     if (PlayerOpacityTimer.IsTimeNotElapsed_FixedUpdateThread())
                     {
                         float scalePercentage = PlayerOpacityTimer.RemainingDurationPercentage();
@@ -188,7 +190,92 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public enum PlayerBlinkState
     {
         PlayerCreate,
-        PlayerOpaque,
+        PlayerOpacity,
         PlayerDespawn
     }
+
+#if UNITY_EDITOR
+    [CustomEditor(typeof(PlayerBlinkBuilder))]
+    public class PlayerBlinkBuilderEditor : AbstractEditor<PlayerBlinkBuilder>
+    {
+        public long? RequiredDuration = null;
+        protected override bool OnInitialize(PlayerBlinkBuilder instance, ObserverUpdateCache observerUpdateCache)
+        {
+            SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
+            if (system != null)
+            {
+                PlayerComponent playerComponentPrefab = system.PlayerComponent;
+
+                if (playerComponentPrefab != null)
+                {
+                    // for lack of better way to create the same player component, just use a transparent clone for the editor.
+                    PlayerComponent playerComponentInstance = playerComponentPrefab.CreateInactiveTransparentCloneInstance();
+                    playerComponentInstance.transform.SetParent(instance.transform, false);
+                    PlayerComponent playerTransparentClone = playerComponentPrefab.CreateInactiveTransparentCloneInstance();
+                    playerTransparentClone.transform.SetParent(instance.transform, false);
+                    if (instance.IsTeleportSource)
+                    {
+                        playerComponentInstance.gameObject.SetActive(true);
+                    }
+                    PlayerClientData playerClientData = new PlayerClientData(system.PlayerGuid, playerComponentInstance);
+
+                    if (observerUpdateCache == null)
+                    {
+                        SetObserverUpdateCache();
+                        observerUpdateCache = ObserverUpdateCache;
+                    }
+                    
+                    instance.Initialize(observerUpdateCache, playerClientData, playerTransparentClone, RequiredDuration);
+                    TryAddParticleSystem(instance.gameObject);
+                    return true;
+                }
+                else
+                {
+                    Debug.LogError("Couldn't find FX.");
+                }
+            }
+            else
+            {
+                Debug.LogError("System null");
+            }
+            return false;
+        }
+        //private void Initialize()
+        //{
+        //    //if (!VariablesSet)
+        //    //{
+        //    //    Instance = (PortalBuilder) target;
+        //    //    VariablesSet = Instance != null && Instance.PlayerClientData != null && Instance.PortalOrb != null && Instance.CrimsonAura != null;
+        //    //    if (VariablesSet)
+        //    //    {
+        //    //        ObserverUpdateCache = Instance.ObserverUpdateCache;
+        //    //    }
+        //    //}
+
+        //}
+
+        //public override void OnInspectorGUI()
+        //{
+        //    base.OnInspectorGUI();
+
+        //    EditorGUI.BeginChangeCheck();
+        //    PlayerComponent playerComponent = (PlayerComponent) EditorGUILayout.ObjectField("PlayerComponent", Instance.PlayerClientData != null ? Instance.PlayerClientData.PlayerComponent : null, typeof(PlayerComponent), true);
+        //    PortalOrbPurple portalOrbPurple = (PortalOrbPurple) EditorGUILayout.ObjectField("PortalOrb", Instance.PortalOrb, typeof(PortalOrbPurple), true);
+        //    CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack) EditorGUILayout.ObjectField("CrimsonAura", Instance.CrimsonAura, typeof(CrimsonAuraBlack), true);
+        //}
+
+        protected override void ManualUpdate()
+        {
+            Instance.ManualUpdate();
+        }
+
+        protected override void EditorDestroy()
+        {
+            GameObject.DestroyImmediate(Instance.PlayerClientData.PlayerComponent.gameObject);
+            GameObject.DestroyImmediate(Instance.PlayerTransparentClone.gameObject);
+
+            Instance.CleanUpInstance();
+        }
+    }
+#endif
 }

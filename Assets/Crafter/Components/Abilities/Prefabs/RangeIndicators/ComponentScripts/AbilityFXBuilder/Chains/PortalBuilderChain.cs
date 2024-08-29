@@ -60,26 +60,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 {
                     if (!TrailForPortals.Completed)
                     {
-                        if (!TrailForPortals.Active)
-                        {
-                            TrailForPortals.gameObject.SetActive(true);
-                        }
                         TrailForPortals.ManualUpdate();
                     }
                     else if (!PortalSource.Completed)
                     {
-                        if (!PortalSource.Active)
-                        {
-                            PortalSource.gameObject.SetActive(true);
-                        }
                         PortalSource.ManualUpdate();
                     }
                     else if (!PortalDest.Completed)
                     {
-                        if (!PortalDest.Active)
-                        {
-                            PortalDest.gameObject.SetActive(true);
-                        }
                         PortalDest.ManualUpdate();
                     }
                 }
@@ -134,6 +122,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             TrailForPortals = null;
         }
     }
+#if UNITY_EDITOR
     [CustomEditor(typeof(PortalBuilderChain))]
     public class PortalBuilderChainEditor : AbstractEditor<PortalBuilderChain>
     {
@@ -224,4 +213,5 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             return false;
         }
     }
+#endif
 }
