@@ -1,12 +1,5 @@
 fileFormatVersion: 2
-guid: ef8946c7fbe595f4a9f13d229eac058d
-AssetOrigin:
-  serializedVersion: 1
-  productId: 242574
-  packageName: Trails VFX - URP
-  packageVersion: 1.0.1
-  assetPath: Assets/Vefects/Trails VFX URP/VFX/Textures/T_VFX_Trail_01.png
-  uploadId: 661580
+guid: 6f77f4cc514206e47b33142077d9182e
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -72,14 +65,14 @@ TextureImporter:
   ignorePngGamma: 0
   applyGammaDecoding: 0
   swizzle: 50462976
-  cookieLightType: 1
+  cookieLightType: 0
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 2
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -92,7 +85,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 2
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
