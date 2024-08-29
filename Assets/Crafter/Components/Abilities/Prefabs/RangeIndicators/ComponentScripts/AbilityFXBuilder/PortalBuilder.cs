@@ -16,14 +16,10 @@ using UnityEngine;
 
 namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder
 {
-    public class PortalBuilder : AbstractAbilityFXBuilder
+    public class PortalBuilder : PlayerBlinkBuilder
     {
         private static readonly int PortalStateLength = Enum.GetNames(typeof(PortalState)).Length;
 
-        [NonSerialized]
-        public PlayerClientData PlayerClientData;
-        [NonSerialized]
-        public PlayerComponent PlayerTransparentClone;
         [NonSerialized]
         public PortalOrbClear PortalOrb;
         [NonSerialized]
@@ -31,10 +27,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         [Range(0f, 2f), SerializeField]
         private float PortalScaleDuration;
-        [Range(0f, 2f), SerializeField]
-        private float PlayerOpacityDuration;
-        [Range(0f, 2f), SerializeField]
-        private float PlayerOpaqueDuration;
         [SerializeField]
         private Vector3 PortalScaleMin;
         [SerializeField]
@@ -43,8 +35,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public Vector3 PortalOrbOffsetPosition;
         [SerializeField]
         private Vector3 CrimsonAuraOffsetPosition;
-        [SerializeField]
-        public bool IsTeleportSource;
 
         // incompatible with onvalidate
         [NonSerialized, HideInInspector]
@@ -57,22 +47,18 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             PortalScaleDifference = PortalScaleMax - PortalScaleMin;
         }
-        private float GetRequiredDurationMillis()
+        protected override float GetRequiredDurationMillis()
         {
-            return (PortalScaleDuration + PlayerOpacityDuration + PlayerOpaqueDuration) * 1000f +
-                (SkillAndAttackIndicatorSystem.FixedTimestep * PortalStateLength * 2f);
+            return PortalScaleDuration * 1000f +
+                (SkillAndAttackIndicatorSystem.FixedTimestep * PortalStateLength * 2f) + base.GetRequiredDurationMillis();
         }
-        private void ResetRequiredDuration()
+        protected override void ResetRequiredDuration()
         {
             PortalScaleTimer.RequiredDuration = (long)(PortalScaleDuration * 1000f);
-            PlayerOpacityTimer.RequiredDuration = (long)(PlayerOpacityDuration * 1000f);
-            PlayerOpaqueTimer.RequiredDuration = (long)(PlayerOpaqueDuration * 1000f);
+            base.ResetRequiredDuration();
         }
-
-        private void OnValidate()
+        protected override void UpdateOnValidatePositions()
         {
-            ResetRequiredDuration();
-
             if (PortalOrb != null)
             {
                 PortalOrb.transform.localPosition = PortalOrbOffsetPosition;
@@ -81,62 +67,29 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 CrimsonAura.transform.localPosition = CrimsonAuraOffsetPosition;
             }
-
-            ManualAwake();
         }
 
         [NonSerialized, HideInInspector]
         private PortalState PortalState; 
         [NonSerialized, HideInInspector]
         private TimerStructDco_Observer PortalScaleTimer;
-        [NonSerialized, HideInInspector]
-        private TimerStructDco_Observer PlayerOpacityTimer;
-        [NonSerialized, HideInInspector]
-        private TimerStructDco_Observer PlayerOpaqueTimer;
-        [NonSerialized, HideInInspector]
-        private bool RequiredDurationsModified = false;
 
         //public string DebugLogRequiredDurations()
         //{
         //    return $"{PortalScaleTimer.RequiredDuration}, {PlayerOpacityTimer.RequiredDuration}, {PlayerOpaqueTimer.RequiredDuration}";
         //}
+        protected override void InitializeDurations(float requiredDurationMultTimes1000)
+        {
+            PortalScaleTimer.RequiredDuration = (long)(PortalScaleDuration * requiredDurationMultTimes1000);
+            base.InitializeDurations(requiredDurationMultTimes1000);
+        }
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
             PlayerComponent playerTransparentClone,
             PortalOrbClear portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed)
         {
-            base.Initialize(observerUpdateCache);
+            base.Initialize(observerUpdateCache, playerClientData, playerTransparentClone, durationAllowed);
             
-            if (durationAllowed != null)
-            {
-                float requiredDurationMultTimes1000 = (long) durationAllowed / GetRequiredDurationMillis() * 1000f;
-                PortalScaleTimer.RequiredDuration = (long)(PortalScaleDuration * requiredDurationMultTimes1000);
-                PlayerOpacityTimer.RequiredDuration = (long)(PlayerOpacityDuration * requiredDurationMultTimes1000);
-                PlayerOpaqueTimer.RequiredDuration = (long)(PlayerOpaqueDuration * requiredDurationMultTimes1000);
-                RequiredDurationsModified = true;
-            }
-            else
-            {
-                if (RequiredDurationsModified)
-                {
-                    ResetRequiredDuration();
-                    RequiredDurationsModified = false;
-                }
-            }
-
             PortalScaleTimer.ObserverUpdateCache = observerUpdateCache;
-            PlayerOpacityTimer.ObserverUpdateCache = observerUpdateCache;
-            PlayerOpaqueTimer.ObserverUpdateCache = observerUpdateCache;
-
-            PlayerClientData = playerClientData;
-
-            PlayerTransparentClone = playerTransparentClone;
-
-            PlayerComponent playerComponent = playerClientData.PlayerComponent;
-
-            if (!IsTeleportSource)
-            {
-                playerComponent.gameObject.SetActive(false);
-            }
 
             PortalOrb = portalOrb;
             portalOrb.DisableSystems();
@@ -146,7 +99,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             PortalState = PortalState.PortalCreate;
         }
-        public void ManualUpdate()
+        public override void ManualUpdate()
         {
             if (Completed)
             {
@@ -179,53 +132,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     else
                     {
                         PortalOrb.transform.localScale = PortalScaleMax;
-                        PortalState = PortalState.PlayerCreate;
+                        PortalState = PortalState.PlayerBlinkState;
                     }
                     break;
-                case PortalState.PlayerCreate:
-                    PlayerTransparentClone.gameObject.SetActive(true);
-                    PlayerTransparentClone.transform.position = transform.position;
-                    PlayerClientData.PlayerComponent.transform.position = transform.position;
-                    float playerTransparentCloneOpacity;
-                    if (IsTeleportSource)
-                    {
-                        PlayerClientData.PlayerComponent.gameObject.SetActive(false);
-                        playerTransparentCloneOpacity = 1f;
-                    }
-                    else
-                    {
-                        playerTransparentCloneOpacity = 0f;
-                    }
-
-                    PlayerTransparentClone.SetCloneFXOpacity(playerTransparentCloneOpacity);
-
-                    PlayerOpacityTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-                    PortalState = PortalState.PlayerOpaque;
-                    break;
-                case PortalState.PlayerOpaque:
-                    if (PlayerOpacityTimer.IsTimeNotElapsed_FixedUpdateThread())
-                    {
-                        float scalePercentage = PlayerOpacityTimer.RemainingDurationPercentage();
-                        if (IsTeleportSource)
-                        {
-                            scalePercentage = 1f - scalePercentage;
-                        }
-                        PlayerTransparentClone.SetCloneFXOpacity(scalePercentage);
-                    }
-                    else
-                    {
-                        PlayerTransparentClone.gameObject.SetActive(false);
-                        PlayerClientData.PlayerComponent.gameObject.SetActive(!IsTeleportSource);
-                        
-                        PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
-                        PortalState = PortalState.PlayerDespawn;
-                    }
-                    break;
-                case PortalState.PlayerDespawn:
-                    if (PlayerOpaqueTimer.IsTimeElapsed_FixedUpdateThread())
-                    {
-                        Complete();
-                    }
+                case PortalState.PlayerBlinkState:
+                    base.ManualUpdate();
                     break;
             }
         }
@@ -238,9 +149,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         public override void CleanUpInstance()
         {
-            ObserverUpdateCache = null;
-            PlayerClientData = null;
-            PlayerTransparentClone = null;
             PortalOrb = null;
             CrimsonAura = null;
         }
@@ -249,9 +157,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     {
         PortalCreate,
         PortalScale,
-        PlayerCreate,
-        PlayerOpaque,
-        PlayerDespawn
+        PlayerBlinkState
     }
 
     [CustomEditor(typeof(PortalBuilder))]
