@@ -20,7 +20,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized]
         public PlayerComponent PlayerTransparentClone;
         [NonSerialized]
-        public TrailMoverBuilder_TargetPos BlinkTrail;
+        public TrailMoverBuilder_TargetPos BlinkTrailStartBuilder;
+        [NonSerialized]
+        public TrailMoverBuilder_TargetPos BlinkTrailEndBuilder;
         [NonSerialized]
         public PlayerBlinkBuilder PlayerBlinkBuilderSource;
         [NonSerialized]
@@ -35,13 +37,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         }
         public void Initialize(ObserverUpdateCache observerUpdateCache,
             PlayerBlinkBuilder playerBlinkBuilderSource,
-            TrailMoverBuilder_TargetPos blinkTrail,
+            TrailMoverBuilder_TargetPos blinkTrailStartBuilder,
+            TrailMoverBuilder_TargetPos blinkTrailEndBuilder,
             PlayerBlinkBuilder playerBlinkBuilderDest,
             long startTime,
             long endTime)
         {
             base.Initialize(observerUpdateCache);
-            BlinkTrail = blinkTrail;
+            BlinkTrailStartBuilder = blinkTrailStartBuilder;
+            BlinkTrailEndBuilder = blinkTrailEndBuilder;
             PlayerBlinkBuilderSource = playerBlinkBuilderSource;
             PlayerBlinkBuilderDest = playerBlinkBuilderDest;
             StartTime = startTime;
@@ -59,11 +63,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 if (elapsedTime <= EndTime)
                 {
-                    if (!(PlayerBlinkBuilderSource.Completed && BlinkTrail.Completed))
+                    if (!(PlayerBlinkBuilderSource.Completed && BlinkTrailStartBuilder.Completed))
                     {
                         if ((int)PlayerBlinkBuilderSource.PlayerBlinkState >= (int) PlayerBlinkState.PlayerOpacity)
                         {
-                            BlinkTrail.ManualUpdate();
+                            BlinkTrailStartBuilder.ManualUpdate();
                         }
 
                         PlayerBlinkBuilderSource.ManualUpdate();
@@ -87,13 +91,17 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 {
                     PlayerBlinkBuilderSource.Complete();
                 }
-                if (!BlinkTrail.Completed)
+                if (!BlinkTrailStartBuilder.Completed)
                 {
-                    BlinkTrail.Complete();
+                    BlinkTrailStartBuilder.Complete();
                 }
                 if (!PlayerBlinkBuilderDest.Completed)
                 {
                     PlayerBlinkBuilderDest.Complete();
+                }
+                if (!BlinkTrailEndBuilder.Completed)
+                {
+                    BlinkTrailEndBuilder.Complete();
                 }
                 base.Complete();
             }
@@ -115,8 +123,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public override void CleanUpInstance()
         {
             PlayerBlinkBuilderSource = null;
-            BlinkTrail = null;
+            BlinkTrailStartBuilder = null;
             PlayerBlinkBuilderDest = null;
+            BlinkTrailEndBuilder = null;
         }
 
     }
@@ -129,7 +138,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         protected override void EditorDestroy()
         {
             GameObject.DestroyImmediate(Instance.PlayerBlinkBuilderSource.gameObject);
-            GameObject.DestroyImmediate(Instance.BlinkTrail.gameObject);
+            GameObject.DestroyImmediate(Instance.BlinkTrailStartBuilder.gameObject);
+            GameObject.DestroyImmediate(Instance.BlinkTrailEndBuilder.gameObject);
             GameObject.DestroyImmediate(Instance.PlayerBlinkBuilderDest.gameObject);
 
             Instance.CleanUpInstance();
@@ -174,10 +184,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                     playerBlinkBuilderDestInstance.transform.position = targetPosition;
 
-                    TrailMoverBuilder_TargetPos trailMoverBuilderTargetPosInstance = GameObject.Instantiate(trailMoverBuilderTargetPosPrefab, instance.transform);
-                    TrailMoverBuilder_TargetPosEditor trailMoverBuilderTargetPosEditor = (TrailMoverBuilder_TargetPosEditor)Editor.CreateEditor(trailMoverBuilderTargetPosInstance,
+                    TrailMoverBuilder_TargetPos trailMoverBuilderTargetPosStartInstance = GameObject.Instantiate(trailMoverBuilderTargetPosPrefab, instance.transform);
+                    TrailMoverBuilder_TargetPosEditor trailMoverBuilderTargetPosStartEditor = (TrailMoverBuilder_TargetPosEditor)Editor.CreateEditor(trailMoverBuilderTargetPosStartInstance,
                         typeof(TrailMoverBuilder_TargetPosEditor));
-                    trailMoverBuilderTargetPosInstance.transform.position = startPosition;
+                    trailMoverBuilderTargetPosStartInstance.transform.position = startPosition;
+
+                    TrailMoverBuilder_TargetPos trailMoverBuilderTargetPosEndInstance = GameObject.Instantiate(trailMoverBuilderTargetPosPrefab, instance.transform);
+                    TrailMoverBuilder_TargetPosEditor trailMoverBuilderTargetPosEndEditor = (TrailMoverBuilder_TargetPosEditor)Editor.CreateEditor(trailMoverBuilderTargetPosEndInstance,
+                        typeof(TrailMoverBuilder_TargetPosEditor));
+                    trailMoverBuilderTargetPosEndInstance.transform.position = targetPosition;
 
                     if (observerUpdateCache == null)
                     {
@@ -193,13 +208,24 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     playerBlinkBuilderDestEditor.OnInspectorGUI();
                     playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
 
-                    trailMoverBuilderTargetPosEditor.SetOverrides(
+                    trailMoverBuilderTargetPosStartEditor.SetOverrides(
                         playerStartPositionOffsetOverride: Vector3.zero,
-                        endPositionOverride: targetPosition);
-                    trailMoverBuilderTargetPosEditor.OnInspectorGUI();
-                    trailMoverBuilderTargetPosEditor.ForceInitialize(observerUpdateCache);
+                        fullEndPositionOverride: null,
+                        propsEndPositionOffsetOverride: Vector3.zero,
+                        propsIndex: 1);
+                    trailMoverBuilderTargetPosStartEditor.OnInspectorGUI();
+                    trailMoverBuilderTargetPosStartEditor.ForceInitialize(observerUpdateCache);
 
-                    instance.Initialize(observerUpdateCache, playerBlinkBuilderSourceInstance, trailMoverBuilderTargetPosInstance,
+                    trailMoverBuilderTargetPosEndEditor.SetOverrides(
+                        playerStartPositionOffsetOverride: Vector3.zero,
+                        fullEndPositionOverride: null,
+                        propsEndPositionOffsetOverride: Vector3.zero,
+                        propsIndex: 2);
+                    trailMoverBuilderTargetPosEndEditor.OnInspectorGUI();
+                    trailMoverBuilderTargetPosEndEditor.ForceInitialize(observerUpdateCache);
+
+                    instance.Initialize(observerUpdateCache, playerBlinkBuilderSourceInstance, trailMoverBuilderTargetPosStartInstance,
+                        trailMoverBuilderTargetPosEndInstance,
                         playerBlinkBuilderDestInstance,
                         startTime: 0L,
                         endTime: 1800L);
