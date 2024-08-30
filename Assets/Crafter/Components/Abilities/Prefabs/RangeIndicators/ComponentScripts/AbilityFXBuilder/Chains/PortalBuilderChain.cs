@@ -193,10 +193,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     portalBuilderDestEditor.OnInspectorGUI();
                     portalBuilderDestEditor.ForceInitialize(observerUpdateCache);
 
-                    Vector3 targetPlayerEndPosition = portalBuilderDestInstance.PlayerClientData.PlayerComponent.transform.position + portalBuilderDestInstance.PortalOrbOffsetPosition;
                     trailMoverBuilderTargetPosEditor.SetOverrides( 
                         playerStartPositionOffsetOverride: portalBuilderSourceInstance.PortalOrbOffsetPosition,
-                        endPositionOverride: targetPlayerEndPosition);
+                        fullEndPositionOverride: targetPosition + portalBuilderDestInstance.PortalOrbOffsetPosition,
+                        propsEndPositionOffsetOverride: Vector3.zero,
+                        propsIndex: 0);
                     trailMoverBuilderTargetPosEditor.OnInspectorGUI();
                     trailMoverBuilderTargetPosEditor.ForceInitialize(observerUpdateCache);
 

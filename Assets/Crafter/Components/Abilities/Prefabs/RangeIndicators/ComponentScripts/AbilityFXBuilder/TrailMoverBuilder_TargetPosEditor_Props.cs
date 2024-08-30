@@ -19,7 +19,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [SerializeField]
         public BlinkRibbonTrailProps[] BlinkRibbonTrailProps = new BlinkRibbonTrailProps[0];
         [SerializeField]
-        public Vector3[] EndPositions = new Vector3[0];
+        public Vector3[] PropsEndPositionOffsets = new Vector3[0];
 
         [SerializeField]
         public Transform MarkersParent;
