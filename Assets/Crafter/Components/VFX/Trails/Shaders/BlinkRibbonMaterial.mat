@@ -76,7 +76,7 @@ Material:
     - _WindSpeed: -7
     m_Colors:
     - _BaseColorAddSpeed: {r: 0.5, g: 0, b: 0, a: 0}
-    - _BaseColorTiling: {r: 1, g: 1, b: 0, a: 0}
+    - _BaseColorTiling: {r: 2, g: 1, b: 0, a: 0}
     - _ColorMaskScale: {r: 1, g: 1, b: 0, a: 0}
     - _ColorMaskSpeed: {r: 0.43, g: -0.1, b: 0, a: 0}
     - _Color_01: {r: 1, g: 1, b: 1, a: 0}

@@ -12,6 +12,7 @@ namespace Assets.Crafter.Components.Models.dpo.TrailEffectsDpo
     [Serializable]
     public class BlinkRibbonTrailProps
     {
+        public float Velocity;
         public int NumTrails;
         public Vector3[] StartPositionOffsetsLocal;
         public Vector3[] EndPositionOffsetsLocal;
@@ -20,9 +21,10 @@ namespace Assets.Crafter.Components.Models.dpo.TrailEffectsDpo
         public int[] NumTrailMarkers;
         public SerializeableArray<Vector3>[] TrailMarkersLocal;
 
-        public BlinkRibbonTrailProps(int numTrails, Vector3[] startPositionOffsetsLocal, Vector3[] endPositionOffsetsLocal, Vector3[] startRotationOffsetsLocal, float[] widthMultipliers,
+        public BlinkRibbonTrailProps(float velocity, int numTrails, Vector3[] startPositionOffsetsLocal, Vector3[] endPositionOffsetsLocal, Vector3[] startRotationOffsetsLocal, float[] widthMultipliers,
             int[] numTrailMarkers, SerializeableArray<Vector3>[] trailMarkersLocal)
         {
+            Velocity = velocity;
             NumTrails = numTrails;
             StartPositionOffsetsLocal = startPositionOffsetsLocal;
             EndPositionOffsetsLocal = endPositionOffsetsLocal;
@@ -33,9 +35,10 @@ namespace Assets.Crafter.Components.Models.dpo.TrailEffectsDpo
             
         }
 
-        public BlinkRibbonTrailProps(Vector3[] startPositionOffsetsLocal, Vector3[] endPositionOffsetsLocal, Vector3[] startRotationOffsetsLocal, float[] widthMultipliers,
+        public BlinkRibbonTrailProps(float velocity, Vector3[] startPositionOffsetsLocal, Vector3[] endPositionOffsetsLocal, Vector3[] startRotationOffsetsLocal, float[] widthMultipliers,
             SerializeableArray<Vector3>[] trailMarkersLocal)
         {
+            Velocity = velocity;
             NumTrails = startPositionOffsetsLocal.Length;
             StartPositionOffsetsLocal = startPositionOffsetsLocal;
             EndPositionOffsetsLocal = endPositionOffsetsLocal;

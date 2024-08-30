@@ -123,7 +123,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             ElapsedTimeSec = 0f;
             TimeRequiredSec = timeRequiredSec;
 
-            TrailPositions = CreateTrailPositions(trails, allTrailMarkersWorldAndEndPosition, movementRotations, trailStartPositions, timeRequiredSec);
+            TrailPositions = CreateTrailPositions(trails, allTrailMarkersWorldAndEndPosition, movementRotations, trailStartPositions, timeRequiredSec,
+                velocity: blinkRibbonTrailProps.Velocity);
         }
 
         public void SetEndPositionsWorld(float startYRotation, Vector3 newEndPositionWorld,
@@ -210,7 +211,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Vector3[][] trailMarkersWorldAndEndPosition,
             Vector3[] movementRotations,
             Vector3[] trailStartPositions,
-            float timeRequiredSec)
+            float timeRequiredSec,
+            float velocity)
         {
             float timestepDeltaTime = SkillAndAttackIndicatorSystem.FixedTrailTimestepSec;
             Vector3[][] allTrailPositions = new Vector3[blinkTrails.Length][];
@@ -226,7 +228,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 int trailMarkerIndex = 0;
                 int stopIndex = positions - 1;
 
-                float velocity = 80f;
                 float targetDistance = timestepDeltaTime * velocity;
                 float rotationSpeed = 0.8f;
 
@@ -581,7 +582,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     //    : 0);
                     int numTrails = EditorGUILayout.IntField("NumTrails", existingProp ? Props.BlinkRibbonTrailProps[i].NumTrails : 0);
                     propsEndPositionOffsets[i] = EditorGUILayout.Vector3Field("PropsEndPositionOffset", propsEndPositionOffsets[i]);
-                    
+                    float velocity = EditorGUILayout.FloatField("Velocity", existingProp ? Props.BlinkRibbonTrailProps[i].Velocity : 0f);
+
                     Vector3[] startPositionOffsetsLocal = new Vector3[numTrails];
                     Vector3[] endPositionOffsetsLocal = new Vector3[numTrails];
                     Vector3[] startRotationOffsetsLocal = new Vector3[numTrails];
@@ -642,7 +644,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     }
                     if (EditorGUI.EndChangeCheck())
                     {
-                        BlinkRibbonTrailProps blinkRibbonTrailProps = new BlinkRibbonTrailProps(numTrails: numTrails,
+                        BlinkRibbonTrailProps blinkRibbonTrailProps = new BlinkRibbonTrailProps(
+                            velocity: velocity,
+                            numTrails: numTrails,
                             startPositionOffsetsLocal: startPositionOffsetsLocal, endPositionOffsetsLocal: endPositionOffsetsLocal, startRotationOffsetsLocal: startRotationOffsetsLocal,
                             widthMultipliers: widthMultipliers, numTrailMarkers: allTrailsNumTrailMarkers, trailMarkersLocal: allTrailsTrailMarkersLocal);
                         Props.BlinkRibbonTrailProps[i] = blinkRibbonTrailProps;
