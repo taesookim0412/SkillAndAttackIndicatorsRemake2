@@ -185,8 +185,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         observerUpdateCache = ObserverUpdateCache;
                     }
 
-                    // PlayerBlinkBuilder has no editor.
-
                     playerBlinkBuilderSourceEditor.RequiredDuration = 400L;
                     playerBlinkBuilderSourceEditor.OnInspectorGUI();
                     playerBlinkBuilderSourceEditor.ForceInitialize(observerUpdateCache);
@@ -196,7 +194,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
 
                     trailMoverBuilderTargetPosEditor.SetOverrides(
-                        playerStartPositionOverride: Vector3.zero,
+                        playerStartPositionOffsetOverride: Vector3.zero,
                         endPositionOverride: targetPosition);
                     trailMoverBuilderTargetPosEditor.OnInspectorGUI();
                     trailMoverBuilderTargetPosEditor.ForceInitialize(observerUpdateCache);

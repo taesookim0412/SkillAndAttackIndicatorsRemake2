@@ -45,11 +45,62 @@ namespace Assets.Crafter.Components.Constants
                         new Vector3(-0.2f, 1.3f, 9.59f) })
                 }
                 )
+            },
+            { BlinkRibbonTrailType.DashBlinkStart, new BlinkRibbonTrailProps(
+                startPositionOffsetsLocal: new Vector3[1]
+                {
+                    new Vector3(0f, 0f, 0.2f)
+                },
+                endPositionOffsetsLocal: new Vector3[1]
+                {
+                    new Vector3(1f, 1f, 1.4f)
+                },
+
+                startRotationOffsetsLocal: new Vector3[1]
+                {
+                    new Vector3(0f, 0f, 0f)
+                },
+                widthMultipliers: new float[1]
+                {
+                    5f
+                },
+                trailMarkersLocal: new SerializeableArray<Vector3>[1]
+                {
+                    new SerializeableArray<Vector3>(new Vector3[1]{ new Vector3(0.8f, 0.8f, 1.2f) })
+                }
+                )
+            },
+            { BlinkRibbonTrailType.DashBlinkEnd, new BlinkRibbonTrailProps(
+                startPositionOffsetsLocal: new Vector3[1]
+                {
+                    new Vector3(-1f, 1f, -1.4f)
+                    
+                },
+                endPositionOffsetsLocal: new Vector3[1]
+                {
+                    new Vector3(0f, 0f, -0.2f)
+                },
+                startRotationOffsetsLocal: new Vector3[1]
+                {
+                    new Vector3(0f, 0f, 0f)
+                },
+                widthMultipliers: new float[1]
+                {
+                    5f
+                },
+                trailMarkersLocal: new SerializeableArray<Vector3>[1]
+                {
+                    new SerializeableArray<Vector3>(new Vector3[1]{ new Vector3(-0.8f, 0.8f, -1.2f) })
+                }
+                )
             }
+
         };
     }
     public enum BlinkRibbonTrailType
     {
-        Dual
+        Dual,
+        DashBlinkStart,
+        DashBlinkEnd
     }
 }

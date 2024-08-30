@@ -412,7 +412,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(TrailMoverBuilder_TargetPos))]
     public class TrailMoverBuilder_TargetPosEditor : AbstractEditor<TrailMoverBuilder_TargetPos>
     {
-        public bool StartPositionOverride = false;
+        public bool StartPositionOffsetOverride = false;
         public Vector3 PlayerStartPositionOffset = new Vector3(0f, 1.2f, 0f);
         public bool EndPositionOverride = false;
         public Vector3 EndPosition;
@@ -427,11 +427,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         private long StartTime;
         private long LastUpdateTime;
-        
-        public void SetOverrides(Vector3 playerStartPositionOverride,  Vector3 endPositionOverride)
+
+        // Enabled only when a new array has been added in dev mode then turned back off.
+        private bool ForceResetPropsFlag = false;
+        public void SetOverrides(Vector3 playerStartPositionOffsetOverride,  Vector3 endPositionOverride)
         {
-            StartPositionOverride = true;
-            PlayerStartPositionOffset = playerStartPositionOverride;
+            StartPositionOffsetOverride = true;
+            PlayerStartPositionOffset = playerStartPositionOffsetOverride;
 
             EndPositionOverride = true;
             EndPosition = endPositionOverride;
@@ -462,7 +464,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                                 blinkRibbonTrailRenderers[j] = GameObject.Instantiate(blinkRibbonTrailRendererPrefab, instance.transform);
                             }
 
-                            Vector3 endPositionWorld = EndPositionOverride ? EndPosition : Props.EndPositionLocal + instance.transform.position;
+                            Vector3 endPositionWorld = EndPositionOverride ? EndPosition : Props.EndPositions[Props.PropsIndex] + instance.transform.position;
 
                             if (observerUpdateCache == null)
                             {
@@ -521,29 +523,37 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         }
                     }
                 }
-                if (GUILayout.Button("Reset Props"))
+                if (GUILayout.Button("Reset Props") || ForceResetPropsFlag)
                 {
                     BlinkRibbonTrailProps[] newPropsArray = new BlinkRibbonTrailProps[TrailEffectsConstants.BlinkRibbonTrailProps.Count];
                     int newPropsArrayIndex = 0;
                     for (int i = 0; i < TrailEffectsConstants.BlinkRibbonTrailTypeEnumLength; i++)
                     {
                         BlinkRibbonTrailType blinkRibbonTrailType = (BlinkRibbonTrailType)i;
-                        if (TrailEffectsConstants.BlinkRibbonTrailProps.TryGetValue(blinkRibbonTrailType, out BlinkRibbonTrailProps props)) {
+                        if (TrailEffectsConstants.BlinkRibbonTrailProps.TryGetValue(blinkRibbonTrailType, out BlinkRibbonTrailProps props))
+                        {
                             newPropsArray[newPropsArrayIndex++] = props;
                         }
                     }
                     Props.BlinkRibbonTrailProps = newPropsArray;
 
                     Props.NumProps = newPropsArray.Length;
+
+                    ExpandEndPositions(newPropsArray.Length);
+
+                    ForceResetPropsFlag = false;
                 }
 
-                Props.EndPositionLocal = EditorGUILayout.Vector3Field("LocalEndPosition", Props.EndPositionLocal);
+                // Does not reset props after changing (intentional for testing different props).
                 Props.PropsIndex = EditorGUILayout.IntField("PropsIndex", Props.PropsIndex);
                 EditorGUI.BeginChangeCheck();
                 Props.NumProps = EditorGUILayout.IntField("NumProps", Props.NumProps);
                 int numProps = Props.NumProps;
+                Vector3[] endPositions = Props.EndPositions;
                 for (int i = 0; i < numProps; i++)
                 {
+                    EditorGUILayout.BeginVertical("GroupBox");
+                    EditorGUILayout.LabelField($"PropsIndex {i}");
                     // i think existingProp can be removed now.
                     bool existingProp = i < Props.BlinkRibbonTrailProps.Length && Props.BlinkRibbonTrailProps[i] != null;
                     EditorGUI.BeginChangeCheck();
@@ -552,6 +562,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     //    Props.BlinkRibbonTrailProps[i].LocalStartPositionOffsets.Length 
                     //    : 0);
                     int numTrails = EditorGUILayout.IntField("NumTrails", existingProp ? Props.BlinkRibbonTrailProps[i].NumTrails : 0);
+                    endPositions[i] = EditorGUILayout.Vector3Field("EndPosition", endPositions[i]);
+                    
                     Vector3[] startPositionOffsetsLocal = new Vector3[numTrails];
                     Vector3[] endPositionOffsetsLocal = new Vector3[numTrails];
                     Vector3[] startRotationOffsetsLocal = new Vector3[numTrails];
@@ -563,6 +575,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     //EditorGUI.BeginChangeCheck();
                     for (int j = 0; j < numTrails; j++)
                     {
+                        EditorGUILayout.BeginVertical("GroupBox");
+                        EditorGUILayout.LabelField($"PropsIndex {i}, TrailIndex {j}");
                         allTrailsNumTrailMarkers[j] = EditorGUILayout.IntField("NumTrailMarkers", (existingProp && Props.BlinkRibbonTrailProps[i].NumTrailMarkers != null) ?
                             Props.BlinkRibbonTrailProps[i].NumTrailMarkers[j] : 0);
                         Vector3[] trailMarkersLocal = new Vector3[allTrailsNumTrailMarkers[j]];
@@ -606,6 +620,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             
                             
                         }
+                        EditorGUILayout.EndVertical();
                     }
                     if (EditorGUI.EndChangeCheck())
                     {
@@ -615,6 +630,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         Props.BlinkRibbonTrailProps[i] = blinkRibbonTrailProps;
                         EditorDestroy();
                     }
+                    EditorGUILayout.EndVertical();
                 }
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -624,6 +640,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         Array.Copy(Props.BlinkRibbonTrailProps, blinkRibbonTrailProps, Props.BlinkRibbonTrailProps.Length > numProps ? numProps : Props.BlinkRibbonTrailProps.Length);
                     }
                     Props.BlinkRibbonTrailProps = blinkRibbonTrailProps;
+
+                    Props.EndPositions = endPositions;
                     EditorDestroy();
                 }
 
@@ -636,6 +654,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 }
             }
 
+        }
+
+        private void ExpandEndPositions(int propsLength)
+        {
+            Vector3[] newEndPositions = new Vector3[propsLength];
+            Vector3[] previousEndPositions = Props.EndPositions;
+            Array.Copy(previousEndPositions, newEndPositions, Math.Min(newEndPositions.Length, previousEndPositions.Length));
+            Props.EndPositions = newEndPositions;
         }
 
         protected override void ManualUpdate()

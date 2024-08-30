@@ -13,13 +13,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class TrailMoverBuilder_TargetPosEditor_Props : MonoBehaviour
     {
         [SerializeField]
-        public Vector3 EndPositionLocal;
-        [SerializeField]
         public int PropsIndex;
         [SerializeField]
         public int NumProps;
         [SerializeField]
         public BlinkRibbonTrailProps[] BlinkRibbonTrailProps = new BlinkRibbonTrailProps[0];
+        [SerializeField]
+        public Vector3[] EndPositions = new Vector3[0];
 
         [SerializeField]
         public Transform MarkersParent;
