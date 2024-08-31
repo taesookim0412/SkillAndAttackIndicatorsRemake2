@@ -38,7 +38,7 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                 ("_Distortion", ShaderPropertyType.Texture),
                 ("_DistortionScale", ShaderPropertyType.Vector),
                 ("_DistortionSpeed", ShaderPropertyType.Vector),
-                ("_DistortionMultiplyTenths", ShaderPropertyType.Float),
+                ("_DistortionMultiply", ShaderPropertyType.Float),
                 ("_Erosion", ShaderPropertyType.Texture),
                 ("_ErosionSpeed", ShaderPropertyType.Float),
                 ("_ErosionMultiply", ShaderPropertyType.Float),

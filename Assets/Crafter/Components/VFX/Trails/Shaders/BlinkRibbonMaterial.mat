@@ -67,20 +67,21 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BaseColorMultiply: 1
-    - _DistortionMultiplyTenths: 1.5
-    - _ErosionMultiply: 0.1
+    - _BaseColorMultiply: 3
+    - _DistortionMultiply: 0.35
+    - _DistortionMultiplyTenths: 3.5
+    - _ErosionMultiply: 1
     - _ErosionSpeed: 0.25
     - _QueueControl: 0
     - _QueueOffset: 0
     - _WindSpeed: -7
     m_Colors:
     - _BaseColorAddSpeed: {r: 0.5, g: 0, b: 0, a: 0}
-    - _BaseColorTiling: {r: 2, g: 1, b: 0, a: 0}
+    - _BaseColorTiling: {r: 1, g: 1, b: 0, a: 0}
     - _ColorMaskScale: {r: 1, g: 1, b: 0, a: 0}
     - _ColorMaskSpeed: {r: 0.43, g: -0.1, b: 0, a: 0}
-    - _Color_01: {r: 1, g: 1, b: 1, a: 0}
-    - _Color_02: {r: 0, g: 0, b: 0, a: 0}
+    - _Color_01: {r: 0, g: 0, b: 0, a: 0}
+    - _Color_02: {r: 0.16037738, g: 0.16037738, b: 0.16037738, a: 0}
     - _DistortionScale: {r: 1, g: 1, b: 0, a: 0}
     - _DistortionSpeed: {r: 0.3, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

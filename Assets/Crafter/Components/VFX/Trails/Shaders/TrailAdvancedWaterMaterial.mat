@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: TrailAdvancedWaterMaterial
-  m_Shader: {fileID: -6465566751694194690, guid: 744a7366530c17f4fa41222dd597a8cc, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 94e6211fcf1044f4fa401a59ca83fea1, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -75,6 +75,7 @@ Material:
     - _BaseColorMultiply: 1
     - _ColorMaskMultiply: 1
     - _ColorSpeed: 0.3
+    - _DistortionMultiply: 0.05
     - _DistortionMultiplyTenths: 0.5
     - _ErosionMultiply: 0
     - _ErosionPower: 1
