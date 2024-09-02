@@ -212,7 +212,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 Vector3 localPosition = LocalPosition;
                 int positionIndex = PositionIndex;
-                float fixedDeltaTime = ObserverUpdateCache.UpdateTickTimeFixedUpdateDeltaTimeSec;
+                float deltaTime = ObserverUpdateCache.UpdateTickTimeRenderThread;
 
                 float sinYAngle = SinYAngle;
                 float cosYAngle = CosYAngle;
@@ -245,7 +245,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 //Debug.Log($"{localPosition.z}, {positionIndex}");
                 if (positionIndex < lineLengthBuffered)
                 {
-                    positionIndex = PositionUtil.MoveTrailPosition(positionIndex, fixedDeltaTime, localPosition.x, localPosition.z,
+                    positionIndex = PositionUtil.MoveTrailPosition(positionIndex, deltaTime, localPosition.x, localPosition.z,
                         out float newLocalPositionX, out float newLocalPositionZ, TimeRequiredIncrementalSec,
                         TimeRequiredIncrementalVelocityMult, WorldPositionsPerZUnit, LocalXPositionsPerZUnit,
                         ElapsedPositionIndexDeltaTime, out float newElapsedPositionIndexDeltaTime, Trail.transform.position.y, out float newWorldPositionY);
@@ -339,7 +339,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     instance.Initialize(observerUpdateCache, waterTrail, LineLengthUnits, ZUnitsPerX, TotalXUnits, timeRequiredForZDistances, system,
                         position.x, position.z, cosYAngle, sinYAngle);
                     TryAddParticleSystem(instance.gameObject);
-                    StartTime = observerUpdateCache.UpdateTickTimeFixedUpdate;
+                    StartTime = observerUpdateCache.UpdateTickTimeRenderThread;
                     return true;
                 }
             }
@@ -352,11 +352,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         protected override void ManualUpdate()
         {
-            float chargeDurationPercentage = (ObserverUpdateCache.UpdateTickTimeFixedUpdate - StartTime) / ChargeDurationFloat;
+            float chargeDurationPercentage = (ObserverUpdateCache.UpdateTickTimeRenderThread - StartTime) / ChargeDurationFloat;
             float fillProgress = EffectsUtil.EaseInOutQuad(chargeDurationPercentage);
             Instance.ManualUpdate(fillProgress);
 
-            LastUpdateTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+            LastUpdateTime = ObserverUpdateCache.UpdateTickTimeRenderThread;
         }
 
         protected override void EditorDestroy()

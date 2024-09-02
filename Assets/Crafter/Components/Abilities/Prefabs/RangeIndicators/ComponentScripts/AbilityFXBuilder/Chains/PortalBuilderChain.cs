@@ -138,7 +138,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         protected override void ManualUpdate()
         {
-            long elapsedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate - StartTime;
+            long elapsedTime = ObserverUpdateCache.UpdateTickTimeRenderThread - StartTime;
             Instance.ManualUpdate(elapsedTime);
         }
 
@@ -207,7 +207,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                     TryAddParticleSystem(instance.gameObject);
 
-                    StartTime = observerUpdateCache.UpdateTickTimeFixedUpdate;
+                    StartTime = observerUpdateCache.UpdateTickTimeRenderThread;
                     return true;
                 }
             }

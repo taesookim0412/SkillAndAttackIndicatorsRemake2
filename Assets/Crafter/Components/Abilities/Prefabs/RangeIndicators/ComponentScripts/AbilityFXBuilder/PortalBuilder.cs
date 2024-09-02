@@ -47,10 +47,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             PortalScaleDifference = PortalScaleMax - PortalScaleMin;
         }
-        protected override float GetRequiredDurationMillis()
+        protected override float GetRequiredDurationMillis(ObserverUpdateCache observerUpdateCache)
         {
             return PortalScaleDuration * 1000f +
-                (SkillAndAttackIndicatorSystem.FixedTimestep * PortalStateLength * 2f) + base.GetRequiredDurationMillis();
+                (observerUpdateCache.UpdateRenderThreadAverageTimeStep * PortalStateLength * 2f) + base.GetRequiredDurationMillis(observerUpdateCache);
         }
         protected override void ResetRequiredDuration()
         {
@@ -119,13 +119,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     CrimsonAura.transform.position = playerPosition + CrimsonAuraOffsetPosition;
                     CrimsonAura.EnableSystems();
 
-                    PortalScaleTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                    PortalScaleTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeRenderThread;
                     PortalState = PortalState.PortalScale;
                     break;
                 case PortalState.PortalScale:
-                    if (PortalScaleTimer.IsTimeNotElapsed_FixedUpdateThread())
+                    if (PortalScaleTimer.IsTimeNotElapsed_RenderThread())
                     {
-                        float scalePercentage = PortalScaleTimer.RemainingDurationPercentage();
+                        float scalePercentage = PortalScaleTimer.RemainingDurationPercentage_RenderThread();
                         Vector3 scaleAddend = PortalScaleDifference * scalePercentage;
                         PortalOrb.transform.localScale = PortalScaleMin + scaleAddend;
                     }

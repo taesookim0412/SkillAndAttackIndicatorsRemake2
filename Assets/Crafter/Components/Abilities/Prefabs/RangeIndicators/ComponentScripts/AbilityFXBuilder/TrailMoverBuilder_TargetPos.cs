@@ -161,7 +161,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 Active = true;
             }
-            float elapsedDeltaTime = ObserverUpdateCache.UpdateTickTimeFixedUpdateDeltaTimeSec;
+            float elapsedDeltaTime = ObserverUpdateCache.UpdateTickTimeRenderThreadDeltaTimeSec;
             float elapsedTimeSec = ElapsedTimeSec;
             if (elapsedTimeSec < TimeRequiredSec)
             {
@@ -496,7 +496,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                                 TimeRequiredSec,
                                 endPositionWorld: endPositionWorld);
                             TryAddParticleSystem(instance.gameObject);
-                            StartTime = observerUpdateCache.UpdateTickTimeFixedUpdate;
+                            StartTime = observerUpdateCache.UpdateTickTimeRenderThread;
                             BakeTrailMeshReinitCompleted = true;
                             return true;
                         }
@@ -692,7 +692,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             TrySaveBakedTrailMesh();
 
-            LastUpdateTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+            LastUpdateTime = ObserverUpdateCache.UpdateTickTimeRenderThread;
         }
         protected void TrySaveBakedTrailMesh()
         {

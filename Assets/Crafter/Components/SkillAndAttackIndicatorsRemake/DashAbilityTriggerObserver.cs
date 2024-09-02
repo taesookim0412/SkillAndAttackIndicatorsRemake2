@@ -125,7 +125,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         protected override void TimerConstrainedFixedUpdate()
         {
-            PortalBuilderChain.ManualUpdate(Timer.ElapsedTime_FixedUpdateThread());
+            PortalBuilderChain.ManualUpdate(Timer.ElapsedTime_RenderThread());
         }
         protected override void OnObserverCompleted()
         {

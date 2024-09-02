@@ -37,10 +37,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public override void ManualAwake()
         {
         }
-        protected virtual float GetRequiredDurationMillis()
+        protected virtual float GetRequiredDurationMillis(ObserverUpdateCache observerUpdateCache)
         {
             return (PlayerOpacityDuration + PlayerOpaqueDuration) * 1000f +
-                (SkillAndAttackIndicatorSystem.FixedTimestep * PlayerBlinkStateLength * 2f);
+                (observerUpdateCache.UpdateRenderThreadAverageTimeStep * PlayerBlinkStateLength * 2f);
         }
         protected virtual void ResetRequiredDuration()
         {
@@ -85,7 +85,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             if (durationAllowed != null)
             {
-                float requiredDurationMultTimes1000 = (long)durationAllowed / GetRequiredDurationMillis() * 1000f;
+                float requiredDurationMultTimes1000 = (long)durationAllowed / GetRequiredDurationMillis(observerUpdateCache) * 1000f;
                 InitializeDurations(requiredDurationMultTimes1000);
                 RequiredDurationsModified = true;
             }
@@ -144,13 +144,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
                     PlayerTransparentClone.SetCloneFXOpacity(playerTransparentCloneOpacity);
 
-                    PlayerOpacityTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                    PlayerOpacityTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeRenderThread;
                     PlayerBlinkState = PlayerBlinkState.PlayerOpacity;
                     break;
                 case PlayerBlinkState.PlayerOpacity:
-                    if (PlayerOpacityTimer.IsTimeNotElapsed_FixedUpdateThread())
+                    if (PlayerOpacityTimer.IsTimeNotElapsed_RenderThread())
                     {
-                        float scalePercentage = PlayerOpacityTimer.RemainingDurationPercentage();
+                        float scalePercentage = PlayerOpacityTimer.RemainingDurationPercentage_RenderThread();
                         if (IsTeleportSource)
                         {
                             scalePercentage = 1f - scalePercentage;
@@ -162,12 +162,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         PlayerTransparentClone.gameObject.SetActive(false);
                         PlayerClientData.PlayerComponent.gameObject.SetActive(!IsTeleportSource);
 
-                        PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                        PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeRenderThread;
                         PlayerBlinkState = PlayerBlinkState.PlayerDespawn;
                     }
                     break;
                 case PlayerBlinkState.PlayerDespawn:
-                    if (PlayerOpaqueTimer.IsTimeElapsed_FixedUpdateThread())
+                    if (PlayerOpaqueTimer.IsTimeElapsed_RenderThread())
                     {
                         Complete();
                     }

@@ -215,7 +215,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     projectorInstance.transform.localEulerAngles = playerRotation;
 
                     ProjectorSet = true;
-                    LastTickTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                    LastTickTime = Props.ObserverUpdateCache.UpdateTickTimeRenderThread;
                 }
                 else
                 {
@@ -225,8 +225,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
             else
             {
-                long elapsedTickTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastTickTime;
-                LastTickTime = Props.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+                long elapsedTickTime = Props.ObserverUpdateCache.UpdateTickTimeRenderThread - LastTickTime;
+                LastTickTime = Props.ObserverUpdateCache.UpdateTickTimeRenderThread;
                 ElapsedTime += elapsedTickTime;
                 ElapsedTimeSecondsFloat += elapsedTickTime * 0.001f;
 

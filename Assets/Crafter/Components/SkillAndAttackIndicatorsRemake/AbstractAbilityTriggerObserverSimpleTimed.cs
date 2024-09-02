@@ -20,12 +20,12 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
         protected override bool TrySetItems()
         {
-            Timer.LastCheckedTime = Props.ObserverUpdateProps.ObserverUpdateCache.UpdateTickTimeFixedUpdate;
+            Timer.LastCheckedTime = Props.ObserverUpdateProps.ObserverUpdateCache.UpdateTickTimeRenderThread;
             return true;
         }
         protected override void ActiveUpdate()
         {
-            if (Timer.IsTimeNotElapsed_FixedUpdateThread())
+            if (Timer.IsTimeNotElapsed_RenderThread())
             {
                 TimerConstrainedFixedUpdate();
             }

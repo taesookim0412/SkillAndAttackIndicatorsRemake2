@@ -68,7 +68,7 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             Initialize(null);
             if (VariablesSet)
             {
-                if (UpdateFixedTimeStep())
+                if (UpdateRenderThread())
                 {
                     WarnFixedUpdateTimeChanged();
                     ManualUpdate();
@@ -79,13 +79,14 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
         {
             Initialize(observerUpdateCache);
         }
-        protected bool UpdateFixedTimeStep()
+        protected bool UpdateRenderThread()
         {
             long newTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            if (newTime - ObserverUpdateCache.UpdateTickTimeFixedUpdate >= SkillAndAttackIndicatorSystem.FixedTimestep)
+            // at 144fps timestep would be 0.0069
+            if (newTime - ObserverUpdateCache.UpdateTickTimeRenderThread >= 0.0069)
             {
-                ObserverUpdateCache.UpdateTickTimeFixedUpdateDeltaTimeSec = (newTime - ObserverUpdateCache.UpdateTickTimeFixedUpdate) * 0.001f;
-                ObserverUpdateCache.UpdateTickTimeFixedUpdate = newTime;
+                ObserverUpdateCache.UpdateTickTimeRenderThreadDeltaTimeSec = (newTime - ObserverUpdateCache.UpdateTickTimeRenderThread) * 0.001f;
+                ObserverUpdateCache.UpdateTickTimeRenderThread = newTime;
                 return true;
             }
             return false;

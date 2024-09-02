@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Crafter.Components.Models.dco;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,20 +9,25 @@ namespace Assets.Crafter.Components.Systems.Observers
 {
     public class ObserverUpdateCache
     {
-        public long UpdateTickTimeFixedUpdate;
-        public float UpdateTickTimeFixedUpdateDeltaTimeSec;
+        public long UpdateTickTimeRenderThread;
+        public float UpdateTickTimeRenderThreadDeltaTimeSec;
+        public float UpdateRenderThreadAverageTimeStep = 0.02f;
+        public FixedSizeArrayDco<float> UpdateRenderThreadPreviousTimeSteps = new FixedSizeArrayDco<float>(5);
 
         public ObserverUpdateCache(long newTime)
         {
-            UpdateTickTimeFixedUpdate = newTime;
+            UpdateTickTimeRenderThread = newTime;
         }
 
-        public void Update_FixedUpdate()
+        public void Update_RenderThread()
         {
             long newTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            UpdateTickTimeFixedUpdateDeltaTimeSec = (newTime - UpdateTickTimeFixedUpdate) * 0.001f;
-            UpdateTickTimeFixedUpdate = newTime;
-            
+            float renderThreadDeltaTimeSec = (newTime - UpdateTickTimeRenderThread) * 0.001f;
+            UpdateTickTimeRenderThreadDeltaTimeSec = renderThreadDeltaTimeSec;
+            UpdateRenderThreadPreviousTimeSteps.AddTail(renderThreadDeltaTimeSec);
+            UpdateRenderThreadAverageTimeStep = UpdateRenderThreadPreviousTimeSteps.CalculateAverage();
+
+            UpdateTickTimeRenderThread = newTime;
         }
     }
 }

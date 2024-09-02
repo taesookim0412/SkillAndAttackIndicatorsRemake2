@@ -25,21 +25,21 @@ namespace Assets.Crafter.Components.Models
             RequiredDuration = requiredDuration;
         }
 
-        public bool IsTimeElapsed_FixedUpdateThread()
+        public bool IsTimeElapsed_RenderThread()
         {
-            return ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastCheckedTime > RequiredDuration;
+            return ObserverUpdateCache.UpdateTickTimeRenderThread - LastCheckedTime > RequiredDuration;
         }
-        public bool IsTimeNotElapsed_FixedUpdateThread()
+        public bool IsTimeNotElapsed_RenderThread()
         {
-            return ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastCheckedTime < RequiredDuration;
+            return ObserverUpdateCache.UpdateTickTimeRenderThread - LastCheckedTime < RequiredDuration;
         }
-        public long ElapsedTime_FixedUpdateThread()
+        public long ElapsedTime_RenderThread()
         {
-            return ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastCheckedTime;
+            return ObserverUpdateCache.UpdateTickTimeRenderThread - LastCheckedTime;
         }
-        public float RemainingDurationPercentage()
+        public float RemainingDurationPercentage_RenderThread()
         {
-            return (ObserverUpdateCache.UpdateTickTimeFixedUpdate - LastCheckedTime) / (float) RequiredDuration;
+            return (ObserverUpdateCache.UpdateTickTimeRenderThread - LastCheckedTime) / (float) RequiredDuration;
         }
     }
 }
