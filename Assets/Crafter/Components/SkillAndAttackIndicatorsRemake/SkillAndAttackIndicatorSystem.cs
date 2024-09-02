@@ -24,8 +24,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         // these are static due to cross-assembly when migrated.
         public const long FixedTimestep = 20L;
-        public const float FixedTimestepSec = 0.02f;
-        public const float FixedTimestepSecReciprocal = 1f / FixedTimestepSec;
         public const float FixedTrailTimestepSec = 0.01f;
         public const float FixedTrailTimestepSecReciprocal = 1f / FixedTrailTimestepSec;
         public const float ONE_THIRD = 1 / 3f;
@@ -180,9 +178,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
             return abilityTriggerFXInstancePools;
         }
-        public void FixedUpdate()
+        public void Update()
         {
-            ObserverUpdateCache.Update_FixedUpdate();
+            ObserverUpdateCache.Update_RenderThread();
 
             //TODO: Migrate to AbstractUpdateObserver.
             if (SkillAndAttackIndicatorObservers.Count > 0)
