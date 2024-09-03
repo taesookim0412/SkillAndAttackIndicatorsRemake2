@@ -165,7 +165,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float elapsedTimeSec = ElapsedTimeSec;
             if (elapsedTimeSec < TimeRequiredSec)
             {
-                MoveTrailToEndPositions(elapsedDeltaTime);
+                MoveTrailToEndPositions(elapsedDeltaTime, out bool _completed);
+                if (_completed)
+                {
+                    Completed = true;
+                }
             }
             else
             {
@@ -175,7 +179,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             ElapsedTimeSec += elapsedDeltaTime;
         }
 
-        public void MoveTrailToEndPositions(float elapsedDeltaTime)
+        public void MoveTrailToEndPositions(float elapsedDeltaTime, out bool completed)
         {
             float previousElapsedTimeSec = ElapsedTimeSec;
             float destElapsedTimeSec = previousElapsedTimeSec + elapsedDeltaTime;
@@ -183,10 +187,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             int startIndex = Math.Max((int) (previousElapsedTimeSec * SkillAndAttackIndicatorSystem.FixedTrailTimestepSecReciprocal), 0);
             int endIndex = (int)(destElapsedTimeSec * SkillAndAttackIndicatorSystem.FixedTrailTimestepSecReciprocal);
 
+            completed = true;
             // very simple with no interpolation between remainder dt.
             BlinkRibbonTrailRenderer[] trails = Trails;
             for (int i = 0; i < trails.Length; i++)
             {
+                bool trailCompleted = false;
                 Vector3[] trailPositions = TrailPositions[i];
                 if (startIndex + 1 < trailPositions.Length) 
                 {
@@ -203,6 +209,20 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         trailRenderer.AddPosition(trailPositions[j]);
                         trail.transform.position = trailPositions[j];
                     }
+                    if (clampedEndIndex >= trailPositions.Length - 1)
+                    {
+                        trailCompleted = true;
+                    }
+                }
+                else
+                {
+                    trailCompleted = true;
+                }
+
+                // completed = completed && trailCompleted without the extra reassignment.
+                if (completed)
+                {
+                    completed = trailCompleted;
                 }
             }
         }

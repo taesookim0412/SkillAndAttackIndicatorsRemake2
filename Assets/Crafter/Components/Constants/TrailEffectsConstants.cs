@@ -47,20 +47,20 @@ namespace Assets.Crafter.Components.Constants
                 }
                 )
             },
-            { BlinkRibbonTrailType.DashBlinkStart, new BlinkRibbonTrailProps(
-                velocity: 15f,
+            { BlinkRibbonTrailType.DashBlink, new BlinkRibbonTrailProps(
+                velocity: 80f,
                 startPositionOffsetsLocal: new Vector3[1]
                 {
-                    new Vector3(0f, 0f, 0.2f)
+                    Vector3.zero
                 },
                 endPositionOffsetsLocal: new Vector3[1]
                 {
-                    new Vector3(1f, 1.135f, 1.76f)
+                    Vector3.zero
                 },
 
                 startRotationOffsetsLocal: new Vector3[1]
                 {
-                    new Vector3(-180f, 0f, 0f)
+                    Vector3.zero
                 },
                 widthMultipliers: new float[1]
                 {
@@ -69,38 +69,12 @@ namespace Assets.Crafter.Components.Constants
                 trailMarkersLocal: new SerializeableArray<Vector3>[1]
                 {
                     new SerializeableArray<Vector3>(new Vector3[5]{
-                        new Vector3(0.202f, 0.059f, 0.258f),
-                        new Vector3(0.438f, 0.516f, 0.422f),
-                        new Vector3(0.579f, 0.895f, 0.572f),
-                        new Vector3(0.684f, 1.281f, 0.63f),
-                        new Vector3(1f, 1.9f, 1.2f)
-
+                        new Vector3(0.2f, 0.05f, 0.52f),
+                        new Vector3(0.44f, 0.8f, 1.39f),
+                        new Vector3(0.58f, 2.68f, 3.01f),
+                        new Vector3(0.81f, 3.98f, 5.09f),
+                        new Vector3(1f, 4.38f, 8.12f)
                     })
-                }
-                )
-            },
-            { BlinkRibbonTrailType.DashBlinkEnd, new BlinkRibbonTrailProps(
-                velocity: 15f,
-                startPositionOffsetsLocal: new Vector3[1]
-                {
-                    new Vector3(-11f, 1.6f, -1.1f)
-                    
-                },
-                endPositionOffsetsLocal: new Vector3[1]
-                {
-                    new Vector3(0f, 0f, -0.2f)
-                },
-                startRotationOffsetsLocal: new Vector3[1]
-                {
-                    new Vector3(0f, 0f, 0f)
-                },
-                widthMultipliers: new float[1]
-                {
-                    1f
-                },
-                trailMarkersLocal: new SerializeableArray<Vector3>[1]
-                {
-                    new SerializeableArray<Vector3>(new Vector3[1]{ new Vector3(-0.8f, 0.8f, -1.2f) })
                 }
                 )
             }
@@ -110,7 +84,6 @@ namespace Assets.Crafter.Components.Constants
     public enum BlinkRibbonTrailType
     {
         Dual,
-        DashBlinkStart,
-        DashBlinkEnd
+        DashBlink,
     }
 }

@@ -28,7 +28,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     {
         private PlayerClientData PlayerClientData;
 
-        private PortalBuilderChain PortalBuilderChain;
+        private DashBlinkAbilityChain DashBlinkAbilityChain;
 
         private Vector3 TargetPosition;
 
@@ -50,7 +50,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         protected override bool PostInstantiateItems(AbstractAbilityFX[] abstractAbilityFXes)
         {
             PlayerClientData playerClientData = PlayerClientData;
-            if (TrailEffectsConstants.BlinkRibbonTrailProps.TryGetValue(BlinkRibbonTrailType.Dual, out BlinkRibbonTrailProps blinkRibbonTrailProps) &&
+            if (TrailEffectsConstants.BlinkRibbonTrailProps.TryGetValue(BlinkRibbonTrailType.DashBlink, out BlinkRibbonTrailProps blinkRibbonTrailProps) &&
                 Props.SkillAndAttackIndicatorSystem.PlayerCloneInstancePools.TryGetValue(playerClientData.Id, out PlayerCloneInstancePool))
             {
                 // must be casted on the ground.
@@ -66,57 +66,48 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 playerTransparentClone.OnCloneFXInit();
                 PlayerTransparentClone = playerTransparentClone;
 
-                CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.CrimsonAuraBlack];
-                crimsonAura.transform.localEulerAngles = playerRotation;
-
-                PortalOrbClear portalOrb = (PortalOrbClear)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalOrbClear];
-                portalOrb.transform.localEulerAngles = playerRotation;
-
                 long blinkRibbonTrailRequiredDuration = 1000L;
                 float blinkRibbonTrailRequiredDurationSec = blinkRibbonTrailRequiredDuration * 0.001f;
-                long portalRequiredDuration = (long)((Timer.RequiredDuration - blinkRibbonTrailRequiredDuration) * 0.4f);
-                PortalBuilder portalSource = (PortalBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Source];
-                portalSource.transform.position = playerPosition;
-                portalSource.transform.localEulerAngles = playerRotation;
-                portalSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, portalRequiredDuration);
+                long blinkRequiredDuration = (long)((Timer.RequiredDuration - blinkRibbonTrailRequiredDuration) * 0.4f);
+                PlayerBlinkBuilder playerBlinkSource = (PlayerBlinkBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Source];
+                playerBlinkSource.transform.position = playerPosition;
+                playerBlinkSource.transform.localEulerAngles = playerRotation;
+                playerBlinkSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, blinkRequiredDuration);
 
-                PortalBuilder portalDest = (PortalBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilder_Dest];
-                portalDest.transform.position = TargetPosition;
-                portalDest.transform.localEulerAngles = playerRotation;
-                portalDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, portalOrb, crimsonAura, portalRequiredDuration);
+                PlayerBlinkBuilder playerBlinkDest = (PlayerBlinkBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Dest];
+                playerBlinkDest.transform.position = TargetPosition;
+                playerBlinkDest.transform.localEulerAngles = playerRotation;
+                playerBlinkDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, blinkRequiredDuration);
 
-                BlinkRibbonTrailRenderer blinkRibbonTrailRenderer1 = (BlinkRibbonTrailRenderer)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer1];
-                blinkRibbonTrailRenderer1.transform.localEulerAngles = playerRotation;
-
-                BlinkRibbonTrailRenderer blinkRibbonTrailRenderer2 = (BlinkRibbonTrailRenderer)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer2];
-                blinkRibbonTrailRenderer2.transform.localEulerAngles = playerRotation;
+                BlinkRibbonTrailRenderer blinkRibbonTrailRenderer = (BlinkRibbonTrailRenderer)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer];
+                blinkRibbonTrailRenderer.transform.localEulerAngles = playerRotation;
 
                 TrailMoverBuilder_TargetPos trailMoverBuilderTargetPos = (TrailMoverBuilder_TargetPos)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.TrailMoverBuilder_TargetPos];
                 trailMoverBuilderTargetPos.transform.position = playerPosition;
                 trailMoverBuilderTargetPos.transform.localEulerAngles = playerRotation;
                 trailMoverBuilderTargetPos.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, 
                     Props.SkillAndAttackIndicatorSystem,
-                    portalSource.PortalOrbOffsetPosition,
-                    new BlinkRibbonTrailRenderer[2] { blinkRibbonTrailRenderer1, blinkRibbonTrailRenderer2 },
+                    Vector3.zero,
+                    new BlinkRibbonTrailRenderer[1] { blinkRibbonTrailRenderer },
                     blinkRibbonTrailProps: blinkRibbonTrailProps,
                     startRotationY: startRotationY,
                     startRotationYCosYAngle: startRotationYCosYAngle,
                     startRotationYSinYAngle: startRotationYSinYAngle,
                     timeRequiredSec: blinkRibbonTrailRequiredDurationSec,
-                    endPositionWorld: TargetPosition + portalDest.PortalOrbOffsetPosition);
+                    endPositionWorld: TargetPosition);
 
                 PlayerClientData = playerClientData;
 
-                PortalBuilderChain portalBuilderChain = (PortalBuilderChain)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PortalBuilderChain];
-                portalBuilderChain.transform.position = playerPosition;
-                portalBuilderChain.transform.localEulerAngles = playerRotation;
-                portalBuilderChain.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache,
-                    portalSource: portalSource,
-                    portalDest: portalDest,
-                    trailMoverBuilderTargetPos,
+                DashBlinkAbilityChain dashBlinkAbilityChain = (DashBlinkAbilityChain)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.DashBlinkAbilityChain];
+                dashBlinkAbilityChain.transform.position = playerPosition;
+                dashBlinkAbilityChain.transform.localEulerAngles = playerRotation;
+                dashBlinkAbilityChain.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache,
+                    playerBlinkBuilderSource: playerBlinkSource,
+                    blinkTrailBuilder: trailMoverBuilderTargetPos,
+                    playerBlinkBuilderDest: playerBlinkDest,
                     startTime: 0L,
                     endTime: Timer.RequiredDuration - 200L);
-                PortalBuilderChain = portalBuilderChain;
+                DashBlinkAbilityChain = dashBlinkAbilityChain;
                 return true;
             }
 
@@ -125,25 +116,22 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         protected override void TimerConstrainedFixedUpdate()
         {
-            PortalBuilderChain.ManualUpdate(Timer.ElapsedTime_RenderThread());
+            DashBlinkAbilityChain.ManualUpdate(Timer.ElapsedTime_RenderThread());
         }
         protected override void OnObserverCompleted()
         {
             // Warning: Potential stale player transparent clone. Workaround: Replace the instance pool reference entirely when meshes change.
             PlayerCloneInstancePool.ReturnPooled(PlayerTransparentClone);
-            
-            PortalBuilderChain.CompleteStatefulFX();
+
+            DashBlinkAbilityChain.CompleteStatefulFX();
         }
     }
     public enum DashAbilityTriggerTypeInstancePools
     {
-        CrimsonAuraBlack,
-        PortalOrbClear,
-        PortalBuilder_Source,
-        PortalBuilder_Dest,
-        PortalBuilderChain,
-        BlinkRibbonTrailRenderer1,
-        BlinkRibbonTrailRenderer2,
+        PlayerBlinkBuilder_Source,
+        PlayerBlinkBuilder_Dest,
+        DashBlinkAbilityChain,
+        BlinkRibbonTrailRenderer,
         TrailMoverBuilder_TargetPos
     }
 }
