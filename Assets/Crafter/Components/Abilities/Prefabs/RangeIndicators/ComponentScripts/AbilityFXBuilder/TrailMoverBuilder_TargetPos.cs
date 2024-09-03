@@ -25,7 +25,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized, HideInInspector]
         private BlinkRibbonTrailProps TrailProps;
         [NonSerialized, HideInInspector]
-        private Vector3[][] TrailPositions;
+        public Vector3[][] TrailPositions;
 
 
         [NonSerialized, HideInInspector]

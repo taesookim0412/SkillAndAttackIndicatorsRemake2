@@ -28,6 +28,20 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
         [NonSerialized, HideInInspector]
         public Material[] Materials;
+
+        [NonSerialized, HideInInspector]
+        private static int CurrentTimeSecId = Shader.PropertyToID("_CurrentTimeSec");
+        [NonSerialized, HideInInspector]
+        private static int EndPositionLocalId = Shader.PropertyToID("_EndPositionLocal");
+        [NonSerialized, HideInInspector]
+        private static int StartTimeSecId = Shader.PropertyToID("_StartTimeSec");
+        [NonSerialized, HideInInspector]
+        private static int RequiredTimeSecId = Shader.PropertyToID("_RequiredTimeSec");
+        [NonSerialized, HideInInspector]
+        private static int RequiredTimeSecReciprocalId = Shader.PropertyToID("_RequiredTimeSecReciprocal");
+        [NonSerialized, HideInInspector]
+        private static int InvertElapsedTimePercentageId = Shader.PropertyToID("_InvertElapsedTimePercentage");
+
         //[NonSerialized, HideInInspector]
         //public PlayerComponentCloneItems PlayerComponentCloneItems;
 
@@ -75,6 +89,31 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
             if (Materials == null)
             {
                 InitializeMaterials();
+            }
+        }
+        public void SetMaterialVertexTargetPos(Vector3 targetPos, float requiredTime, bool invertElapsedTimePercentage)
+        {
+            foreach (Material material in Materials)
+            {
+                float timeSec = Time.time;
+                material.SetFloat(CurrentTimeSecId, timeSec);
+                material.SetVector(EndPositionLocalId, targetPos);
+                
+                material.SetFloat(StartTimeSecId, timeSec);
+
+                material.SetFloat(RequiredTimeSecId, requiredTime);
+
+                float requiredTimeSecReciprocal = requiredTime > 0f ? 1f / requiredTime : 0f;
+                material.SetFloat(RequiredTimeSecReciprocalId, requiredTimeSecReciprocal);
+
+                material.SetInt(InvertElapsedTimePercentageId, invertElapsedTimePercentage ? 1 : 0);
+            }
+        }
+        public void SetMaterialTime()
+        {
+            foreach (Material material in Materials)
+            {
+                material.SetFloat("_CurrentTimeSec", Time.time);
             }
         }
         public void SetCloneFXOpacity(float opacity)

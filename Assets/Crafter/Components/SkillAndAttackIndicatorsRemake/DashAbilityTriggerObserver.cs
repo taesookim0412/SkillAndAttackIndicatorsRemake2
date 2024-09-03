@@ -66,26 +66,16 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 playerTransparentClone.OnCloneFXInit();
                 PlayerTransparentClone = playerTransparentClone;
 
-                long blinkRibbonTrailRequiredDuration = 1000L;
-                float blinkRibbonTrailRequiredDurationSec = blinkRibbonTrailRequiredDuration * 0.001f;
-                long blinkRequiredDuration = (long)((Timer.RequiredDuration - blinkRibbonTrailRequiredDuration) * 0.4f);
-                PlayerBlinkBuilder playerBlinkSource = (PlayerBlinkBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Source];
-                playerBlinkSource.transform.position = playerPosition;
-                playerBlinkSource.transform.localEulerAngles = playerRotation;
-                playerBlinkSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, blinkRequiredDuration);
-
-                PlayerBlinkBuilder playerBlinkDest = (PlayerBlinkBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Dest];
-                playerBlinkDest.transform.position = TargetPosition;
-                playerBlinkDest.transform.localEulerAngles = playerRotation;
-                playerBlinkDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, blinkRequiredDuration);
-
                 BlinkRibbonTrailRenderer blinkRibbonTrailRenderer = (BlinkRibbonTrailRenderer)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer];
                 blinkRibbonTrailRenderer.transform.localEulerAngles = playerRotation;
+
+                long blinkRibbonTrailRequiredDuration = 1000L;
+                float blinkRibbonTrailRequiredDurationSec = blinkRibbonTrailRequiredDuration * 0.001f;
 
                 TrailMoverBuilder_TargetPos trailMoverBuilderTargetPos = (TrailMoverBuilder_TargetPos)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.TrailMoverBuilder_TargetPos];
                 trailMoverBuilderTargetPos.transform.position = playerPosition;
                 trailMoverBuilderTargetPos.transform.localEulerAngles = playerRotation;
-                trailMoverBuilderTargetPos.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, 
+                trailMoverBuilderTargetPos.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache,
                     Props.SkillAndAttackIndicatorSystem,
                     Vector3.zero,
                     new BlinkRibbonTrailRenderer[1] { blinkRibbonTrailRenderer },
@@ -95,6 +85,27 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     startRotationYSinYAngle: startRotationYSinYAngle,
                     timeRequiredSec: blinkRibbonTrailRequiredDurationSec,
                     endPositionWorld: TargetPosition);
+
+                long blinkRequiredDuration = (long)((Timer.RequiredDuration - blinkRibbonTrailRequiredDuration) * 0.4f);
+                PlayerBlinkBuilder playerBlinkSource = (PlayerBlinkBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Source];
+                playerBlinkSource.transform.position = playerPosition;
+                playerBlinkSource.transform.localEulerAngles = playerRotation;
+
+                Vector3[] firstTrailPositions = trailMoverBuilderTargetPos.TrailPositions[0];
+                int firstTrailPositionsSourceVertexIndex = Math.Min(5, firstTrailPositions.Length - 1);
+
+                playerBlinkSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone,
+                    playerVertexTargetPos: firstTrailPositions[firstTrailPositionsSourceVertexIndex] - playerPosition,
+                    blinkRequiredDuration);
+
+                // length - 1 - 5
+                int firstTrailPositionsDestVertexIndex = Math.Max(0, firstTrailPositions.Length - 6);
+                PlayerBlinkBuilder playerBlinkDest = (PlayerBlinkBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Dest];
+                playerBlinkDest.transform.position = TargetPosition;
+                playerBlinkDest.transform.localEulerAngles = playerRotation;
+                playerBlinkDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone, 
+                    playerVertexTargetPos: firstTrailPositions[firstTrailPositionsDestVertexIndex] - playerPosition,
+                    blinkRequiredDuration);
 
                 PlayerClientData = playerClientData;
 

@@ -21,6 +21,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public PlayerClientData PlayerClientData;
         [NonSerialized]
         public PlayerComponent PlayerTransparentClone;
+        [NonSerialized]
+        public Vector3 PlayerVertexTargetPos;
 
         [Range(0f, 2f), SerializeField]
         private float PlayerOpacityDuration;
@@ -79,7 +81,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PlayerOpaqueTimer.RequiredDuration = (long)(PlayerOpaqueDuration * requiredDurationMultTimes1000);
         }
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
-            PlayerComponent playerTransparentClone, long? durationAllowed)
+            PlayerComponent playerTransparentClone, Vector3 playerVertexTargetPos, long? durationAllowed)
         {
             base.Initialize(observerUpdateCache);
 
@@ -105,6 +107,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             PlayerTransparentClone = playerTransparentClone;
 
+            PlayerVertexTargetPos = playerVertexTargetPos;
+
             PlayerComponent playerComponent = playerClientData.PlayerComponent;
 
             if (!IsTeleportSource)
@@ -129,6 +133,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         Active = true;
                     }
                     PlayerTransparentClone.gameObject.SetActive(true);
+                    PlayerTransparentClone.SetMaterialVertexTargetPos(PlayerVertexTargetPos, PlayerOpacityDuration, !IsTeleportSource);
                     PlayerTransparentClone.transform.position = transform.position;
                     PlayerClientData.PlayerComponent.transform.position = transform.position;
                     float playerTransparentCloneOpacity;
@@ -155,6 +160,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         {
                             scalePercentage = 1f - scalePercentage;
                         }
+                        PlayerTransparentClone.SetMaterialTime();
                         PlayerTransparentClone.SetCloneFXOpacity(scalePercentage);
                     }
                     else
@@ -198,6 +204,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(PlayerBlinkBuilder))]
     public class PlayerBlinkBuilderEditor : AbstractEditor<PlayerBlinkBuilder>
     {
+        public Vector3 PlayerVertexTargetPos = new Vector3(0f, 1f, 1f);
         public long? RequiredDuration = null;
         protected override bool OnInitialize(PlayerBlinkBuilder instance, ObserverUpdateCache observerUpdateCache)
         {
@@ -225,7 +232,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         observerUpdateCache = ObserverUpdateCache;
                     }
                     
-                    instance.Initialize(observerUpdateCache, playerClientData, playerTransparentClone, RequiredDuration);
+                    // for this builder, just set the vertex target pos to be forward by unrotated 1 forward z.
+
+                    instance.Initialize(observerUpdateCache, playerClientData, playerTransparentClone,
+                        playerVertexTargetPos: PlayerVertexTargetPos,
+                        RequiredDuration);
                     TryAddParticleSystem(instance.gameObject);
                     return true;
                 }

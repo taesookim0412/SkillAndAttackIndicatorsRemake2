@@ -87,7 +87,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PlayerComponent playerTransparentClone,
             PortalOrbClear portalOrb, CrimsonAuraBlack crimsonAura, long? durationAllowed)
         {
-            base.Initialize(observerUpdateCache, playerClientData, playerTransparentClone, durationAllowed);
+            base.Initialize(observerUpdateCache, playerClientData, playerTransparentClone, 
+                playerVertexTargetPos: PortalOrbOffsetPosition,
+                durationAllowed);
             
             PortalScaleTimer.ObserverUpdateCache = observerUpdateCache;
 
