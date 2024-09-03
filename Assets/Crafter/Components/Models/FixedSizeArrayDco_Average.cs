@@ -20,10 +20,6 @@ namespace Assets.Crafter.Components.Models
                 RemoveHeadPrimitive(out float removedItem);
                 Sum -= removedItem;
             }
-            else
-            {
-                Count++;
-            }
 
             AddTail(newNumber);
             Sum += newNumber;
