@@ -70,25 +70,4 @@ namespace Assets.Crafter.Components.Models.dco
         }
 
     }
-
-    public static class FixedSizeArrayHelpers
-    {
-        public static float CalculateAverage(this FixedSizeArrayDco<float> array)
-        {
-            if (array.Count == 0)
-            {
-                return 0f;
-            }
-
-            float sum = 0;
-
-            int lastIndex = array.Head;
-            for (int i = 0; i < array.Count; i++)
-            {
-                int arrayIndex = (array.Head + i) % array.CapacityMaxSize;
-                sum += array.Items[arrayIndex];
-            }
-            return sum / (float)array.Count;
-        }
-    }
 }

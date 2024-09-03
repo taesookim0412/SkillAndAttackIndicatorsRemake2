@@ -1,4 +1,5 @@
-﻿using Assets.Crafter.Components.Models.dco;
+﻿using Assets.Crafter.Components.Models;
+using Assets.Crafter.Components.Models.dco;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace Assets.Crafter.Components.Systems.Observers
         public long UpdateTickTimeRenderThread;
         public float UpdateTickTimeRenderThreadDeltaTimeSec;
         public float UpdateRenderThreadAverageTimeStep = 0.02f;
-        public FixedSizeArrayDco<float> UpdateRenderThreadPreviousTimeSteps = new FixedSizeArrayDco<float>(5);
+        public FixedSizeArrayDco_Average UpdateRenderThreadPreviousTimeSteps = new FixedSizeArrayDco_Average(5);
 
         public ObserverUpdateCache(long newTime)
         {
@@ -24,8 +25,7 @@ namespace Assets.Crafter.Components.Systems.Observers
             long newTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             float renderThreadDeltaTimeSec = (newTime - UpdateTickTimeRenderThread) * 0.001f;
             UpdateTickTimeRenderThreadDeltaTimeSec = renderThreadDeltaTimeSec;
-            UpdateRenderThreadPreviousTimeSteps.AddTail(renderThreadDeltaTimeSec);
-            UpdateRenderThreadAverageTimeStep = UpdateRenderThreadPreviousTimeSteps.CalculateAverage();
+            UpdateRenderThreadAverageTimeStep = UpdateRenderThreadPreviousTimeSteps.CalculateNewAverage(renderThreadDeltaTimeSec);
 
             UpdateTickTimeRenderThread = newTime;
         }
