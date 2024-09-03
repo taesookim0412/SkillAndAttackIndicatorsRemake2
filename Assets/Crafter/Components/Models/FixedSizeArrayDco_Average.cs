@@ -27,7 +27,7 @@ namespace Assets.Crafter.Components.Models
 
             AddTail(newNumber);
             Sum += newNumber;
-            return Sum / CapacityMaxSize;
+            return Sum / Count;
         }
     }
 }
