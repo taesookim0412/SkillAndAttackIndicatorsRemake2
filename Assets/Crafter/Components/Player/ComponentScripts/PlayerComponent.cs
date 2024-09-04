@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 namespace Assets.Crafter.Components.Player.ComponentScripts
 {
@@ -28,6 +29,8 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
         [NonSerialized, HideInInspector]
         public Material[] Materials;
+        [NonSerialized, HideInInspector]
+        public LocalKeyword[] LocalKeywords;
 
         [NonSerialized, HideInInspector]
         private static int CurrentTimeSecId = Shader.PropertyToID("_CurrentTimeSec");
@@ -39,8 +42,6 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         private static int RequiredTimeSecId = Shader.PropertyToID("_RequiredTimeSec");
         [NonSerialized, HideInInspector]
         private static int RequiredTimeSecReciprocalId = Shader.PropertyToID("_RequiredTimeSecReciprocal");
-        [NonSerialized, HideInInspector]
-        private static int InvertElapsedTimePercentageId = Shader.PropertyToID("_InvertElapsedTimePercentage");
 
         //[NonSerialized, HideInInspector]
         //public PlayerComponentCloneItems PlayerComponentCloneItems;
@@ -54,16 +55,20 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
             }
 
             Material[] materials = new Material[materialsCount];
+            LocalKeyword[] localKeywords = new LocalKeyword[materialsCount];
             int i = 0;
             foreach (SkinnedMeshRendererContainer holder in Meshes)
             {
                 foreach (Material material in holder.SkinnedMeshRenderer.materials)
                 {
-                    materials[i++] = material;
+                    materials[i] = material;
+                    localKeywords[i] = new LocalKeyword(material.shader, "_INVERT_ELAPSED_TIME_PERCENTAGE");
+                    i++;
                 }
             }
 
             Materials = materials;
+            LocalKeywords = localKeywords;
         }
         public PlayerComponent CreateInactiveTransparentCloneInstance()
         {
@@ -93,8 +98,10 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         }
         public void SetMaterialVertexTargetPos(Vector3 targetPos, float requiredTime, bool invertElapsedTimePercentage)
         {
-            foreach (Material material in Materials)
+            for (int i = 0; i < Materials.Length; i++)
             {
+                Material material = Materials[i];
+                LocalKeyword invertElapsedTimePercentageKeyword = LocalKeywords[i];
                 float timeSec = Time.time;
                 material.SetFloat(CurrentTimeSecId, timeSec);
                 material.SetVector(EndPositionLocalId, targetPos);
@@ -106,7 +113,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
                 float requiredTimeSecReciprocal = requiredTime > 0f ? 1f / requiredTime : 0f;
                 material.SetFloat(RequiredTimeSecReciprocalId, requiredTimeSecReciprocal);
 
-                material.SetInt(InvertElapsedTimePercentageId, invertElapsedTimePercentage ? 1 : 0);
+                material.SetKeyword(invertElapsedTimePercentageKeyword, invertElapsedTimePercentage);
             }
         }
         public void SetMaterialTime()
