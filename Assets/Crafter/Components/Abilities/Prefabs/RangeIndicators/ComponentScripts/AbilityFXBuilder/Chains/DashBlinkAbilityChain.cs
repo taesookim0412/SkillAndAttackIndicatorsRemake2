@@ -1,4 +1,6 @@
-﻿using Assets.Crafter.Components.Editors.ComponentScripts;
+﻿using Assets.Crafter.Components.Constants;
+using Assets.Crafter.Components.Editors.ComponentScripts;
+using Assets.Crafter.Components.Models.dpo.TrailEffectsDpo;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using Assets.Crafter.Components.Systems.Observers;
@@ -61,7 +63,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 {
                     if (!(PlayerBlinkBuilderSource.Completed && BlinkTrailBuilder.Completed))
                     {
-                        if ((int)PlayerBlinkBuilderSource.PlayerBlinkState >= (int) PlayerBlinkState.PlayerOpacity)
+                        if ((int)PlayerBlinkBuilderSource.PlayerBlinkState >= (int)PlayerBlinkState.PlayerOpacity)
                         {
                             BlinkTrailBuilder.ManualUpdate();
                         }
@@ -186,27 +188,29 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         observerUpdateCache = ObserverUpdateCache;
                     }
 
-                    trailMoverBuilderTargetPosEditor.SetOverrides(
-                        playerStartPositionOffsetOverride: Vector3.zero,
-                        fullEndPositionOverride: null,
-                        propsEndPositionOffsetOverride: endPositionOffset,
-                        propsIndex: 1);
+                    // Because the editor's Props are found in OnInspectorGUI, this is one of the few places this gets called early.
                     trailMoverBuilderTargetPosEditor.OnInspectorGUI();
-                    trailMoverBuilderTargetPosEditor.ForceInitialize(observerUpdateCache);
+                    BlinkRibbonTrailProps trailProps = trailMoverBuilderTargetPosEditor.Props.BlinkRibbonTrailProps[1];
 
-
-                    Vector3[] firstTrailPositions = trailMoverBuilderTargetPosInstance.TrailPositions[0];
-                    int firstTrailPositionsSourceVertexIndex = Math.Min(5, firstTrailPositions.Length - 1);
-                    Vector3 playerBlinkSourceTargetPos = firstTrailPositions[firstTrailPositionsSourceVertexIndex] - startPosition;
-
+                    Vector3 playerBlinkSourceTargetPos = trailProps.TrailMarkersLocal[0].Items[0];
                     playerBlinkBuilderSourceEditor.SetOverrides(playerBlinkSourceTargetPos);
                     playerBlinkBuilderSourceEditor.RequiredDuration = 400L;
                     playerBlinkBuilderSourceEditor.OnInspectorGUI();
                     playerBlinkBuilderSourceEditor.ForceInitialize(observerUpdateCache);
 
+                    playerBlinkBuilderDestEditor.SetOverrides(new Vector3(0.2f, 0f, -1f));
                     playerBlinkBuilderDestEditor.RequiredDuration = 400L;
                     playerBlinkBuilderDestEditor.OnInspectorGUI();
                     playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
+
+                    Vector3 playerBlinkSourceComponentCenter = playerBlinkBuilderSourceInstance.PlayerClientData.PlayerComponent.BodyCenter;
+                    trailMoverBuilderTargetPosEditor.SetOverrides(
+                        playerStartPositionOffsetOverride: playerBlinkSourceComponentCenter,
+                        fullEndPositionOverride: null,
+                        propsEndPositionOffsetOverride: endPositionOffset,
+                        propsIndex: 1);
+                    trailMoverBuilderTargetPosEditor.OnInspectorGUI();
+                    trailMoverBuilderTargetPosEditor.ForceInitialize(observerUpdateCache);
 
                     instance.Initialize(observerUpdateCache, playerBlinkBuilderSourceInstance, trailMoverBuilderTargetPosInstance,
                         playerBlinkBuilderDestInstance,

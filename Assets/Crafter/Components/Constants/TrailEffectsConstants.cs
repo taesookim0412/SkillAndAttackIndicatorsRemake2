@@ -60,7 +60,7 @@ namespace Assets.Crafter.Components.Constants
 
                 startRotationOffsetsLocal: new Vector3[1]
                 {
-                    Vector3.zero
+                    new Vector3(-45f, 0f, 0f)
                 },
                 widthMultipliers: new float[1]
                 {
@@ -68,11 +68,8 @@ namespace Assets.Crafter.Components.Constants
                 },
                 trailMarkersLocal: new SerializeableArray<Vector3>[1]
                 {
-                    new SerializeableArray<Vector3>(new Vector3[5]{
-                        new Vector3(0.2f, 0.05f, 0.52f),
-                        new Vector3(0.44f, 0.8f, 1.39f),
-                        new Vector3(0.58f, 2.68f, 3.01f),
-                        new Vector3(0.81f, 3.98f, 5.09f),
+                    new SerializeableArray<Vector3>(new Vector3[2]{
+                        new Vector3(0.81f, 3.35f, 5.09f),
                         new Vector3(1f, 4.38f, 8.12f)
                     })
                 }

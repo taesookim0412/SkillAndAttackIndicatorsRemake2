@@ -23,7 +23,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized]
         public BlinkRibbonTrailRenderer[] Trails;
         [NonSerialized, HideInInspector]
-        private BlinkRibbonTrailProps TrailProps;
+        public BlinkRibbonTrailProps TrailProps;
+        [NonSerialized, HideInInspector]
+        public Vector3[] TrailStartPositions;
+        [NonSerialized, HideInInspector]
+        public bool[] TrailStarted;
+        
         [NonSerialized, HideInInspector]
         public Vector3[][] TrailPositions;
 
@@ -55,6 +60,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float[] widthMultipliers = blinkRibbonTrailProps.WidthMultipliers; 
             Vector3[] localStartPositionOffsets = blinkRibbonTrailProps.StartPositionOffsetsLocal;
             Vector3[] trailStartPositions = new Vector3[trails.Length];
+            bool[] trailStarted = new bool[trails.Length];
             for (int i = 0; i < trails.Length; i++)
             {
                 Vector3 startPositionOffset = localStartPositionOffsets[i] + playerStartOffsetPosition;
@@ -76,8 +82,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 trailStartPositions[i] = startPosition;
                 trail.transform.position = startPosition;
                 trail.TrailRenderer.Clear();
-                trail.TrailRenderer.AddPosition(startPosition);
+
+                trailStarted[i] = false;
             }
+            TrailStartPositions = trailStartPositions;
+            TrailStarted = trailStarted;
 
             Vector3[] localStartRotationOffsets = blinkRibbonTrailProps.StartRotationOffsetsLocal;
             Vector3[] movementRotations = new Vector3[trails.Length];
@@ -162,10 +171,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 Active = true;
             }
             float elapsedDeltaTime = ObserverUpdateCache.UpdateTickTimeRenderThreadDeltaTimeSec;
-            float elapsedTimeSec = ElapsedTimeSec;
-            if (elapsedTimeSec < TimeRequiredSec)
+            if (ElapsedTimeSec < TimeRequiredSec)
             {
-                MoveTrailToEndPositions(elapsedDeltaTime, out bool _completed);
+                MoveTrailToEndPositions(elapsedDeltaTime, ElapsedTimeSec, out bool _completed);
                 if (_completed)
                 {
                     Completed = true;
@@ -179,9 +187,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             ElapsedTimeSec += elapsedDeltaTime;
         }
 
-        public void MoveTrailToEndPositions(float elapsedDeltaTime, out bool completed)
+        public void MoveTrailToEndPositions(float elapsedDeltaTime, float previousElapsedTimeSec, out bool completed)
         {
-            float previousElapsedTimeSec = ElapsedTimeSec;
             float destElapsedTimeSec = previousElapsedTimeSec + elapsedDeltaTime;
 
             int startIndex = Math.Max((int) (previousElapsedTimeSec * SkillAndAttackIndicatorSystem.FixedTrailTimestepSecReciprocal), 0);
@@ -194,6 +201,16 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 bool trailCompleted = false;
                 Vector3[] trailPositions = TrailPositions[i];
+
+                if (startIndex == 0 && !TrailStarted[i])
+                {
+                    BlinkRibbonTrailRenderer trail = trails[i];
+                    Vector3 startPosition = TrailStartPositions[i];
+                    trail.TrailRenderer.AddPosition(startPosition);
+                    trail.transform.position = startPosition;
+
+                    TrailStarted[i] = true;
+                }
                 if (startIndex + 1 < trailPositions.Length) 
                 {
                     BlinkRibbonTrailRenderer trail = trails[i];
@@ -442,7 +459,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public bool PropsIndexOverride = false;
         public int PropsIndex;
 
-        private TrailMoverBuilder_TargetPosEditor_Props Props;
+        public TrailMoverBuilder_TargetPosEditor_Props Props;
 
         private bool BakeTrailMesh = false;
         private bool BakeTrailMeshReinitCompleted = false;

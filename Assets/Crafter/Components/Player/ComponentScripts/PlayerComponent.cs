@@ -1,4 +1,5 @@
 ﻿using Assets.Crafter.Components.Models;
+using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using Assets.Crafter.Components.Systems.Observers;
 using StarterAssets;
 using System;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 
 namespace Assets.Crafter.Components.Player.ComponentScripts
 {
@@ -32,7 +34,10 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         [NonSerialized, HideInInspector]
         public LocalKeyword[] LocalKeywords;
         [NonSerialized, HideInInspector]
-        public Vector3[] VertexExtents;
+        public Vector3[] MeshCenters;
+        // Note: Refer to PlayerClientData instead of using BodyCenter.
+        [NonSerialized, HideInInspector]
+        public Vector3 BodyCenter;
 
         [NonSerialized, HideInInspector]
         private static int CurrentTimeSecId = Shader.PropertyToID("_CurrentTimeSec");
@@ -47,7 +52,6 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
         //[NonSerialized, HideInInspector]
         //public PlayerComponentCloneItems PlayerComponentCloneItems;
-
         private void InitializeMaterials()
         {
             int materialsCount = 0;
@@ -58,7 +62,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
             Material[] materials = new Material[materialsCount];
             LocalKeyword[] localKeywords = new LocalKeyword[materialsCount];
-            Vector3[] vertexExtents = new Vector3[materialsCount];
+            Vector3[] meshCenters = new Vector3[materialsCount];
             int i = 0;
             foreach (SkinnedMeshRendererContainer holder in Meshes)
             {
@@ -66,14 +70,18 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
                 {
                     materials[i] = material;
                     localKeywords[i] = new LocalKeyword(material.shader, "_INVERT_ELAPSED_TIME_PERCENTAGE");
-                    vertexExtents[i] = holder.SkinnedMeshRenderer.sharedMesh.bounds.extents;
+                    meshCenters[i] = holder.SkinnedMeshRenderer.sharedMesh.bounds.center;
+                    if (i == 0)
+                    {
+                        BodyCenter = meshCenters[i];
+                    }
                     i++;
                 }
             }
 
             Materials = materials;
             LocalKeywords = localKeywords;
-            VertexExtents = vertexExtents;
+            MeshCenters = meshCenters;
         }
         public PlayerComponent CreateInactiveTransparentCloneInstance()
         {
@@ -108,10 +116,8 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
             {
                 Material material = materials[i];
                 LocalKeyword invertElapsedTimePercentageKeyword = LocalKeywords[i];
-                Vector3 vertexExtents = VertexExtents[i];
 
-                // Since the shader is based on the origin of the object, it must be offset by its extents.
-                Vector3 offsetTargetPos = new Vector3(targetPos.x, targetPos.y - vertexExtents.y, targetPos.z + vertexExtents.z);
+                Vector3 offsetTargetPos = targetPos - MeshCenters[i];
 
                 float timeSec = Time.time;
                 material.SetFloat(CurrentTimeSecId, timeSec);
