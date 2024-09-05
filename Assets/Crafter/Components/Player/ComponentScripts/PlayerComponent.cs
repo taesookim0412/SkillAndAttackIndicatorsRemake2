@@ -31,6 +31,8 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         public Material[] Materials;
         [NonSerialized, HideInInspector]
         public LocalKeyword[] LocalKeywords;
+        [NonSerialized, HideInInspector]
+        public Vector3[] VertexExtents;
 
         [NonSerialized, HideInInspector]
         private static int CurrentTimeSecId = Shader.PropertyToID("_CurrentTimeSec");
@@ -56,6 +58,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
             Material[] materials = new Material[materialsCount];
             LocalKeyword[] localKeywords = new LocalKeyword[materialsCount];
+            Vector3[] vertexExtents = new Vector3[materialsCount];
             int i = 0;
             foreach (SkinnedMeshRendererContainer holder in Meshes)
             {
@@ -63,12 +66,14 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
                 {
                     materials[i] = material;
                     localKeywords[i] = new LocalKeyword(material.shader, "_INVERT_ELAPSED_TIME_PERCENTAGE");
+                    vertexExtents[i] = holder.SkinnedMeshRenderer.sharedMesh.bounds.extents;
                     i++;
                 }
             }
 
             Materials = materials;
             LocalKeywords = localKeywords;
+            VertexExtents = vertexExtents;
         }
         public PlayerComponent CreateInactiveTransparentCloneInstance()
         {
@@ -98,13 +103,19 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         }
         public void SetMaterialVertexTargetPos(Vector3 targetPos, float requiredTime, bool invertElapsedTimePercentage)
         {
-            for (int i = 0; i < Materials.Length; i++)
+            Material[] materials = Materials;
+            for (int i = 0; i < materials.Length; i++)
             {
-                Material material = Materials[i];
+                Material material = materials[i];
                 LocalKeyword invertElapsedTimePercentageKeyword = LocalKeywords[i];
+                Vector3 vertexExtents = VertexExtents[i];
+
+                // Since the shader is based on the origin of the object, it must be offset by its extents.
+                Vector3 offsetTargetPos = new Vector3(targetPos.x, targetPos.y - vertexExtents.y, targetPos.z + vertexExtents.z);
+
                 float timeSec = Time.time;
                 material.SetFloat(CurrentTimeSecId, timeSec);
-                material.SetVector(EndPositionLocalId, targetPos);
+                material.SetVector(EndPositionLocalId, offsetTargetPos);
                 
                 material.SetFloat(StartTimeSecId, timeSec);
 
