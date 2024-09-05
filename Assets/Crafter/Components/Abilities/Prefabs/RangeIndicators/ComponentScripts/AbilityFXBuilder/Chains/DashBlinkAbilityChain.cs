@@ -186,14 +186,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         observerUpdateCache = ObserverUpdateCache;
                     }
 
-                    playerBlinkBuilderSourceEditor.RequiredDuration = 400L;
-                    playerBlinkBuilderSourceEditor.OnInspectorGUI();
-                    playerBlinkBuilderSourceEditor.ForceInitialize(observerUpdateCache);
-
-                    playerBlinkBuilderDestEditor.RequiredDuration = 400L;
-                    playerBlinkBuilderDestEditor.OnInspectorGUI();
-                    playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
-
                     trailMoverBuilderTargetPosEditor.SetOverrides(
                         playerStartPositionOffsetOverride: Vector3.zero,
                         fullEndPositionOverride: null,
@@ -201,6 +193,20 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         propsIndex: 1);
                     trailMoverBuilderTargetPosEditor.OnInspectorGUI();
                     trailMoverBuilderTargetPosEditor.ForceInitialize(observerUpdateCache);
+
+
+                    Vector3[] firstTrailPositions = trailMoverBuilderTargetPosInstance.TrailPositions[0];
+                    int firstTrailPositionsSourceVertexIndex = Math.Min(5, firstTrailPositions.Length - 1);
+                    Vector3 playerBlinkSourceTargetPos = firstTrailPositions[firstTrailPositionsSourceVertexIndex] - startPosition;
+
+                    playerBlinkBuilderSourceEditor.SetOverrides(playerBlinkSourceTargetPos);
+                    playerBlinkBuilderSourceEditor.RequiredDuration = 400L;
+                    playerBlinkBuilderSourceEditor.OnInspectorGUI();
+                    playerBlinkBuilderSourceEditor.ForceInitialize(observerUpdateCache);
+
+                    playerBlinkBuilderDestEditor.RequiredDuration = 400L;
+                    playerBlinkBuilderDestEditor.OnInspectorGUI();
+                    playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
 
                     instance.Initialize(observerUpdateCache, playerBlinkBuilderSourceInstance, trailMoverBuilderTargetPosInstance,
                         playerBlinkBuilderDestInstance,

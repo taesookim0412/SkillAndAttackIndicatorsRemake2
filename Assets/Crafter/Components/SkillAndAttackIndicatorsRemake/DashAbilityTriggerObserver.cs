@@ -93,9 +93,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 Vector3[] firstTrailPositions = trailMoverBuilderTargetPos.TrailPositions[0];
                 int firstTrailPositionsSourceVertexIndex = Math.Min(5, firstTrailPositions.Length - 1);
+                Vector3 playerBlinkSourceTargetPos = firstTrailPositions[firstTrailPositionsSourceVertexIndex] - playerPosition;
 
                 playerBlinkSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone,
-                    playerVertexTargetPos: firstTrailPositions[firstTrailPositionsSourceVertexIndex] - playerPosition,
+                    playerVertexTargetPos: playerBlinkSourceTargetPos,
                     blinkRequiredDuration);
 
                 // length - 1 - 5

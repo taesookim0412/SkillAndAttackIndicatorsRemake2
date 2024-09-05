@@ -206,6 +206,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     {
         public Vector3 PlayerVertexTargetPos = new Vector3(0f, 1f, 1f);
         public long? RequiredDuration = null;
+
+        public void SetOverrides(Vector3 playerVertexTargetPos)
+        {
+            PlayerVertexTargetPos = playerVertexTargetPos;
+        }
         protected override bool OnInitialize(PlayerBlinkBuilder instance, ObserverUpdateCache observerUpdateCache)
         {
             SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
@@ -232,8 +237,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         observerUpdateCache = ObserverUpdateCache;
                     }
                     
-                    // for this builder, just set the vertex target pos to be forward by unrotated 1 forward z.
-
                     instance.Initialize(observerUpdateCache, playerClientData, playerTransparentClone,
                         playerVertexTargetPos: PlayerVertexTargetPos,
                         RequiredDuration);

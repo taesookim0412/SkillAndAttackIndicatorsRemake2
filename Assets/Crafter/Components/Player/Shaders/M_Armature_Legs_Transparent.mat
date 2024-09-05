@@ -93,6 +93,42 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _TrailAdvancedAlphaBlendsubgraph_9d1fd3de8c2e4d5795a57bc15f52dbd9_BaseColor_2272314064_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 6f77f4cc514206e47b33142077d9182e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TrailAdvancedAlphaBlendsubgraph_9d1fd3de8c2e4d5795a57bc15f52dbd9_Distortion_2030523851_Texture2D:
+        m_Texture: {fileID: 2800000, guid: d0edf1cc670b20e46b71dc6f84e2fd83, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TrailAdvancedAlphaBlendsubgraph_9d1fd3de8c2e4d5795a57bc15f52dbd9_Erosion_4062887412_Texture2D:
+        m_Texture: {fileID: 2800000, guid: a593eab558be81643a6f197d0c2e3204, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TrailAdvancedAlphaBlendsubgraph_a4a8bff498644294a68dffac21f25e75_BaseColor_2272314064_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 6f77f4cc514206e47b33142077d9182e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TrailAdvancedAlphaBlendsubgraph_a4a8bff498644294a68dffac21f25e75_Distortion_2030523851_Texture2D:
+        m_Texture: {fileID: 2800000, guid: d0edf1cc670b20e46b71dc6f84e2fd83, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TrailAdvancedAlphaBlendsubgraph_a4a8bff498644294a68dffac21f25e75_Erosion_4062887412_Texture2D:
+        m_Texture: {fileID: 2800000, guid: a593eab558be81643a6f197d0c2e3204, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TrailAdvancedAlphaBlendsubgraph_b7b4785349b74ef8924bb19b60158cf3_BaseColor_2272314064_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 6f77f4cc514206e47b33142077d9182e, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TrailAdvancedAlphaBlendsubgraph_b7b4785349b74ef8924bb19b60158cf3_Distortion_2030523851_Texture2D:
+        m_Texture: {fileID: 2800000, guid: d0edf1cc670b20e46b71dc6f84e2fd83, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TrailAdvancedAlphaBlendsubgraph_b7b4785349b74ef8924bb19b60158cf3_Erosion_4062887412_Texture2D:
+        m_Texture: {fileID: 2800000, guid: a593eab558be81643a6f197d0c2e3204, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -116,6 +152,7 @@ Material:
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _Cull: 2
+    - _CurrentTimeSec: 0
     - _Cutoff: 0.5
     - _DISABLE_ENVIRONMENT_REFLECTIONS: 0
     - _DetailAlbedoMapScale: 1
@@ -126,6 +163,7 @@ Material:
     - _GlossMapScale: 0.757
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _INVERT_ELAPSED_TIME_PERCENTAGE: 0
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -149,6 +187,7 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EndPositionLocal: {r: 0, g: 0, b: 0, a: 0}
     - _EndPositionWorld: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
