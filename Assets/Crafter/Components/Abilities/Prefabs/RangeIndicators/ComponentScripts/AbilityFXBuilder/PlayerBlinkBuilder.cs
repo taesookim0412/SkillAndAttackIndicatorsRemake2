@@ -36,6 +36,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized, HideInInspector]
         private float RequiredDurationMult;
 
+        [NonSerialized, HideInInspector]
+        private long VertexTargetPosStartTime;
+
+        [NonSerialized, HideInInspector]
+        private float PlayerOpacityDurationReciprocal;
+
         public override void ManualAwake()
         {
         }
@@ -133,6 +139,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         Active = true;
                     }
                     PlayerTransparentClone.gameObject.SetActive(true);
+                    VertexTargetPosStartTime = ObserverUpdateCache.UpdateTickTimeRenderThread;
+                    PlayerOpacityDurationReciprocal = PlayerOpacityDuration > 0f ? 1f / PlayerOpacityDuration : 0f;
                     PlayerTransparentClone.SetMaterialVertexTargetPos(PlayerVertexTargetPos, PlayerOpacityDuration, !IsTeleportSource);
                     PlayerTransparentClone.transform.position = transform.position;
                     PlayerClientData.PlayerComponent.transform.position = transform.position;
@@ -160,7 +168,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         {
                             scalePercentage = 1f - scalePercentage;
                         }
-                        PlayerTransparentClone.SetMaterialTime();
+                        SetMaterialVertexPosTimeNormalized();
                         PlayerTransparentClone.SetCloneFXOpacity(scalePercentage);
                     }
                     else
@@ -179,6 +187,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     }
                     break;
             }
+        }
+
+        private void SetMaterialVertexPosTimeNormalized()
+        {
+            long timeElapsed = ObserverUpdateCache.UpdateTickTimeRenderThread - VertexTargetPosStartTime;
+            float timeElapsedNormalized = timeElapsed * PartialMathUtil.SECOND_PER_MILLISECOND * PlayerOpacityDurationReciprocal;
+            float timeElapsedNormalizedClamped = Mathf.Clamp01(timeElapsedNormalized);
+
+            PlayerTransparentClone.SetMaterialVertexPosTimeElapsedNormalized(timeElapsedNormalizedClamped);
         }
         // override aswell in the derived class.
         public override void Complete()

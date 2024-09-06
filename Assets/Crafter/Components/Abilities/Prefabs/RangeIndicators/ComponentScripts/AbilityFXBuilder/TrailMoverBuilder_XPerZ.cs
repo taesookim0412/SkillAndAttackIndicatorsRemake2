@@ -103,7 +103,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 {
                     timeRequiredIncrementalVelocityMult[i] = 0f;
                 }
-                timeRequiredIncrementalSec[i] = timeRequiredDifference * 0.001f;
+                timeRequiredIncrementalSec[i] = timeRequiredDifference * PartialMathUtil.SECOND_PER_MILLISECOND;
 
                 prevAccumTimeRequiredForZDistance = timeRequiredAccum;
             }

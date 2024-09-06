@@ -143,7 +143,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     {
                         case AbilityIndicatorFXType.DashPortalAbility:
                             ChargeDuration = 800L;
-                            ChargeDurationSecondsFloat = 800 * 0.001f;
+                            ChargeDurationSecondsFloat = 800 * PartialMathUtil.SECOND_PER_MILLISECOND;
                             TriggerCreateDelay = 400L;
                             DashTargetPosition = CreateDashTargetPosition(LineLengthUnits,
                                 playerPosition.x, playerPosition.z,
@@ -228,7 +228,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 long elapsedTickTime = Props.ObserverUpdateCache.UpdateTickTimeRenderThread - LastTickTime;
                 LastTickTime = Props.ObserverUpdateCache.UpdateTickTimeRenderThread;
                 ElapsedTime += elapsedTickTime;
-                ElapsedTimeSecondsFloat += elapsedTickTime * 0.001f;
+                ElapsedTimeSecondsFloat += elapsedTickTime * PartialMathUtil.SECOND_PER_MILLISECOND;
 
                 float newFillProgress = 0f;
                 switch (AbilityProjectorType)

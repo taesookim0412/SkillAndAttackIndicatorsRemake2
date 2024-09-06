@@ -70,7 +70,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 blinkRibbonTrailRenderer.transform.localEulerAngles = playerRotation;
 
                 long blinkRibbonTrailRequiredDuration = 1000L;
-                float blinkRibbonTrailRequiredDurationSec = blinkRibbonTrailRequiredDuration * 0.001f;
+                float blinkRibbonTrailRequiredDurationSec = blinkRibbonTrailRequiredDuration * PartialMathUtil.SECOND_PER_MILLISECOND;
 
                 long blinkRequiredDuration = (long)((Timer.RequiredDuration - blinkRibbonTrailRequiredDuration) * 0.4f);
                 PlayerBlinkBuilder playerBlinkSource = (PlayerBlinkBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Source];

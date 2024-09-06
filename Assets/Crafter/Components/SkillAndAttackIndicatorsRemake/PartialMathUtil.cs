@@ -15,6 +15,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public const float PI = 3.14159274F;
         public const float Deg2Rad = PI / 180f;
         public const float Rad2Deg = 57.29578f;
+        public const float SECOND_PER_MILLISECOND = 0.001f;
         public static float RepeatRotation(float t)
         {
             return Clamp(t - (float)Math.Floor(t / 360f) * 360f, 0f, 360f);

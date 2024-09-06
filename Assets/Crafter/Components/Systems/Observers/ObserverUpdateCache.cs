@@ -1,5 +1,6 @@
 ﻿using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Models.dco;
+using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace Assets.Crafter.Components.Systems.Observers
         public void Update_RenderThread()
         {
             long newTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            float renderThreadDeltaTimeSec = (newTime - UpdateTickTimeRenderThread) * 0.001f;
+            float renderThreadDeltaTimeSec = (newTime - UpdateTickTimeRenderThread) * PartialMathUtil.SECOND_PER_MILLISECOND;
             UpdateTickTimeRenderThreadDeltaTimeSec = renderThreadDeltaTimeSec;
             UpdateRenderThreadAverageTimeStep = UpdateRenderThreadPreviousTimeSteps.CalculateNewAverage(renderThreadDeltaTimeSec);
 

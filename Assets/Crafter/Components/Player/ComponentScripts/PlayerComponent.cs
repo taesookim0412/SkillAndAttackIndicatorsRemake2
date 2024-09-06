@@ -40,15 +40,9 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         public Vector3 BodyCenter;
 
         [NonSerialized, HideInInspector]
-        private static int CurrentTimeSecId = Shader.PropertyToID("_CurrentTimeSec");
-        [NonSerialized, HideInInspector]
         private static int EndPositionLocalId = Shader.PropertyToID("_EndPositionLocal");
         [NonSerialized, HideInInspector]
-        private static int StartTimeSecId = Shader.PropertyToID("_StartTimeSec");
-        [NonSerialized, HideInInspector]
-        private static int RequiredTimeSecId = Shader.PropertyToID("_RequiredTimeSec");
-        [NonSerialized, HideInInspector]
-        private static int RequiredTimeSecReciprocalId = Shader.PropertyToID("_RequiredTimeSecReciprocal");
+        private static int TimeElapsedNormalizedId = Shader.PropertyToID("_TimeElapsedNormalized");
 
         //[NonSerialized, HideInInspector]
         //public PlayerComponentCloneItems PlayerComponentCloneItems;
@@ -119,25 +113,18 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
                 Vector3 offsetTargetPos = targetPos - MeshCenters[i];
 
-                float timeSec = Time.time;
-                material.SetFloat(CurrentTimeSecId, timeSec);
                 material.SetVector(EndPositionLocalId, offsetTargetPos);
-                
-                material.SetFloat(StartTimeSecId, timeSec);
 
-                material.SetFloat(RequiredTimeSecId, requiredTime);
-
-                float requiredTimeSecReciprocal = requiredTime > 0f ? 1f / requiredTime : 0f;
-                material.SetFloat(RequiredTimeSecReciprocalId, requiredTimeSecReciprocal);
+                material.SetFloat(TimeElapsedNormalizedId, 0f);
 
                 material.SetKeyword(invertElapsedTimePercentageKeyword, invertElapsedTimePercentage);
             }
         }
-        public void SetMaterialTime()
+        public void SetMaterialVertexPosTimeElapsedNormalized(float timeElapsedNormalized)
         {
             foreach (Material material in Materials)
             {
-                material.SetFloat("_CurrentTimeSec", Time.time);
+                material.SetFloat(TimeElapsedNormalizedId, timeElapsedNormalized);
             }
         }
         public void SetCloneFXOpacity(float opacity)

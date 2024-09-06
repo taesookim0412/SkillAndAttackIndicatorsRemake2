@@ -85,7 +85,7 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             // at 144fps timestep would be 0.0069
             if (newTime - ObserverUpdateCache.UpdateTickTimeRenderThread >= 0.0069)
             {
-                ObserverUpdateCache.UpdateTickTimeRenderThreadDeltaTimeSec = (newTime - ObserverUpdateCache.UpdateTickTimeRenderThread) * 0.001f;
+                ObserverUpdateCache.UpdateTickTimeRenderThreadDeltaTimeSec = (newTime - ObserverUpdateCache.UpdateTickTimeRenderThread) * PartialMathUtil.SECOND_PER_MILLISECOND;
                 ObserverUpdateCache.UpdateTickTimeRenderThread = newTime;
                 return true;
             }
