@@ -127,6 +127,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(DashBlinkAbilityChain))]
     public class DashBlinkAbilityChainEditor : AbstractEditor<DashBlinkAbilityChain>
     {
+        private Vector3 PlayerBlinkSourceTargetPos = new Vector3(1.13f, 3.76f, 7.53f);
         private long StartTime;
         protected override void EditorDestroy()
         {
@@ -141,6 +142,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             long elapsedTime = ObserverUpdateCache.UpdateTickTimeRenderThread - StartTime;
             Instance.ManualUpdate(elapsedTime);
+        }
+
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+
+            PlayerBlinkSourceTargetPos = EditorGUILayout.Vector3Field("PlayerBlinkSourceTargetPos", PlayerBlinkSourceTargetPos);
         }
 
         protected override bool OnInitialize(DashBlinkAbilityChain instance, ObserverUpdateCache observerUpdateCache)
@@ -192,8 +200,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     trailMoverBuilderTargetPosEditor.OnInspectorGUI();
                     BlinkRibbonTrailProps trailProps = trailMoverBuilderTargetPosEditor.Props.BlinkRibbonTrailProps[1];
 
-                    Vector3 playerBlinkSourceTargetPos = trailProps.TrailMarkersLocal[0].Items[0];
-                    playerBlinkBuilderSourceEditor.SetOverrides(playerBlinkSourceTargetPos);
+                    //Vector3 playerBlinkSourceTargetPos = trailProps.TrailMarkersLocal[0].Items[0];
+                    playerBlinkBuilderSourceEditor.SetOverrides(PlayerBlinkSourceTargetPos);
                     playerBlinkBuilderSourceEditor.RequiredDuration = 400L;
                     playerBlinkBuilderSourceEditor.OnInspectorGUI();
                     playerBlinkBuilderSourceEditor.ForceInitialize(observerUpdateCache);
@@ -203,9 +211,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     playerBlinkBuilderDestEditor.OnInspectorGUI();
                     playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
 
-                    Vector3 playerBlinkSourceComponentCenter = playerBlinkBuilderSourceInstance.PlayerClientData.PlayerComponent.BodyCenter;
                     trailMoverBuilderTargetPosEditor.SetOverrides(
-                        playerStartPositionOffsetOverride: playerBlinkSourceComponentCenter,
+                        playerStartPositionOffsetOverride: Vector3.zero,
                         fullEndPositionOverride: null,
                         propsEndPositionOffsetOverride: endPositionOffset,
                         propsIndex: 1);

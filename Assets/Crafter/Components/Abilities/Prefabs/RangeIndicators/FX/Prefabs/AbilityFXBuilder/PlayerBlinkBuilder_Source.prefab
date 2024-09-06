@@ -48,6 +48,6 @@ MonoBehaviour:
   ParticleSystems: []
   TrailRenderer: {fileID: 0}
   EnableParticleSystemsRequired: 0
-  PlayerOpacityDuration: 0.365
+  PlayerOpacityDuration: 0.29
   PlayerOpaqueDuration: 0
   IsTeleportSource: 1

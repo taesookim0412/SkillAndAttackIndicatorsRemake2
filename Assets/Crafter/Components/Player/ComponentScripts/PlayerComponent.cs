@@ -63,7 +63,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
                 foreach (Material material in holder.SkinnedMeshRenderer.materials)
                 {
                     materials[i] = material;
-                    localKeywords[i] = new LocalKeyword(material.shader, "_INVERT_ELAPSED_TIME_PERCENTAGE");
+                    localKeywords[i] = new LocalKeyword(material.shader, "_INVERT_TARGET_POS");
                     meshCenters[i] = holder.SkinnedMeshRenderer.sharedMesh.bounds.center;
                     if (i == 0)
                     {
@@ -103,13 +103,13 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
                 InitializeMaterials();
             }
         }
-        public void SetMaterialVertexTargetPos(Vector3 targetPos, float requiredTime, bool invertElapsedTimePercentage)
+        public void SetMaterialVertexTargetPos(Vector3 targetPos, float requiredTime, bool invertTargetPos)
         {
             Material[] materials = Materials;
             for (int i = 0; i < materials.Length; i++)
             {
                 Material material = materials[i];
-                LocalKeyword invertElapsedTimePercentageKeyword = LocalKeywords[i];
+                LocalKeyword invertTargetPosKeyword = LocalKeywords[i];
 
                 Vector3 offsetTargetPos = targetPos - MeshCenters[i];
 
@@ -117,7 +117,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
                 material.SetFloat(TimeElapsedNormalizedId, 0f);
 
-                material.SetKeyword(invertElapsedTimePercentageKeyword, invertElapsedTimePercentage);
+                material.SetKeyword(invertTargetPosKeyword, invertTargetPos);
             }
         }
         public void SetMaterialVertexPosTimeElapsedNormalized(float timeElapsedNormalized)

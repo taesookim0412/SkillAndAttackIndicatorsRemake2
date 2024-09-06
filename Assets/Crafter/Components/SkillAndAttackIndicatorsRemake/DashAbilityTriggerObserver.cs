@@ -78,27 +78,24 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 playerBlinkSource.transform.localEulerAngles = playerRotation;
 
                 playerBlinkSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone,
-                    playerVertexTargetPos: blinkRibbonTrailProps.TrailMarkersLocal[0].Items[0],
+                    playerVertexTargetPos: new Vector3(0.12f, 0.36f, 1.22f),
                     blinkRequiredDuration);
 
                 PlayerBlinkBuilder playerBlinkDest = (PlayerBlinkBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Dest];
                 playerBlinkDest.transform.position = TargetPosition;
                 playerBlinkDest.transform.localEulerAngles = playerRotation;
                 playerBlinkDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone,
-                    playerVertexTargetPos: Vector3.zero,
+                    playerVertexTargetPos: new Vector3(0.2f, 0f, -1f),
                     blinkRequiredDuration);
 
                 PlayerClientData = playerClientData;
-
-                // relies on OnCloneFXInit
-                Vector3 playerBlinkSourceComponentCenter = playerTransparentClone.BodyCenter;
 
                 TrailMoverBuilder_TargetPos trailMoverBuilderTargetPos = (TrailMoverBuilder_TargetPos)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.TrailMoverBuilder_TargetPos];
                 trailMoverBuilderTargetPos.transform.position = playerPosition;
                 trailMoverBuilderTargetPos.transform.localEulerAngles = playerRotation;
                 trailMoverBuilderTargetPos.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache,
                     Props.SkillAndAttackIndicatorSystem,
-                    playerStartOffsetPosition: playerBlinkSourceComponentCenter,
+                    playerStartOffsetPosition: Vector3.zero,
                     new BlinkRibbonTrailRenderer[1] { blinkRibbonTrailRenderer },
                     blinkRibbonTrailProps: blinkRibbonTrailProps,
                     startRotationY: startRotationY,

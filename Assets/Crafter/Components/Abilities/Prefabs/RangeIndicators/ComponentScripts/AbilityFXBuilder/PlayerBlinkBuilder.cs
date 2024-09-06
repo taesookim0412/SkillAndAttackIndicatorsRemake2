@@ -222,11 +222,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class PlayerBlinkBuilderEditor : AbstractEditor<PlayerBlinkBuilder>
     {
         public Vector3 PlayerVertexTargetPos = new Vector3(0f, 1f, 1f);
+        private bool PlayerVertexTargetPosOverride = false;
         public long? RequiredDuration = null;
 
         public void SetOverrides(Vector3 playerVertexTargetPos)
         {
             PlayerVertexTargetPos = playerVertexTargetPos;
+            PlayerVertexTargetPosOverride = true;
         }
         protected override bool OnInitialize(PlayerBlinkBuilder instance, ObserverUpdateCache observerUpdateCache)
         {
@@ -245,6 +247,17 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     if (instance.IsTeleportSource)
                     {
                         playerComponentInstance.gameObject.SetActive(true);
+                    }
+                    if (!PlayerVertexTargetPosOverride)
+                    {
+                        if (instance.IsTeleportSource) 
+                        {
+                            PlayerVertexTargetPos = new Vector3(1f, 0f, 0.2f);
+                        }
+                        else
+                        {
+                            PlayerVertexTargetPos = new Vector3(0.2f, 0f, -1f);
+                        }
                     }
                     PlayerClientData playerClientData = new PlayerClientData(system.PlayerGuid, playerComponentInstance);
 
