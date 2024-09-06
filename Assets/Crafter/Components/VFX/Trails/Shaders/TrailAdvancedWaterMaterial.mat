@@ -24,7 +24,8 @@ Material:
   m_Shader: {fileID: -6465566751694194690, guid: 94e6211fcf1044f4fa401a59ca83fea1, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _USE_VERTEX_COLOR
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -80,8 +81,10 @@ Material:
     - _ErosionMultiply: 0
     - _ErosionPower: 1
     - _ErosionSpeed: 0.25
+    - _MIX_COLOR_EROSION: 0
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _USE_VERTEX_COLOR: 1
     - _WindSpeed: -7
     m_Colors:
     - _BaseColorAddSpeed: {r: 0.5, g: 0, b: 0, a: 0}
