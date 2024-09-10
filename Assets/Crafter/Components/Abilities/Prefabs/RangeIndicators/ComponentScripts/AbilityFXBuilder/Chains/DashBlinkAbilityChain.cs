@@ -128,6 +128,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class DashBlinkAbilityChainEditor : AbstractEditor<DashBlinkAbilityChain>
     {
         private Vector3 PlayerBlinkSourceTargetPos = new Vector3(1.13f, 3.76f, 7.53f);
+        private Vector3 PlayerBlinkDestTargetPos = new Vector3(0.2f, 0f, -1.2f);
         private long StartTime;
         protected override void EditorDestroy()
         {
@@ -149,6 +150,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             base.OnInspectorGUI();
 
             PlayerBlinkSourceTargetPos = EditorGUILayout.Vector3Field("PlayerBlinkSourceTargetPos", PlayerBlinkSourceTargetPos);
+            PlayerBlinkDestTargetPos = EditorGUILayout.Vector3Field("PlayerBlinkDestTargetPos", PlayerBlinkDestTargetPos);
         }
 
         protected override bool OnInitialize(DashBlinkAbilityChain instance, ObserverUpdateCache observerUpdateCache)
@@ -196,28 +198,29 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         observerUpdateCache = ObserverUpdateCache;
                     }
 
-                    // Because the editor's Props are found in OnInspectorGUI, this is one of the few places this gets called early.
-                    trailMoverBuilderTargetPosEditor.OnInspectorGUI();
-                    BlinkRibbonTrailProps trailProps = trailMoverBuilderTargetPosEditor.Props.BlinkRibbonTrailProps[1];
-
-                    //Vector3 playerBlinkSourceTargetPos = trailProps.TrailMarkersLocal[0].Items[0];
-                    playerBlinkBuilderSourceEditor.SetOverrides(PlayerBlinkSourceTargetPos);
-                    playerBlinkBuilderSourceEditor.RequiredDuration = 400L;
-                    playerBlinkBuilderSourceEditor.OnInspectorGUI();
-                    playerBlinkBuilderSourceEditor.ForceInitialize(observerUpdateCache);
-
-                    playerBlinkBuilderDestEditor.SetOverrides(new Vector3(0.2f, 0f, -1f));
-                    playerBlinkBuilderDestEditor.RequiredDuration = 400L;
-                    playerBlinkBuilderDestEditor.OnInspectorGUI();
-                    playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
+                    (Vector3 localPos, bool useEndPosition)[] trailVertexPositionsLocal = new (Vector3 localPos, bool useEndPosition)[2] { 
+                        (PlayerBlinkSourceTargetPos, false), 
+                        (PlayerBlinkDestTargetPos, true) };
 
                     trailMoverBuilderTargetPosEditor.SetOverrides(
                         playerStartPositionOffsetOverride: Vector3.zero,
                         fullEndPositionOverride: null,
                         propsEndPositionOffsetOverride: endPositionOffset,
-                        propsIndex: 1);
+                        propsIndex: 1,
+                        trailVertexPositionsLocal: trailVertexPositionsLocal,
+                        trailVertexTrailIndex: 0);
                     trailMoverBuilderTargetPosEditor.OnInspectorGUI();
                     trailMoverBuilderTargetPosEditor.ForceInitialize(observerUpdateCache);
+
+                    playerBlinkBuilderSourceEditor.SetOverrides(trailMoverBuilderTargetPosInstance.ClosestTrailPositionsLocal[0]);
+                    playerBlinkBuilderSourceEditor.RequiredDuration = 400L;
+                    playerBlinkBuilderSourceEditor.OnInspectorGUI();
+                    playerBlinkBuilderSourceEditor.ForceInitialize(observerUpdateCache);
+
+                    playerBlinkBuilderDestEditor.SetOverrides(trailMoverBuilderTargetPosInstance.ClosestTrailPositionsLocal[1]);
+                    playerBlinkBuilderDestEditor.RequiredDuration = 400L;
+                    playerBlinkBuilderDestEditor.OnInspectorGUI();
+                    playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
 
                     instance.Initialize(observerUpdateCache, playerBlinkBuilderSourceInstance, trailMoverBuilderTargetPosInstance,
                         playerBlinkBuilderDestInstance,

@@ -32,6 +32,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized, HideInInspector]
         public Vector3[][] TrailPositions;
 
+        [NonSerialized, HideInInspector]
+        public Vector3[] ClosestTrailPositionsLocal;
+
 
         [NonSerialized, HideInInspector]
         private float ElapsedTimeSec;
@@ -51,7 +54,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             float startRotationYCosYAngle,
             float startRotationYSinYAngle,
             float timeRequiredSec,
-            Vector3 endPositionWorld)
+            Vector3 endPositionWorld,
+            (Vector3 localPos, bool useEndPosition)[] trailVertexPositionsLocal = null,
+            int trailVertexTrailIndex = 0
+            )
         {
             base.Initialize(observerUpdateCache);
 
@@ -134,6 +140,19 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             TrailPositions = CreateTrailPositions(trails, allTrailMarkersWorldAndEndPosition, movementRotations, trailStartPositions, timeRequiredSec,
                 velocity: blinkRibbonTrailProps.Velocity);
+
+            if (trailVertexPositionsLocal != null)
+            {
+                Vector3 endPositionLocal = endPositionWorld - startWorldPosition;
+                ClosestTrailPositionsLocal = FindClosestTrailPositionsLocal(TrailPositions[trailVertexTrailIndex], trailVertexPositionsLocal, startWorldPosition,
+                    endPositionLocal,
+                    startRotationYCosYAngle, startRotationYSinYAngle, startRotationY);
+            }
+            else
+            {
+                ClosestTrailPositionsLocal = null;
+            }
+            
         }
 
         public void SetEndPositionsWorld(float startYRotation, Vector3 newEndPositionWorld,
@@ -434,6 +453,78 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             return allTrailPositions;
         }
+
+        private Vector3[] FindClosestTrailPositionsLocal(Vector3[] trailPositions, (Vector3 localPos, bool useEndPosition)[] otherPositionsLocal, 
+            Vector3 startWorldPosition,
+            Vector3 endPositionLocal,
+            float startRotationYCosYAngle, float startRotationYSinYAngle, float rotationY)
+        {
+            float unrotatedRotationAngle = rotationY * -1 * PartialMathUtil.Deg2Rad;
+            float unrotatedStartRotationYCosYAngle = Mathf.Cos(unrotatedRotationAngle);
+            float unrotatedStartRotationYSinYAngle = Mathf.Sin(unrotatedRotationAngle);
+
+            Vector3[] closestTrailPositionsLocal = new Vector3[otherPositionsLocal.Length];
+
+            for (int i = 0; i < otherPositionsLocal.Length; i++)
+            {
+                (Vector3 otherPositionLocal, bool useEndPosition) = otherPositionsLocal[i];
+                if (useEndPosition)
+                {
+                    otherPositionLocal = endPositionLocal + otherPositionLocal;
+                }
+                
+                float rotatedX = otherPositionLocal.z * startRotationYSinYAngle + otherPositionLocal.x * startRotationYCosYAngle;
+                float rotatedZ = otherPositionLocal.z * startRotationYCosYAngle - otherPositionLocal.x * startRotationYSinYAngle;
+
+                Vector3 otherPositionWorld = new Vector3(startWorldPosition.x + rotatedX,
+                    startWorldPosition.y + otherPositionLocal.y,
+                    startWorldPosition.z + rotatedZ);
+
+                if (trailPositions.Length == 0)
+                {
+                    closestTrailPositionsLocal[i] = Vector3.zero;
+                }
+                else
+                {
+                    float minDistance = (otherPositionWorld - trailPositions[0]).magnitude;
+                    Vector3 closestPosition = trailPositions[0];
+
+                    for (int j = 1; j < trailPositions.Length; j++)
+                    {
+                        float distance = (otherPositionWorld - trailPositions[j]).magnitude;
+                        if (distance < minDistance)
+                        {
+                            minDistance = distance;
+                            closestPosition = trailPositions[j];
+                        }
+                    }
+
+                    // convert to object space -- reverse the rotation and offset.
+                    Vector3 localClosestPosition = closestPosition - startWorldPosition;
+
+                    float unrotatedX = localClosestPosition.z * unrotatedStartRotationYSinYAngle + localClosestPosition.x * unrotatedStartRotationYCosYAngle;
+                    float unrotatedZ = localClosestPosition.z * unrotatedStartRotationYCosYAngle - localClosestPosition.x * unrotatedStartRotationYSinYAngle;
+
+                    //Debug.Log(localClosestPosition);
+                    //Debug.Log(new Vector3(unrotatedX, localClosestPosition.y - startWorldPosition.y, unrotatedZ));
+                    Vector3 localPositionFromStart = new Vector3(unrotatedX, localClosestPosition.y, unrotatedZ);
+                    if (useEndPosition)
+                    {
+                        //Debug.Log($"{endPositionLocal}, {localPositionFromStart}");
+                        //Debug.Log(endPositionLocal - localPositionFromStart);
+                        // the direction is based on the endpositionlocal.
+                        closestTrailPositionsLocal[i] = localPositionFromStart - endPositionLocal;
+                    }
+                    else
+                    {
+                        closestTrailPositionsLocal[i] = localPositionFromStart;
+                    }
+                    //Debug.Log(closestTrailPositionsLocal[i]);
+                }
+            }
+
+            return closestTrailPositionsLocal;
+        }
         public override void Complete()
         {
             base.Complete();
@@ -458,6 +549,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public Vector3 PropsEndPositionOffset;
         public bool PropsIndexOverride = false;
         public int PropsIndex;
+        public (Vector3 localPos, bool useEndPosition)[] TrailVertexPositionsLocal;
+        public int TrailVertexTrailIndex;
 
         public TrailMoverBuilder_TargetPosEditor_Props Props;
 
@@ -472,7 +565,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
         // Enabled only when a new array has been added in dev mode then turned back off.
         private bool ForceResetPropsFlag = false;
-        public void SetOverrides(Vector3 playerStartPositionOffsetOverride, Vector3? fullEndPositionOverride, Vector3 propsEndPositionOffsetOverride, int propsIndex)
+        public void SetOverrides(Vector3 playerStartPositionOffsetOverride, Vector3? fullEndPositionOverride, Vector3 propsEndPositionOffsetOverride, int propsIndex,
+            (Vector3 localPos, bool useEndPosition)[] trailVertexPositionsLocal, int trailVertexTrailIndex)
         {
             StartPositionOffsetOverride = true;
             PlayerStartPositionOffset = playerStartPositionOffsetOverride;
@@ -490,6 +584,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             PropsIndexOverride = true;
             PropsIndex = propsIndex;
+
+            TrailVertexPositionsLocal = trailVertexPositionsLocal;
+            TrailVertexTrailIndex = trailVertexTrailIndex;
         }
         protected override bool OnInitialize(TrailMoverBuilder_TargetPos instance, ObserverUpdateCache observerUpdateCache)
         {
@@ -531,7 +628,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             instance.Initialize(observerUpdateCache, system, PlayerStartPositionOffset, blinkRibbonTrailRenderers, blinkRibbonTrailProps, startRotationY,
                                 startRotationYCosYAngle, startRotationYSinYAngle,
                                 TimeRequiredSec,
-                                endPositionWorld: endPositionWorld);
+                                endPositionWorld: endPositionWorld,
+                                trailVertexPositionsLocal: TrailVertexPositionsLocal, TrailVertexTrailIndex);
                             TryAddParticleSystem(instance.gameObject);
                             StartTime = observerUpdateCache.UpdateTickTimeRenderThread;
                             BakeTrailMeshReinitCompleted = true;
