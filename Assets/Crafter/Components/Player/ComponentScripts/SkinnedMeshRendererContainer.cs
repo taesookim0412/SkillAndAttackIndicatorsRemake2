@@ -13,5 +13,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         public SkinnedMeshRenderer SkinnedMeshRenderer;
         [SerializeField]
         public Material[] TransparentMaterials;
+        [SerializeField]
+        public bool IsBody = false;
     }
 }

@@ -20,6 +20,15 @@ namespace Assets.Crafter.Components.Models
                 ["w"] = vector4.w
             };
         }
+        public static JObject ToJObject(this Vector3 vector3)
+        {
+            return new JObject
+            {
+                ["x"] = vector3.x,
+                ["y"] = vector3.y,
+                ["z"] = vector3.z
+            };
+        }
         public static JObject ToJObject(this Color color)
         {
             return new JObject
