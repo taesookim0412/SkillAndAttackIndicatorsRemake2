@@ -86,6 +86,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         }
         public void OnEnable()
         {
+            //  Does not belong here! MOVE THIS!
+            PartialAssetInitializer.InitializeAssets();
+
             long updateTickTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             ObserverUpdateCache = new ObserverUpdateCache(updateTickTime);
             ObserverUpdateProps = new ObserverUpdateProps(ObserverUpdateCache);

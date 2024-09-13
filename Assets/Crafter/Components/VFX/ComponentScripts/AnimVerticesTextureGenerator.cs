@@ -27,6 +27,8 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
         [SerializeField, HideInInspector]
         public PlayerComponent PlayerComponent;
         [SerializeField, HideInInspector]
+        public PlayerMeshSet PlayerMeshSet;
+        [SerializeField, HideInInspector]
         public Animator Animator;
         [SerializeField, HideInInspector]
         public string AnimStateName;
@@ -58,6 +60,7 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
             Undo.RecordObject(Instance, "All State");
 
             Instance.AnimVerticesTexture = (AnimVerticesTexture)EditorGUILayout.Popup((int)Instance.AnimVerticesTexture, AnimVerticesTexturesConstants.AnimVerticesTextureNames);
+            Instance.PlayerMeshSet = (PlayerMeshSet)EditorGUILayout.Popup((int)Instance.PlayerMeshSet, PartialPlayerConstants.PlayerMeshSetNames);
 
             EditorGUI.BeginChangeCheck();
             Instance.PlayerComponent = (PlayerComponent)EditorGUILayout.ObjectField("PlayerComponent", Instance.PlayerComponent, typeof(PlayerComponent), true);
@@ -95,7 +98,7 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
             {
                 SkinnedMeshRendererContainer[] smrContainers = Instance.PlayerComponent.Meshes;
 
-                Dictionary<string, Dictionary<string, VertexTextureItems>> meshVertexPosTextures = new Dictionary<string, Dictionary<string, VertexTextureItems>>(smrContainers.Length); 
+                Dictionary<string, Dictionary<string, AnimVertexEditorTextureItems>> meshVertexPosTextures = new Dictionary<string, Dictionary<string, AnimVertexEditorTextureItems>>(smrContainers.Length); 
                 BakeVertexWeightedPositions(
                     meshVertexPosTextures,
                     onlyBody: true);
@@ -105,22 +108,22 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                 TrySaveMeshVertexTextures(meshVertexPosTextures, maxChannelValues);
             }
         }
-        public void ConvertMaxChannelValues(Dictionary<string, Dictionary<string, VertexTextureItems>> meshVertexPosTextures,
+        private void ConvertMaxChannelValues(Dictionary<string, Dictionary<string, AnimVertexEditorTextureItems>> meshVertexPosTextures,
             Dictionary<string, Dictionary<string, JObject>> maxChannelValuesDict)
         {
-            foreach (KeyValuePair<string, Dictionary<string, VertexTextureItems>> meshPair in meshVertexPosTextures)
+            foreach (KeyValuePair<string, Dictionary<string, AnimVertexEditorTextureItems>> meshPair in meshVertexPosTextures)
             {
                 Dictionary<string, JObject> submeshMaxChannelValues = new Dictionary<string, JObject>(meshPair.Value.Count);
 
-                foreach (KeyValuePair<string, VertexTextureItems> submeshPair in meshPair.Value)
+                foreach (KeyValuePair<string, AnimVertexEditorTextureItems> submeshPair in meshPair.Value)
                 {
                     submeshMaxChannelValues[submeshPair.Key] = submeshPair.Value.MaxChannelValues.ToJObject();
                 }
                 maxChannelValuesDict[meshPair.Key] = submeshMaxChannelValues;
             }
         }
-        public void BakeVertexWeightedPositions(
-            Dictionary<string, Dictionary<string, VertexTextureItems>> meshDict,
+        private void BakeVertexWeightedPositions(
+            Dictionary<string, Dictionary<string, AnimVertexEditorTextureItems>> meshDict,
             bool onlyBody)
         {
             SkinnedMeshRendererContainer[] smrContainers = Instance.PlayerComponent.Meshes;
@@ -146,7 +149,7 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
 
                 Material[] materials = smr.materials;
 
-                Dictionary<string, VertexTextureItems> submeshDict = new Dictionary<string, VertexTextureItems>(materials.Length);
+                Dictionary<string, AnimVertexEditorTextureItems> submeshDict = new Dictionary<string, AnimVertexEditorTextureItems>(materials.Length);
 
                 string meshName = smr.name;
                 Mesh mesh = smr.sharedMesh;
@@ -245,7 +248,7 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                     }
 
                     Texture2D vertexPosTexture = CreateVertexPosTexture(floatVectors, height: textureHeight, width: textureWidth, maxChannelValuesReciprocal: maxChannelValuesReciprocal);
-                    submeshDict[RemoveMaterialNameLabels(material.name)] = new VertexTextureItems(vertexPosTexture, maxChannelValues);
+                    submeshDict[RemoveMaterialNameLabels(material.name)] = new AnimVertexEditorTextureItems(vertexPosTexture, maxChannelValues);
                 }
                 meshDict[meshName] = submeshDict;
             }
@@ -287,18 +290,18 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                 }
             }
         }
-        private void TrySaveMeshVertexTextures(Dictionary<string, Dictionary<string, VertexTextureItems>> meshVertexPosTextures,
+        private void TrySaveMeshVertexTextures(Dictionary<string, Dictionary<string, AnimVertexEditorTextureItems>> meshVertexPosTextures,
             Dictionary<string, Dictionary<string, JObject>> meshMaxChannelValues)
         {
             string animVertTextureName = Instance.AnimVerticesTexture.ToString();
-            string prefix = EditorUtility.SaveFilePanelInProject("Save Mesh Vertex Pos Textures And MaxChannelValues", $"{animVertTextureName}__{Instance.name}", "", "", "Assets/Crafter/Components/VFX/AnimVertices");
+            string prefix = EditorUtility.SaveFilePanelInProject("Save Mesh Vertex Pos Textures And MaxChannelValues", $"{animVertTextureName}__{Instance.name}", "", "", "Assets/Crafter/Components/VFX/AnimVertices/Resources");
 
-            foreach (KeyValuePair<string, Dictionary<string, VertexTextureItems>> meshPair in meshVertexPosTextures)
+            foreach (KeyValuePair<string, Dictionary<string, AnimVertexEditorTextureItems>> meshPair in meshVertexPosTextures)
             {
                 string meshName = meshPair.Key;
                 Dictionary<string, JObject> submeshMaxChannelValuesDict = new Dictionary<string, JObject>(meshPair.Value.Count);
 
-                foreach (KeyValuePair<string, VertexTextureItems> submeshPair in meshPair.Value) 
+                foreach (KeyValuePair<string, AnimVertexEditorTextureItems> submeshPair in meshPair.Value) 
                 {
                     string submeshName = submeshPair.Key;
                     submeshMaxChannelValuesDict[submeshName] = submeshPair.Value.MaxChannelValues.ToJObject();
@@ -310,7 +313,7 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
             }
 
             string maxChannelValuesJson = JsonConvert.SerializeObject(meshMaxChannelValues);
-            File.WriteAllText($"{prefix}__MaxChannelValues.json", maxChannelValuesJson);
+            File.WriteAllText($"{prefix}__{Instance.PlayerMeshSet}__MaxChannelValues.json", maxChannelValuesJson);
 
             AssetDatabase.Refresh();
         }
@@ -391,12 +394,12 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
             return transformedVertex * weight;
         }
     }
-    public struct VertexTextureItems
+    internal struct AnimVertexEditorTextureItems
     {
         public Texture2D VertexPosTexture;
         public Vector3 MaxChannelValues;
 
-        public VertexTextureItems(Texture2D vertexPosTexture, Vector3 maxChannelValues)
+        public AnimVertexEditorTextureItems(Texture2D vertexPosTexture, Vector3 maxChannelValues)
         {
             VertexPosTexture = vertexPosTexture;
             MaxChannelValues = maxChannelValues;
