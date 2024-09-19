@@ -1,4 +1,5 @@
 ﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFX;
+using Assets.Crafter.Components.Constants;
 using Assets.Crafter.Components.Editors.ComponentScripts;
 using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Player.ComponentScripts;
@@ -190,7 +191,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     {
                         playerComponentInstance.gameObject.SetActive(true);
                     }
-                    PlayerClientData playerClientData = new PlayerClientData(system.PlayerGuid, playerComponentInstance);
+                    PlayerClientData playerClientData = new PlayerClientData(system.PlayerGuid, playerComponentInstance, PlayerComponentModel.Starter);
 
                     PortalOrbClear portalOrb = GameObject.Instantiate(portalOrbPrefab, instance.transform);
 

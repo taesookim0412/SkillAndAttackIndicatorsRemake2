@@ -1,4 +1,5 @@
-﻿using Assets.Crafter.Components.Models;
+﻿using Assets.Crafter.Components.Constants;
+using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
 using Assets.Crafter.Components.Systems.Observers;
 using StarterAssets;
@@ -28,9 +29,12 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         public SkinnedMeshRendererContainer[] Meshes;
         [SerializeField]
         public Animator Animator;
+        private static readonly int BindPoseAnimFullPathHash = Animator.StringToHash("Base Layer.BindPose");
 
         [NonSerialized, HideInInspector]
         public Material[] Materials;
+        [NonSerialized, HideInInspector]
+        public AnimVerticesTextureItems[] AnimVerticesTextureItems;
         [NonSerialized, HideInInspector]
         public LocalKeyword[] LocalKeywords;
         [NonSerialized, HideInInspector]
@@ -43,6 +47,10 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         private static int EndPositionLocalId = Shader.PropertyToID("_EndPositionLocal");
         [NonSerialized, HideInInspector]
         private static int TimeElapsedNormalizedId = Shader.PropertyToID("_TimeElapsedNormalized");
+        [NonSerialized, HideInInspector]
+        private static int AnimVerticesId = Shader.PropertyToID("_AnimVertices");
+        [NonSerialized, HideInInspector]
+        private static int AnimVerticesMaxChannelValuesId = Shader.PropertyToID("_AnimVerticesMaxChannelValues");
 
         //[NonSerialized, HideInInspector]
         //public PlayerComponentCloneItems PlayerComponentCloneItems;
@@ -77,6 +85,42 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
             LocalKeywords = localKeywords;
             MeshCenters = meshCenters;
         }
+        private void SetAnimVerticesTexture(PlayerComponentModel playerComponentModel, AnimVerticesTexture animVerticesTexture)
+        {
+            int materialsCount = Materials.Length;
+
+            AnimVerticesTextureItems[] animVerticesTextureItems = new AnimVerticesTextureItems[materialsCount];
+
+            if (AnimVerticesTexturesConstants.ANIM_VERTICES_TEXTURES.TryGetValue(animVerticesTexture, out var animVerticesPair) &&
+                animVerticesPair.TryGetValue(playerComponentModel, out var playerComponentPair))
+            {
+                int i = 0;
+                foreach (SkinnedMeshRendererContainer holder in Meshes)
+                {
+                    string meshName = holder.SkinnedMeshRenderer.name;
+                    PlayerMesh playerMesh = Enum.Parse<PlayerMesh>(meshName);
+                    if (playerComponentPair.TryGetValue(playerMesh, out var playerMeshPair))
+                    {
+                        foreach (Material material in holder.SkinnedMeshRenderer.materials)
+                        {
+                            string submeshName = GameObjectUtil.RemoveInstanceName(material.name);
+                            submeshName = GameObjectUtil.RemoveTransparentName(submeshName);
+                            PlayerSubmesh playerSubmesh = Enum.Parse<PlayerSubmesh>(submeshName);
+                            if (playerMeshPair.TryGetValue(playerSubmesh, out var submeshPairItems))
+                            {
+                                animVerticesTextureItems[i] = submeshPairItems;
+                            }
+                            i++;
+                        }
+                    }
+                    else
+                    {
+                        i += holder.SkinnedMeshRenderer.materials.Length;
+                    }
+                }
+            }
+            AnimVerticesTextureItems = animVerticesTextureItems;
+        }
         public PlayerComponent CreateInactiveTransparentCloneInstance()
         {
             PlayerComponent playerComponentInstance = GameObject.Instantiate(this);
@@ -90,22 +134,25 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
                 holder.SkinnedMeshRenderer.materials = holder.TransparentMaterials;
             }
 
+            // 
             playerComponentInstance.InitializeMaterials();
 
             return playerComponentInstance;
         }
-        public void OnCloneFXInit()
+        public void OnCloneFXInit(PlayerComponentModel playerComponentModel, AnimVerticesTexture animVerticesTexture)
         {
             //PlayerComponentCloneItems = new PlayerComponentCloneItems(observerUpdateCache);
-            // Since Materials is NonSerialized, it must be re-created after the first pool item is created.
+            // Since these are NonSerialized, it must be re-created after the first pool item is created.
             if (Materials == null)
             {
                 InitializeMaterials();
             }
+            SetAnimVerticesTexture(playerComponentModel, animVerticesTexture);
         }
         public void SetMaterialVertexTargetPos(Vector3 targetPos, float requiredTime, bool invertTargetPos)
         {
             Material[] materials = Materials;
+            AnimVerticesTextureItems[] animVerticesTextureItemsArray = AnimVerticesTextureItems;
             for (int i = 0; i < materials.Length; i++)
             {
                 Material material = materials[i];
@@ -116,6 +163,19 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
                 material.SetVector(EndPositionLocalId, offsetTargetPos);
 
                 material.SetFloat(TimeElapsedNormalizedId, 0f);
+
+                AnimVerticesTextureItems animVerticesTextureItems = animVerticesTextureItemsArray[i];
+                if (animVerticesTextureItems != null)
+                {
+                    material.SetTexture(AnimVerticesId, animVerticesTextureItems.Texture);
+                    material.SetVector(AnimVerticesMaxChannelValuesId, animVerticesTextureItems.MaxChannelValues);
+                }
+                else
+                {
+                    material.SetTexture(AnimVerticesId, null);
+                    material.SetVector(AnimVerticesMaxChannelValuesId, Vector3.zero);
+                }
+                
 
                 material.SetKeyword(invertTargetPosKeyword, invertTargetPos);
             }
@@ -133,6 +193,16 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
             {
                 material.color = new Color(1f, 1f, 1f, opacity);
             }
+        }
+
+        public void PauseAnimatorWithBindPoseState()
+        {
+            Animator.Play(BindPoseAnimFullPathHash);
+            Animator.speed = 0f;
+        }
+        public void EnableAnimatorSpeed()
+        {
+            Animator.speed = 1f;
         }
     }
 

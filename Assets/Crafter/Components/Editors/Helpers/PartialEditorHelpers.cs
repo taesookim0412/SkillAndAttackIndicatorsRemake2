@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace Assets.Crafter.Components.Editors.Helpers
 {
+#if UNITY_EDITOR
     public class PartialEditorHelpers
     {
         public static AnimationClip GetAnimStateClip(AnimatorController animController, int layerIndex, string animStateName)
@@ -33,4 +34,5 @@ namespace Assets.Crafter.Components.Editors.Helpers
             return null;
         }
     }
+#endif
 }

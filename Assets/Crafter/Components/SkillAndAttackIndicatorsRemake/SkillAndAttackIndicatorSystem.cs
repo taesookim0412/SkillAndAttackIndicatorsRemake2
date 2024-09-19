@@ -81,7 +81,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public Guid PlayerGuid = Guid.NewGuid();
         public void Awake()
         {
-            PlayerClientData = new PlayerClientData(PlayerGuid, PlayerComponent);
+            PlayerClientData = new PlayerClientData(PlayerGuid, PlayerComponent, PlayerComponentModel.Starter);
             Camera = Camera.main;
         }
         public void OnEnable()
