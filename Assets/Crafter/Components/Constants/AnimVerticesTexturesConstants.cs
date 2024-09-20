@@ -50,8 +50,8 @@ namespace Assets.Crafter.Components.Constants
             PlayerMeshSet playerMeshSet,
             (PlayerMesh playerMesh, PlayerSubmesh[] playerSubmeshes)[] meshLoads)
         {
-            TextAsset maxChannelVerticesResource = Resources.Load<TextAsset>(CreateAnimVerticesMaxChannelValuesName(animVertTexture, playerComponentModel, playerMeshSet.ToString()));
-            var maxChannelVertices = JsonConvert.DeserializeObject<Dictionary<PlayerMesh, Dictionary<PlayerSubmesh, Vector3>>>(maxChannelVerticesResource.text);
+            TextAsset rangeValuesResource = Resources.Load<TextAsset>(CreateAnimVerticesRangeValuesName(animVertTexture, playerComponentModel, playerMeshSet.ToString()));
+            var rangeValuesDict = JsonConvert.DeserializeObject<Dictionary<PlayerMesh, Dictionary<PlayerSubmesh, (Vector3 channelValuesRange, Vector3 positiveMinChannelValues)>>>(rangeValuesResource.text);
 
             var dict = new Dictionary<PlayerMesh, Dictionary<PlayerSubmesh, AnimVerticesTextureItems>>(meshLoads.Length);
 
@@ -62,9 +62,9 @@ namespace Assets.Crafter.Components.Constants
                 foreach (PlayerSubmesh playerSubmesh in playerSubmeshes)
                 {
                     Texture2D textureAsset = Resources.Load<Texture2D>(CreateAnimVerticesTextureName(animVertTexture, playerComponentModel, playerMeshString, playerSubmesh.ToString()));
-                    Vector3 submeshMaxChannelVertices = maxChannelVertices[playerMesh][playerSubmesh];
+                    (Vector3 channelValuesRange, Vector3 positiveMinChannelValues) = rangeValuesDict[playerMesh][playerSubmesh];
 
-                    submeshDict[playerSubmesh] = new AnimVerticesTextureItems(textureAsset, submeshMaxChannelVertices);
+                    submeshDict[playerSubmesh] = new AnimVerticesTextureItems(textureAsset, channelValuesRange, positiveMinChannelValues);
                 }
                 dict[playerMesh] = submeshDict;
             }
@@ -79,21 +79,23 @@ namespace Assets.Crafter.Components.Constants
         {
             return $"{animVertTexture}__{playerComponentModel}__{meshName}__{submeshName}";
         }
-        private static string CreateAnimVerticesMaxChannelValuesName(string animVertTexture,
+        private static string CreateAnimVerticesRangeValuesName(string animVertTexture,
             string playerComponentModel, string playerMeshSet)
         {
-            return $"{animVertTexture}__{playerComponentModel}__{playerMeshSet}__MaxChannelValues";
+            return $"{animVertTexture}__{playerComponentModel}__{playerMeshSet}__RangeValues";
         }
     }
     public class AnimVerticesTextureItems
     {
-        public Texture2D Texture;
-        public Vector3 MaxChannelValues;
+        public Texture2D VertexPosTexture;
+        public Vector3 ChannelValuesRange;
+        public Vector3 PositiveMinChannelValues;
 
-        public AnimVerticesTextureItems(Texture2D texture, Vector3 maxChannelValues)
+        public AnimVerticesTextureItems(Texture2D vertexPosTexture, Vector3 channelValuesRange, Vector3 positiveMinChannelValues)
         {
-            Texture = texture;
-            MaxChannelValues = maxChannelValues;
+            VertexPosTexture = vertexPosTexture;
+            ChannelValuesRange = channelValuesRange;
+            PositiveMinChannelValues = positiveMinChannelValues;
         }
     }
     public enum AnimVerticesTexture

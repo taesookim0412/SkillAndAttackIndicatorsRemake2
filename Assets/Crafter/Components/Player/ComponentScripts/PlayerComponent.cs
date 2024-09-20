@@ -50,7 +50,9 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
         [NonSerialized, HideInInspector]
         private static int AnimVerticesId = Shader.PropertyToID("_AnimVertices");
         [NonSerialized, HideInInspector]
-        private static int AnimVerticesMaxChannelValuesId = Shader.PropertyToID("_AnimVerticesMaxChannelValues");
+        private static int AnimVerticesChannelValuesRangeId = Shader.PropertyToID("_AnimVerticesChannelValuesRange");
+        [NonSerialized, HideInInspector]
+        private static int AnimVerticesPositiveMinChannelValuesId = Shader.PropertyToID("_AnimVerticesPositiveMinChannelValues");
 
         //[NonSerialized, HideInInspector]
         //public PlayerComponentCloneItems PlayerComponentCloneItems;
@@ -167,13 +169,15 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
                 AnimVerticesTextureItems animVerticesTextureItems = animVerticesTextureItemsArray[i];
                 if (animVerticesTextureItems != null)
                 {
-                    material.SetTexture(AnimVerticesId, animVerticesTextureItems.Texture);
-                    material.SetVector(AnimVerticesMaxChannelValuesId, animVerticesTextureItems.MaxChannelValues);
+                    material.SetTexture(AnimVerticesId, animVerticesTextureItems.VertexPosTexture);
+                    material.SetVector(AnimVerticesChannelValuesRangeId, animVerticesTextureItems.ChannelValuesRange);
+                    material.SetVector(AnimVerticesPositiveMinChannelValuesId, animVerticesTextureItems.PositiveMinChannelValues);
                 }
                 else
                 {
                     material.SetTexture(AnimVerticesId, null);
-                    material.SetVector(AnimVerticesMaxChannelValuesId, Vector3.zero);
+                    material.SetVector(AnimVerticesChannelValuesRangeId, Vector3.zero);
+                    material.SetVector(AnimVerticesPositiveMinChannelValuesId, Vector3.zero);
                 }
                 
 
