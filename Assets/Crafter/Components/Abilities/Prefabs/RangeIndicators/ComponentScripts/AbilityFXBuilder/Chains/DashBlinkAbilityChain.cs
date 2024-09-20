@@ -1,5 +1,6 @@
 ﻿using Assets.Crafter.Components.Constants;
 using Assets.Crafter.Components.Editors.ComponentScripts;
+using Assets.Crafter.Components.Editors.Helpers;
 using Assets.Crafter.Components.Models.dpo.TrailEffectsDpo;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
@@ -127,8 +129,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(DashBlinkAbilityChain))]
     public class DashBlinkAbilityChainEditor : AbstractEditor<DashBlinkAbilityChain>
     {
-        private Vector3 PlayerBlinkSourceTargetPos = new Vector3(1.13f, 3.76f, 7.53f);
-        private Vector3 PlayerBlinkDestTargetPos = new Vector3(0.2f, 0f, -1.2f);
+        private DashBlinkAbilityChainEditorProps Props;
+
         private long StartTime;
         protected override void EditorDestroy()
         {
@@ -144,13 +146,63 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             long elapsedTime = ObserverUpdateCache.UpdateTickTimeRenderThread - StartTime;
             Instance.ManualUpdate(elapsedTime);
         }
+        //public void OnSceneGUI()
+        //{
+        //    if (Instance.Animator != null)
+        //    {
+        //        Instance.Animator.Play(Instance.AnimStateName, Instance.AnimLayerIndex, Instance.AnimClipFrame);
+        //        Instance.Animator.Update(0.166f);
+        //    }
+        //}
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
 
-            PlayerBlinkSourceTargetPos = EditorGUILayout.Vector3Field("PlayerBlinkSourceTargetPos", PlayerBlinkSourceTargetPos);
-            PlayerBlinkDestTargetPos = EditorGUILayout.Vector3Field("PlayerBlinkDestTargetPos", PlayerBlinkDestTargetPos);
+            if (Props == null)
+            {
+                Props = GameObject.Find($"{Instance.name}Props").GetComponent<DashBlinkAbilityChainEditorProps>();
+            }
+
+            if (Props != null) 
+            {
+                Props.PlayerBlinkSourceTargetPos = EditorGUILayout.Vector3Field("PlayerBlinkSourceTargetPos", Props.PlayerBlinkSourceTargetPos);
+                Props.PlayerBlinkDestTargetPos = EditorGUILayout.Vector3Field("PlayerBlinkDestTargetPos", Props.PlayerBlinkDestTargetPos);
+                EditorGUI.BeginChangeCheck();
+                Props.PlayerComponent = (PlayerComponent)EditorGUILayout.ObjectField("PlayerComponent", Props.PlayerComponent, typeof(PlayerComponent), true);
+                Props.Animator = (Animator)EditorGUILayout.ObjectField("Animator", Props.Animator, typeof(Animator), true);
+                bool changeAnimator = EditorGUI.EndChangeCheck();
+
+                if (Props.Animator != null)
+                {
+                    DrawAnimTab(changeAnimator);
+                }
+            }
+            
+        }
+        private void DrawAnimTab(bool changeAnimator)
+        {
+            EditorGUI.BeginChangeCheck();
+            Props.AnimLayerIndex = EditorGUILayout.IntField("AnimLayerIndex", Props.AnimLayerIndex);
+            Props.AnimStateName = EditorGUILayout.TextField("State name", Props.AnimStateName);
+            if (EditorGUI.EndChangeCheck() || changeAnimator)
+            {
+                Props.AnimClip = PartialEditorHelpers.GetAnimStateClip((AnimatorController)Props.Animator.runtimeAnimatorController, Props.AnimLayerIndex, Props.AnimStateName);
+            }
+
+            float selectedClipLength;
+            if (Props.AnimClip != null)
+            {
+                selectedClipLength = Props.AnimClip.length;
+            }
+            else
+            {
+                return;
+            }
+
+            Props.AnimClipFrame = EditorGUILayout.Slider("AnimClipFrame", Props.AnimClipFrame, 0f, selectedClipLength);
+
+
         }
 
         protected override bool OnInitialize(DashBlinkAbilityChain instance, ObserverUpdateCache observerUpdateCache)
@@ -199,8 +251,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     }
 
                     (Vector3 localPos, bool useEndPosition)[] trailVertexPositionsLocal = new (Vector3 localPos, bool useEndPosition)[2] { 
-                        (PlayerBlinkSourceTargetPos, false), 
-                        (PlayerBlinkDestTargetPos, true) };
+                        (Props.PlayerBlinkSourceTargetPos, false), 
+                        (Props.PlayerBlinkDestTargetPos, true) };
 
                     trailMoverBuilderTargetPosEditor.SetOverrides(
                         playerStartPositionOffsetOverride: Vector3.zero,
@@ -212,12 +264,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     trailMoverBuilderTargetPosEditor.OnInspectorGUI();
                     trailMoverBuilderTargetPosEditor.ForceInitialize(observerUpdateCache);
 
-                    playerBlinkBuilderSourceEditor.SetOverrides(trailMoverBuilderTargetPosInstance.ClosestTrailPositionsLocal[0]);
+                    playerBlinkBuilderSourceEditor.SetOverrides(Props.PlayerComponent, trailMoverBuilderTargetPosInstance.ClosestTrailPositionsLocal[0]);
                     playerBlinkBuilderSourceEditor.RequiredDuration = 400L;
                     playerBlinkBuilderSourceEditor.OnInspectorGUI();
                     playerBlinkBuilderSourceEditor.ForceInitialize(observerUpdateCache);
 
-                    playerBlinkBuilderDestEditor.SetOverrides(trailMoverBuilderTargetPosInstance.ClosestTrailPositionsLocal[1]);
+                    playerBlinkBuilderDestEditor.SetOverrides(Props.PlayerComponent, trailMoverBuilderTargetPosInstance.ClosestTrailPositionsLocal[1]);
                     playerBlinkBuilderDestEditor.RequiredDuration = 400L;
                     playerBlinkBuilderDestEditor.OnInspectorGUI();
                     playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
@@ -236,5 +288,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             return false;
         }
     }
+
 #endif
 }

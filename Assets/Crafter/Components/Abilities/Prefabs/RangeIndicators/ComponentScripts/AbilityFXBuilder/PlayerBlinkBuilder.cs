@@ -221,12 +221,19 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     [CustomEditor(typeof(PlayerBlinkBuilder))]
     public class PlayerBlinkBuilderEditor : AbstractEditor<PlayerBlinkBuilder>
     {
+        public PlayerComponent PlayerComponent;
+        public bool PlayerComponentOverride;
         public Vector3 PlayerVertexTargetPos = new Vector3(0f, 1f, 1f);
         private bool PlayerVertexTargetPosOverride = false;
         public long? RequiredDuration = null;
 
-        public void SetOverrides(Vector3 playerVertexTargetPos)
+        public void SetOverrides(PlayerComponent playerComponent, Vector3 playerVertexTargetPos)
         {
+            if (playerComponent != null)
+            {
+                PlayerComponent = playerComponent;
+                PlayerComponentOverride = true;
+            }
             PlayerVertexTargetPos = playerVertexTargetPos;
             PlayerVertexTargetPosOverride = true;
         }
@@ -235,7 +242,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
             if (system != null)
             {
-                PlayerComponent playerComponentPrefab = system.PlayerComponent;
+                PlayerComponent playerComponentPrefab = PlayerComponentOverride ? PlayerComponent : system.PlayerComponent;
 
                 if (playerComponentPrefab != null)
                 {

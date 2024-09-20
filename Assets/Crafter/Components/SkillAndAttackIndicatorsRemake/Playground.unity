@@ -14921,6 +14921,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a52ab5ed932deb4facc305dae43f734, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!95 &1762682262 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 6982812146204527121, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+  m_PrefabInstance: {fileID: 1762682258}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1764214107
 GameObject:
   m_ObjectHideFlags: 0
@@ -20091,6 +20096,58 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6d7ac3ed313d9954c821e4aa3adc8301, type: 3}
+--- !u!1 &2031498069
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2031498071}
+  - component: {fileID: 2031498070}
+  m_Layer: 0
+  m_Name: DashBlinkAbilityChain1Props
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2031498070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2031498069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bc6932de1350cd4fbf3957a4056f311, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PlayerBlinkSourceTargetPos: {x: 1.13, y: 3.76, z: 7.53}
+  PlayerBlinkDestTargetPos: {x: 0.2, y: 0, z: -1.2}
+  PlayerComponent: {fileID: 1762682261}
+  Animator: {fileID: 1762682262}
+  AnimStateName: JumpStart
+  AnimLayerIndex: 2
+  AnimClip: {fileID: 7478122292733868173, guid: 98f277b0c8055e143b2fcf058d3c27dc, type: 3}
+  AnimClipFrame: 0.18
+--- !u!4 &2031498071
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2031498069}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!21 &2033751625
 Material:
   serializedVersion: 8
@@ -67637,7 +67694,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9119158332294838497, guid: c682fb336d9bfa048badf88d9686ffd4, type: 3}
       propertyPath: m_Name
-      value: DashBlinkAbilityChain
+      value: DashBlinkAbilityChain1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -67847,3 +67904,4 @@ SceneRoots:
   - {fileID: 8844621668915331351}
   - {fileID: 551094427}
   - {fileID: 284265437}
+  - {fileID: 2031498071}
