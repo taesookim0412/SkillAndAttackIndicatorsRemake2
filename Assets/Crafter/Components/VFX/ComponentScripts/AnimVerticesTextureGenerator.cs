@@ -15,7 +15,6 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-#if UNITY_EDITOR
 namespace Assets.Crafter.Components.VFX.ComponentScripts
 {
     public class AnimVerticesTextureGenerator : MonoBehaviour
@@ -89,36 +88,20 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
             {
                 SkinnedMeshRendererContainer[] smrContainers = Instance.PlayerComponent.Meshes;
 
-                Dictionary<string, Dictionary<string, VertexTextureItems>> meshVertexPosTextures = new Dictionary<string, Dictionary<string, VertexTextureItems>>(smrContainers.Length); 
+                Dictionary<string, (Texture2D vertexPosTexture, Vector3 maxChannelValues)> meshVertexPosTextures =
+                    new Dictionary<string, (Texture2D vertexPosTexture, Vector3 maxChannelValues)>(smrContainers.Length);
+
                 BakeVertexWeightedPositions(
                     meshVertexPosTextures,
                     onlyBody: true);
-                Dictionary<string, Dictionary<string, JObject>> maxChannelValues = new Dictionary<string, Dictionary<string, JObject>>(smrContainers.Length);
-                ConvertMaxChannelValues(meshVertexPosTextures, maxChannelValues);
-
-                TrySaveMeshVertexTextures(meshVertexPosTextures, maxChannelValues);
-            }
-        }
-        public void ConvertMaxChannelValues(Dictionary<string, Dictionary<string, VertexTextureItems>> meshVertexPosTextures,
-            Dictionary<string, Dictionary<string, JObject>> maxChannelValuesDict)
-        {
-            foreach (KeyValuePair<string, Dictionary<string, VertexTextureItems>> meshPair in meshVertexPosTextures)
-            {
-                Dictionary<string, JObject> submeshMaxChannelValues = new Dictionary<string, JObject>(meshPair.Value.Count);
-
-                foreach (KeyValuePair<string, VertexTextureItems> submeshPair in meshPair.Value)
-                {
-                    submeshMaxChannelValues[submeshPair.Key] = submeshPair.Value.MaxChannelValues.ToJObject();
-                }
-                maxChannelValuesDict[meshPair.Key] = submeshMaxChannelValues;
+                TrySaveMeshVertexTextures(meshVertexPosTextures);
             }
         }
         public void BakeVertexWeightedPositions(
-            Dictionary<string, Dictionary<string, VertexTextureItems>> meshDict,
+            Dictionary<string, (Texture2D vertexPosTexture, Vector3 maxChannelValues)> meshVertexPosTextures,
             bool onlyBody)
         {
             SkinnedMeshRendererContainer[] smrContainers = Instance.PlayerComponent.Meshes;
-
             for (int i = 0; i < smrContainers.Length; i++)
             {
                 SkinnedMeshRendererContainer smrContainer = smrContainers[i];
@@ -139,9 +122,6 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                 SkinnedMeshRenderer smr = smrContainers[i].SkinnedMeshRenderer;
 
                 Material[] materials = smr.materials;
-
-                Dictionary<string, VertexTextureItems> submeshDict = new Dictionary<string, VertexTextureItems>(materials.Length);
-
                 string meshName = smr.name;
                 Mesh mesh = smr.sharedMesh;
 
@@ -154,10 +134,11 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                 Texture baseColorTexture = firstMaterial.mainTexture;
                 int textureWidth = baseColorTexture.width;
                 int textureHeight = baseColorTexture.height;
-                int textureWidthMaxIndex = textureWidth - 1;
-                int textureHeightMaxIndex = textureHeight - 1;
                 float textureWidthFloat = (float)textureWidth;
                 float textureHeightFloat = (float)textureHeight;
+
+                Vector3[] floatVectors = new Vector3[baseColorTexture.height * baseColorTexture.width];
+                Vector3 maxChannelValues = Vector3.zero;
 
                 Vector2[] uvs = mesh.uv;
                 Vector3[] vertices = mesh.vertices;
@@ -178,15 +159,21 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                     existingUvs[height] = new bool[textureWidth];
                 }
 
+                int totalSubmeshVertices = 0;
                 for (int submeshIndex = 0; submeshIndex < materials.Length; submeshIndex++)
                 {
-                    Vector3[] floatVectors = new Vector3[baseColorTexture.height * baseColorTexture.width];
-                    Vector3 maxChannelValues = Vector3.zero;
-                    int[] triangles = mesh.GetTriangles(submeshIndex);
-                    // Additionally add floatVector to the list so it's simpler and reduces floatVectors indexing.
-                    List<(int yIndex, int xIndex, Vector3 floatVector)> setFloatVectorsIndices = new List<(int yIndex, int xIndex, Vector3 floatVector)>(triangles.Length);
+                    totalSubmeshVertices += mesh.GetTriangles(submeshIndex).Length;
+                }
 
+                // Additionally add floatVector to the list so it's simpler and reduces floatVectors indexing.
+                List<(int yIndex, int xIndex, Vector3 floatVector)> setFloatVectorsIndices = new List<(int yIndex, int xIndex, Vector3 floatVector)>(totalSubmeshVertices);
+
+                for (int submeshIndex = 0; submeshIndex < materials.Length; submeshIndex++)
+                {
                     Material material = materials[submeshIndex];
+
+                    // Create the texture based on the triangles of the submesh.
+                    int[] triangles = mesh.GetTriangles(submeshIndex);
 
                     foreach (int triangleIndex in triangles)
                     {
@@ -206,9 +193,7 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
 
                         Vector2 uv = uvs[triangleIndex];
 
-                        SetVertexValues(floatVectors, textureHeight, textureWidth, 
-                            textureHeightMaxIndex, textureWidthMaxIndex,
-                            uv, existingUvs, setFloatVectorsIndices, accumVertexPosition);
+                        SetVertexValues(floatVectors, textureHeight, textureWidth, uv, existingUvs, setFloatVectorsIndices, accumVertexPosition);
                         if (accumVertexPosition.x > maxChannelValues.x)
                         {
                             maxChannelValues.x = accumVertexPosition.x;
@@ -222,36 +207,28 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                             maxChannelValues.z = accumVertexPosition.z;
                         }
                     }
-                    // Surround the uvs due to precision issues and after all the necessary verts are set.
-                    SurroundExistingUV_5Units(floatVectors, existingUvs, textureHeight, textureWidth, setFloatVectorsIndices);
-                    Vector3 maxChannelValuesReciprocal = Vector3.zero;
-                    if (maxChannelValues.x > PartialMathUtil.FLOAT_TOLERANCE)
-                    {
-                        maxChannelValuesReciprocal.x = 1f / maxChannelValues.x;
-                    }
-                    if (maxChannelValues.y > PartialMathUtil.FLOAT_TOLERANCE)
-                    {
-                        maxChannelValuesReciprocal.y = 1f / maxChannelValues.y;
-                    }
-                    if (maxChannelValues.z > PartialMathUtil.FLOAT_TOLERANCE)
-                    {
-                        maxChannelValuesReciprocal.z = 1f / maxChannelValues.z;
-                    }
-
-                    Texture2D vertexPosTexture = CreateVertexPosTexture(floatVectors, height: textureHeight, width: textureWidth, maxChannelValuesReciprocal: maxChannelValuesReciprocal);
-                    submeshDict[RemoveMaterialNameLabels(material.name)] = new VertexTextureItems(vertexPosTexture, maxChannelValues);
                 }
-                meshDict[meshName] = submeshDict;
+
+                // Surround the uvs due to precision issues and after all the necessary verts are set.
+                SurroundExistingUV_5Units(floatVectors, existingUvs, textureHeight, textureWidth, setFloatVectorsIndices);
+
+                Vector3 maxChannelValuesReciprocal = Vector3.zero;
+                if (maxChannelValues.x > PartialMathUtil.FLOAT_TOLERANCE)
+                {
+                    maxChannelValuesReciprocal.x = 1f / maxChannelValues.x;
+                }
+                if (maxChannelValues.y > PartialMathUtil.FLOAT_TOLERANCE)
+                {
+                    maxChannelValuesReciprocal.y = 1f / maxChannelValues.y;
+                }
+                if (maxChannelValues.z > PartialMathUtil.FLOAT_TOLERANCE)
+                {
+                    maxChannelValuesReciprocal.z = 1f / maxChannelValues.z;
+                }
+
+                Texture2D vertexPosTexture = CreateVertexPosTexture(floatVectors, height: textureHeight, width: textureWidth, maxChannelValuesReciprocal: maxChannelValuesReciprocal);
+                meshVertexPosTextures[meshName] = (vertexPosTexture, maxChannelValues);
             }
-        }
-        private string RemoveMaterialNameLabels(string materialName)
-        {
-            int instanceIndexOf = materialName.IndexOf(" (Instance)");
-            if (instanceIndexOf > 0)
-            {
-                return materialName.Substring(0, instanceIndexOf);
-            }
-            return materialName;
         }
 
         private void SurroundExistingUV_5Units(Vector3[] floatVectors, bool[][] existingUvs, int height, int width, List<(int yIndex, int xIndex, Vector3 floatVector)> setFloatVectorsIndices)
@@ -281,29 +258,23 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                 }
             }
         }
-        private void TrySaveMeshVertexTextures(Dictionary<string, Dictionary<string, VertexTextureItems>> meshVertexPosTextures,
-            Dictionary<string, Dictionary<string, JObject>> meshMaxChannelValues)
+        public void TrySaveMeshVertexTextures(Dictionary<string, (Texture2D vertexPosTexture, Vector3 maxChannelValues)> meshVertexPosTextures)
         {
-            string prefix = EditorUtility.SaveFilePanelInProject("Save Mesh Vertex Pos Textures And MaxChannelValues", Instance.name, "", "", "Assets/Crafter/Components/VFX/AnimVertices");
+            string prefix = EditorUtility.SaveFilePanelInProject("Save Textures And Dict Folder Plus Prefix", "", "", "", "Assets/Crafter/Components/VFX/AnimVertices");
 
-            foreach (KeyValuePair<string, Dictionary<string, VertexTextureItems>> meshPair in meshVertexPosTextures)
+            // Reconstruct the needed values for separate json.
+            Dictionary<string, JObject> maxChannelValuesDict = new Dictionary<string, JObject>(meshVertexPosTextures.Count);
+
+            foreach (KeyValuePair<string, (Texture2D vertexPosTexture, Vector3 maxChannelValues)> meshVertexPosTexturePair in meshVertexPosTextures)
             {
-                string meshName = meshPair.Key;
-                Dictionary<string, JObject> submeshMaxChannelValuesDict = new Dictionary<string, JObject>(meshPair.Value.Count);
+                maxChannelValuesDict[meshVertexPosTexturePair.Key] = meshVertexPosTexturePair.Value.maxChannelValues.ToJObject();
 
-                foreach (KeyValuePair<string, VertexTextureItems> submeshPair in meshPair.Value) 
-                {
-                    string submeshName = submeshPair.Key;
-                    submeshMaxChannelValuesDict[submeshName] = submeshPair.Value.MaxChannelValues.ToJObject();
-
-                    byte[] bytes = submeshPair.Value.VertexPosTexture.EncodeToPNG();
-                    // separate by double underscore
-                    File.WriteAllBytes($"{prefix}__{meshName}__{submeshName}.png", bytes);
-                }
+                byte[] bytes = meshVertexPosTexturePair.Value.vertexPosTexture.EncodeToPNG();
+                File.WriteAllBytes($"{prefix}_{meshVertexPosTexturePair.Key}.png", bytes);
             }
 
-            string maxChannelValuesJson = JsonConvert.SerializeObject(meshMaxChannelValues);
-            File.WriteAllText($"{prefix}__MaxChannelValues.json", maxChannelValuesJson);
+            string maxChannelValuesJson = JsonConvert.SerializeObject(maxChannelValuesDict);
+            File.WriteAllText($"{prefix}_MaxChannelValues.json", maxChannelValuesJson);
 
             AssetDatabase.Refresh();
         }
@@ -328,13 +299,11 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
         private void SetVertexValues(Vector3[] floatVectors,
             int height,
             int width,
-            int heightMaxIndex,
-            int widthMaxIndex,
             Vector2 uv, bool[][] existingUvs,
             List<(int yIndex, int xIndex, Vector3 floatVector)> setFloatVectorsIndices, Vector3 accumVertexPosition)
         {
-            int yIndex = PartialDataTypesUtil.Round(uv.y * heightMaxIndex);
-            int xIndex = PartialDataTypesUtil.Round(uv.x * widthMaxIndex);
+            int yIndex = PartialDataTypesUtil.Round((1f - uv.y) * height);
+            int xIndex = PartialDataTypesUtil.Round(uv.x * width);
 
             floatVectors[yIndex * width + xIndex] = accumVertexPosition;
             existingUvs[yIndex][xIndex] = true;
@@ -384,16 +353,4 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
             return transformedVertex * weight;
         }
     }
-    public struct VertexTextureItems
-    {
-        public Texture2D VertexPosTexture;
-        public Vector3 MaxChannelValues;
-
-        public VertexTextureItems(Texture2D vertexPosTexture, Vector3 maxChannelValues)
-        {
-            VertexPosTexture = vertexPosTexture;
-            MaxChannelValues = maxChannelValues;
-        }
-    }
 }
-#endif
