@@ -63,7 +63,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
                 PlayerComponent playerTransparentClone = PlayerCloneInstancePool.InstantiatePooled(playerPosition);
                 playerTransparentClone.transform.localEulerAngles = playerRotation;
-                playerTransparentClone.OnCloneFXInit(playerClientData.PlayerComponentModel, AnimVerticesTexture.DashBlinkAbility);
+                playerTransparentClone.OnCloneFXInit();
                 PlayerTransparentClone = playerTransparentClone;
 
                 BlinkRibbonTrailRenderer blinkRibbonTrailRenderer = (BlinkRibbonTrailRenderer)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer];

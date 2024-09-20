@@ -1,5 +1,4 @@
-﻿using Assets.Crafter.Components.Constants;
-using Assets.Crafter.Components.Editors.ComponentScripts;
+﻿using Assets.Crafter.Components.Editors.ComponentScripts;
 using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.SkillAndAttackIndicatorsRemake;
@@ -140,7 +139,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         Active = true;
                     }
                     PlayerTransparentClone.gameObject.SetActive(true);
-                    PlayerTransparentClone.PauseAnimatorWithBindPoseState();
                     VertexTargetPosStartTime = ObserverUpdateCache.UpdateTickTimeRenderThread;
                     PlayerOpacityDurationReciprocal = PlayerOpacityDuration > 0f ? 1f / PlayerOpacityDuration : 0f;
                     PlayerTransparentClone.SetMaterialVertexTargetPos(PlayerVertexTargetPos, PlayerOpacityDuration, !IsTeleportSource);
@@ -202,7 +200,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         // override aswell in the derived class.
         public override void Complete()
         {
-            PlayerTransparentClone.EnableAnimatorSpeed();
             base.Complete();
         }
 
@@ -238,10 +235,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
             if (system != null)
             {
-                if (AnimVerticesTexturesConstants.ANIM_VERTICES_TEXTURES == null)
-                {
-                    AnimVerticesTexturesConstants.InitializeAnimVerticesTextures();
-                }
                 PlayerComponent playerComponentPrefab = system.PlayerComponent;
 
                 if (playerComponentPrefab != null)
@@ -250,7 +243,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     PlayerComponent playerComponentInstance = playerComponentPrefab.CreateInactiveTransparentCloneInstance();
                     playerComponentInstance.transform.SetParent(instance.transform, false);
                     PlayerComponent playerTransparentClone = playerComponentPrefab.CreateInactiveTransparentCloneInstance();
-                    playerTransparentClone.OnCloneFXInit(PlayerComponentModel.Starter, AnimVerticesTexture.DashBlinkAbility);
                     playerTransparentClone.transform.SetParent(instance.transform, false);
                     if (instance.IsTeleportSource)
                     {
@@ -267,7 +259,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                             PlayerVertexTargetPos = new Vector3(0.2f, 0f, -1f);
                         }
                     }
-                    PlayerClientData playerClientData = new PlayerClientData(system.PlayerGuid, playerComponentInstance, PlayerComponentModel.Starter);
+                    PlayerClientData playerClientData = new PlayerClientData(system.PlayerGuid, playerComponentInstance);
 
                     if (observerUpdateCache == null)
                     {

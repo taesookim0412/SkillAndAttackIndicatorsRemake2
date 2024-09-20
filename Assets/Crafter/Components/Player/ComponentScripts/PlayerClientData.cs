@@ -1,5 +1,4 @@
-﻿using Assets.Crafter.Components.Constants;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,13 +15,11 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
         public Guid Id;
         public PlayerComponent PlayerComponent;
-        public PlayerComponentModel PlayerComponentModel;
 
-        public PlayerClientData(Guid id, PlayerComponent playerComponent, PlayerComponentModel playerComponentModel)
+        public PlayerClientData(Guid id, PlayerComponent playerComponent)
         {
             Id = id;
             PlayerComponent = playerComponent;
-            PlayerComponentModel = playerComponentModel;
         }
 
         public void PlayWalkingState()

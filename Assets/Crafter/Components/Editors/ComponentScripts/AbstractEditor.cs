@@ -18,7 +18,6 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
         protected T Instance;
         protected ObserverUpdateCache ObserverUpdateCache;
         protected bool VariablesSet;
-        protected bool InitializeFailed;
         protected bool VariablesAdded;
         protected bool SkipDestroy = false;
 
@@ -41,23 +40,14 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
         }
         protected void Initialize(ObserverUpdateCache observerUpdateCache)
         {
-            if (!InitializeFailed && !VariablesSet && PrefabStageUtility.GetCurrentPrefabStage() == null)
+            if (!VariablesSet && PrefabStageUtility.GetCurrentPrefabStage() == null)
             {
                 T instance = (T)target;
                 Instance = instance;
-                try
+                if (OnInitialize(instance, observerUpdateCache))
                 {
-                    if (OnInitialize(instance, observerUpdateCache))
-                    {
-                        VariablesSet = true;
-                        VariablesAdded = true;
-                    }
-                }
-                catch (Exception e) 
-                {
-                    Debug.LogError($"Initialize Failed.");
-                    Debug.LogError(e);
-                    InitializeFailed = true;
+                    VariablesSet = true;
+                    VariablesAdded = true;
                 }
             }
         }

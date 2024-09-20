@@ -248,10 +248,19 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
                     }
 
                     Texture2D vertexPosTexture = CreateVertexPosTexture(floatVectors, height: textureHeight, width: textureWidth, maxChannelValuesReciprocal: maxChannelValuesReciprocal);
-                    submeshDict[GameObjectUtil.RemoveInstanceName(material.name)] = new AnimVertexEditorTextureItems(vertexPosTexture, maxChannelValues);
+                    submeshDict[RemoveMaterialNameLabels(material.name)] = new AnimVertexEditorTextureItems(vertexPosTexture, maxChannelValues);
                 }
                 meshDict[meshName] = submeshDict;
             }
+        }
+        private string RemoveMaterialNameLabels(string materialName)
+        {
+            int instanceIndexOf = materialName.IndexOf(" (Instance)");
+            if (instanceIndexOf > 0)
+            {
+                return materialName.Substring(0, instanceIndexOf);
+            }
+            return materialName;
         }
 
         private void SurroundExistingUV_5Units(Vector3[] floatVectors, bool[][] existingUvs, int height, int width, List<(int yIndex, int xIndex, Vector3 floatVector)> setFloatVectorsIndices)

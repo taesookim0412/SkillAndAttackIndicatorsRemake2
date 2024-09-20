@@ -20,12 +20,6 @@
         },
         {
             "m_Id": "5ec29e5c504848fb9c703ff8fca8b5e8"
-        },
-        {
-            "m_Id": "6bdeb51f3f0d44d2833992279542228b"
-        },
-        {
-            "m_Id": "5c43e0b34b57426eb133a40bc50073f9"
         }
     ],
     "m_Keywords": [
@@ -2095,12 +2089,6 @@
             "m_Id": "5ec29e5c504848fb9c703ff8fca8b5e8"
         },
         {
-            "m_Id": "6bdeb51f3f0d44d2833992279542228b"
-        },
-        {
-            "m_Id": "5c43e0b34b57426eb133a40bc50073f9"
-        },
-        {
             "m_Id": "8500fc07ddbd4b328c22b7d46fad3eee"
         },
         {
@@ -2399,34 +2387,6 @@
 
 {
     "m_SGVersion": 1,
-    "m_Type": "UnityEditor.ShaderGraph.Internal.Vector3ShaderProperty",
-    "m_ObjectId": "5c43e0b34b57426eb133a40bc50073f9",
-    "m_Guid": {
-        "m_GuidSerialized": "449f5192-98e6-4751-aa9d-82c21eb93b2c"
-    },
-    "m_Name": "_AnimVerticesMaxChannelValues",
-    "m_DefaultRefNameVersion": 1,
-    "m_RefNameGeneratedByDisplayName": "_AnimVerticesMaxChannelValues",
-    "m_DefaultReferenceName": "_AnimVerticesMaxChannelValues",
-    "m_OverrideReferenceName": "",
-    "m_GeneratePropertyBlock": true,
-    "m_UseCustomSlotLabel": false,
-    "m_CustomSlotLabel": "",
-    "m_DismissedVersion": 0,
-    "m_Precision": 0,
-    "overrideHLSLDeclaration": false,
-    "hlslDeclarationOverride": 0,
-    "m_Hidden": false,
-    "m_Value": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0,
-        "w": 0.0
-    }
-}
-
-{
-    "m_SGVersion": 1,
     "m_Type": "UnityEditor.ShaderGraph.Internal.Vector1ShaderProperty",
     "m_ObjectId": "5ec29e5c504848fb9c703ff8fca8b5e8",
     "m_Guid": {
@@ -2614,36 +2574,6 @@
     "m_Value": 0.0,
     "m_DefaultValue": 0.0,
     "m_Labels": []
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty",
-    "m_ObjectId": "6bdeb51f3f0d44d2833992279542228b",
-    "m_Guid": {
-        "m_GuidSerialized": "44a1246c-cf0a-4b07-9ccb-e55d57cee6a5"
-    },
-    "m_Name": "_AnimVertices",
-    "m_DefaultRefNameVersion": 1,
-    "m_RefNameGeneratedByDisplayName": "_AnimVertices",
-    "m_DefaultReferenceName": "_AnimVertices",
-    "m_OverrideReferenceName": "",
-    "m_GeneratePropertyBlock": true,
-    "m_UseCustomSlotLabel": false,
-    "m_CustomSlotLabel": "",
-    "m_DismissedVersion": 0,
-    "m_Precision": 0,
-    "overrideHLSLDeclaration": false,
-    "hlslDeclarationOverride": 0,
-    "m_Hidden": false,
-    "m_Value": {
-        "m_SerializedTexture": "{\"texture\":{\"instanceID\":0}}",
-        "m_Guid": ""
-    },
-    "isMainTexture": false,
-    "useTilingAndOffset": false,
-    "m_Modifiable": true,
-    "m_DefaultType": 0
 }
 
 {
