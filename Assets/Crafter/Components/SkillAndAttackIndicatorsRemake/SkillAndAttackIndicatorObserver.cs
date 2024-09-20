@@ -1164,6 +1164,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         //}
     }
 
+    public enum PlayerComponentModel
+    {
+        Starter
+    }
     public enum AbilityProjectorType
     {
         ArcProjector,
