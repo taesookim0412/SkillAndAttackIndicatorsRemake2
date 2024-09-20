@@ -847,9 +847,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         Mesh trailMesh = new Mesh();
                         trail.TrailRenderer.BakeMesh(trailMesh, useTransform: false);
                         AssetDatabase.CreateAsset(trailMesh, $"{trailName}_{i}.asset");
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.Refresh();
                     }
-                    AssetDatabase.SaveAssets();
-                    AssetDatabase.Refresh();
                 }
             }
         }
