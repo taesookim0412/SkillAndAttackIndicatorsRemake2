@@ -1,5 +1,4 @@
 ﻿using Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFX;
-using Assets.Crafter.Components.Constants;
 using Assets.Crafter.Components.Editors.Helpers;
 using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Player.ComponentScripts;
@@ -16,14 +15,11 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-
+#if UNITY_EDITOR
 namespace Assets.Crafter.Components.VFX.ComponentScripts
 {
-#if UNITY_EDITOR
     public class AnimVerticesTextureGenerator : MonoBehaviour
     {
-        [SerializeField, HideInInspector]
-        public AnimVerticesTexture AnimVerticesTexture;
         [SerializeField, HideInInspector]
         public PlayerComponent PlayerComponent;
         [SerializeField, HideInInspector]
@@ -56,8 +52,6 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
             Instance = (AnimVerticesTextureGenerator)target;
 
             Undo.RecordObject(Instance, "All State");
-
-            Instance.AnimVerticesTexture = (AnimVerticesTexture)EditorGUILayout.Popup((int)Instance.AnimVerticesTexture, AnimVerticesTexturesConstants.AnimVerticesTextureNames);
 
             EditorGUI.BeginChangeCheck();
             Instance.PlayerComponent = (PlayerComponent)EditorGUILayout.ObjectField("PlayerComponent", Instance.PlayerComponent, typeof(PlayerComponent), true);
@@ -290,8 +284,7 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
         private void TrySaveMeshVertexTextures(Dictionary<string, Dictionary<string, VertexTextureItems>> meshVertexPosTextures,
             Dictionary<string, Dictionary<string, JObject>> meshMaxChannelValues)
         {
-            string animVertTextureName = Instance.AnimVerticesTexture.ToString();
-            string prefix = EditorUtility.SaveFilePanelInProject("Save Mesh Vertex Pos Textures And MaxChannelValues", $"{animVertTextureName}__{Instance.name}", "", "", "Assets/Crafter/Components/VFX/AnimVertices");
+            string prefix = EditorUtility.SaveFilePanelInProject("Save Mesh Vertex Pos Textures And MaxChannelValues", Instance.name, "", "", "Assets/Crafter/Components/VFX/AnimVertices");
 
             foreach (KeyValuePair<string, Dictionary<string, VertexTextureItems>> meshPair in meshVertexPosTextures)
             {
@@ -402,6 +395,5 @@ namespace Assets.Crafter.Components.VFX.ComponentScripts
             MaxChannelValues = maxChannelValues;
         }
     }
-#endif
 }
-
+#endif
