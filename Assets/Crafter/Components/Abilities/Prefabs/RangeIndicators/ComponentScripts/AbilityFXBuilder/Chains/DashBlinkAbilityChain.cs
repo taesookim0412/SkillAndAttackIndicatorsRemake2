@@ -80,13 +80,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 if (!PlayerAnimStateSet)
                 {
-                    PlayerClientData.PlayJumpStartFXState(0f);
+                    PlayerClientData.SetJumpStartFXState(true);
                     PlayerAnimStateSet = true;
                 }
                 else if (!PlayerAnimStateTimeSet)
                 {
-                    bool isAnimStateTimeMet = PlayerClientData.isAnimStateTimeMet(AnimFrameProps.AnimFullPathHash, AnimFrameProps.AnimClipFrameNormalized);
-                    if (isAnimStateTimeMet)
+                    bool isNextOrCurrentAnimStateTimeMet = PlayerClientData.IsNextOrCurrentAnimStateTimeMet(AnimFrameProps.AnimFullPathHash, AnimFrameProps.AnimClipFrameNormalized);
+                    if (isNextOrCurrentAnimStateTimeMet)
                     {
                         PlayerAnimStateTimeSet = true;
                         PlayerClientData.PlayerComponent.Animator.speed = 0f;
@@ -138,6 +138,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 }
                 PlayerComponent playerComponent = PlayerClientData.PlayerComponent;
                 playerComponent.Animator.speed = 1f;
+                PlayerClientData.SetJumpStartFXState(false);
+
                 base.Complete();
             }
         }
@@ -147,6 +149,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 PlayerComponent playerComponent = PlayerClientData.PlayerComponent;
                 playerComponent.Animator.speed = 1f;
+                PlayerClientData.SetJumpStartFXState(false);
                 playerComponent.ShowMeshes();
                 playerComponent.transform.position = PlayerBlinkBuilderDest.transform.position;
 

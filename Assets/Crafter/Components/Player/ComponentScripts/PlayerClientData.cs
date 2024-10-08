@@ -11,6 +11,7 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
     public class PlayerClientData
     {
         private static readonly int WalkAnimFullPathHash = Animator.StringToHash("Base Layer.Walking");
+        private static readonly int JumpStartFXId = Animator.StringToHash("JumpStartFX");
         private static readonly int JumpStartFXFullPathHash = Animator.StringToHash("Base Layer.JumpStartFX");
 
         public Guid Id;
@@ -27,14 +28,23 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
             PlayerComponent.Animator.Play(WalkAnimFullPathHash, 0);
         }
         // Note: Replace this with the full anim state machine.
-        public void PlayJumpStartFXState(float normalizedTime)
+        public void SetJumpStartFXState(bool enable)
         {
-            PlayerComponent.Animator.Play(JumpStartFXFullPathHash, 0, normalizedTime);
-            PlayerComponent.Animator.Update(PartialMathUtil.ONE_FRAME);
+            PlayerComponent.Animator.SetBool(JumpStartFXId, enable);
         }
 
-        public bool isAnimStateTimeMet(float animFullPathHash, float animClipFrameNormalized)
+        //public bool IsAnimStateTimeMet(float animFullPathHash, float animClipFrameNormalized)
+        //{
+        //    var animStateInfo = PlayerComponent.Animator.GetCurrentAnimatorStateInfo(layerIndex: 0);
+        //    return animStateInfo.fullPathHash == animFullPathHash && animStateInfo.normalizedTime >= animClipFrameNormalized;
+        //}
+        public bool IsNextOrCurrentAnimStateTimeMet(float animFullPathHash, float animClipFrameNormalized)
         {
+            var nextAnimStateInfo = PlayerComponent.Animator.GetNextAnimatorStateInfo(layerIndex: 0);
+            if (nextAnimStateInfo.fullPathHash == animFullPathHash && nextAnimStateInfo.normalizedTime >= animClipFrameNormalized)
+            {
+                return true;
+            }
             var animStateInfo = PlayerComponent.Animator.GetCurrentAnimatorStateInfo(layerIndex: 0);
             return animStateInfo.fullPathHash == animFullPathHash && animStateInfo.normalizedTime >= animClipFrameNormalized;
         }
