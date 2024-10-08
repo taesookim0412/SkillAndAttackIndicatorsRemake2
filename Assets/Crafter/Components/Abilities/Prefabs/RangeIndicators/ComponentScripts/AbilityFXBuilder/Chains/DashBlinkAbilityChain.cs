@@ -31,9 +31,19 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public PlayerBlinkBuilder PlayerBlinkBuilderDest;
 
         [NonSerialized, HideInInspector]
+        private AnimFrameProps AnimFrameProps;
+        [NonSerialized, HideInInspector]
+        private bool PlayAnimFrame = false;
+        [NonSerialized, HideInInspector]
+        private bool PlayerAnimStateSet = false;
+        [NonSerialized, HideInInspector]
+        private bool PlayerAnimStateTimeSet = false;
+
+        [NonSerialized, HideInInspector]
         private long StartTime;
         [NonSerialized, HideInInspector]
         private long EndTime;
+
         public override void ManualAwake()
         {
         }
@@ -41,13 +51,21 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PlayerBlinkBuilder playerBlinkBuilderSource,
             TrailMoverBuilder_TargetPos blinkTrailBuilder,
             PlayerBlinkBuilder playerBlinkBuilderDest,
+            AnimFrameProps animFrameProps,
+            bool playAnimFrame,
             long startTime,
             long endTime)
         {
             base.Initialize(observerUpdateCache);
+            PlayerClientData = playerBlinkBuilderDest.PlayerClientData;
+            PlayerTransparentClone = playerBlinkBuilderDest.PlayerTransparentClone;
             BlinkTrailBuilder = blinkTrailBuilder;
             PlayerBlinkBuilderSource = playerBlinkBuilderSource;
             PlayerBlinkBuilderDest = playerBlinkBuilderDest;
+            AnimFrameProps = animFrameProps;
+            PlayAnimFrame = playAnimFrame;
+            PlayerAnimStateSet = false;
+            PlayerAnimStateTimeSet = false;
             StartTime = startTime;
             EndTime = endTime;
         }
@@ -58,6 +76,25 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 return;
             }
+            if (PlayAnimFrame)
+            {
+                if (!PlayerAnimStateSet)
+                {
+                    PlayerClientData.PlayJumpStartFXState(0f);
+                    PlayerAnimStateSet = true;
+                }
+                else if (!PlayerAnimStateTimeSet)
+                {
+                    bool isAnimStateTimeMet = PlayerClientData.isAnimStateTimeMet(AnimFrameProps.AnimFullPathHash, AnimFrameProps.AnimClipFrameNormalized);
+                    if (isAnimStateTimeMet)
+                    {
+                        PlayerAnimStateTimeSet = true;
+                        PlayerClientData.PlayerComponent.Animator.speed = 0f;
+                    }
+                }
+            }
+            
+                
 
             if (elapsedTime >= StartTime)
             {
@@ -99,6 +136,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 {
                     PlayerBlinkBuilderDest.Complete();
                 }
+                PlayerComponent playerComponent = PlayerClientData.PlayerComponent;
+                playerComponent.Animator.speed = 1f;
                 base.Complete();
             }
         }
@@ -106,11 +145,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             if (!CompletedStateful)
             {
-                PlayerComponent playerComponent = PlayerBlinkBuilderDest.PlayerClientData.PlayerComponent;
-                if (!playerComponent.gameObject.activeSelf)
-                {
-                    playerComponent.gameObject.SetActive(true);
-                }
+                PlayerComponent playerComponent = PlayerClientData.PlayerComponent;
+                playerComponent.Animator.speed = 1f;
+                playerComponent.ShowMeshes();
                 playerComponent.transform.position = PlayerBlinkBuilderDest.transform.position;
 
                 base.CompleteStatefulFX();
@@ -158,7 +195,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-
             if (Props == null)
             {
                 Props = GameObject.Find($"{Instance.name}Props").GetComponent<DashBlinkAbilityChainEditorProps>();
@@ -166,8 +202,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             if (Props != null) 
             {
+                Undo.RecordObject(Props, "Props");
                 Props.PlayerBlinkSourceTargetPos = EditorGUILayout.Vector3Field("PlayerBlinkSourceTargetPos", Props.PlayerBlinkSourceTargetPos);
                 Props.PlayerBlinkDestTargetPos = EditorGUILayout.Vector3Field("PlayerBlinkDestTargetPos", Props.PlayerBlinkDestTargetPos);
+                Props.PlayerVertexSourceTargetPosOffset = EditorGUILayout.Vector3Field("PlayerVertexSourceTargetPosOffset", Props.PlayerVertexSourceTargetPosOffset);
+                Props.PlayerVertexDestTargetPosOffset = EditorGUILayout.Vector3Field("PlayerVertexDestTargetPosOffset", Props.PlayerVertexDestTargetPosOffset);
                 EditorGUI.BeginChangeCheck();
                 Props.PlayerComponent = (PlayerComponent)EditorGUILayout.ObjectField("PlayerComponent", Props.PlayerComponent, typeof(PlayerComponent), true);
                 Props.Animator = (Animator)EditorGUILayout.ObjectField("Animator", Props.Animator, typeof(Animator), true);
@@ -202,7 +241,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             Props.AnimClipFrame = EditorGUILayout.Slider("AnimClipFrame", Props.AnimClipFrame, 0f, selectedClipLength);
 
-
+            Props.PlayAnimFrame = GUILayout.Toggle(Props.PlayAnimFrame, "Play Anim Frame");
         }
 
         protected override bool OnInitialize(DashBlinkAbilityChain instance, ObserverUpdateCache observerUpdateCache)
@@ -264,18 +303,29 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     trailMoverBuilderTargetPosEditor.OnInspectorGUI();
                     trailMoverBuilderTargetPosEditor.ForceInitialize(observerUpdateCache);
 
-                    playerBlinkBuilderSourceEditor.SetOverrides(Props.PlayerComponent, trailMoverBuilderTargetPosInstance.ClosestTrailPositionsLocal[0]);
+                    // Note: Sometimes, the anim doesn't update so fast after the object gets instantiated in the editor, and remains in bindpose.
+                    int animFullPathHash = Animator.StringToHash($"Base Layer.{Props.AnimStateName}");
+                    AnimFrameProps animFrameProps = new AnimFrameProps(animFullPathHash, Props.AnimLayerIndex, Props.AnimClipFrame);
+                    playerBlinkBuilderSourceEditor.SetOverrides(Props.PlayerComponent, trailMoverBuilderTargetPosInstance.ClosestTrailPositionsLocal[0],
+                        Props.PlayerVertexSourceTargetPosOffset,
+                        animFrameProps,
+                        Props.PlayAnimFrame);
                     playerBlinkBuilderSourceEditor.RequiredDuration = 400L;
                     playerBlinkBuilderSourceEditor.OnInspectorGUI();
                     playerBlinkBuilderSourceEditor.ForceInitialize(observerUpdateCache);
 
-                    playerBlinkBuilderDestEditor.SetOverrides(Props.PlayerComponent, trailMoverBuilderTargetPosInstance.ClosestTrailPositionsLocal[1]);
+                    playerBlinkBuilderDestEditor.SetOverrides(Props.PlayerComponent, trailMoverBuilderTargetPosInstance.ClosestTrailPositionsLocal[1],
+                        Props.PlayerVertexDestTargetPosOffset,
+                        animFrameProps,
+                        Props.PlayAnimFrame);
                     playerBlinkBuilderDestEditor.RequiredDuration = 400L;
                     playerBlinkBuilderDestEditor.OnInspectorGUI();
                     playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
 
                     instance.Initialize(observerUpdateCache, playerBlinkBuilderSourceInstance, trailMoverBuilderTargetPosInstance,
                         playerBlinkBuilderDestInstance,
+                        animFrameProps: animFrameProps,
+                        playAnimFrame: Props.PlayAnimFrame,
                         startTime: 0L,
                         endTime: 1800L);
 

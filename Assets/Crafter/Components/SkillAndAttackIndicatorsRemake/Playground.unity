@@ -249,12 +249,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a00414845798f96499a08e5e6dfc8145, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerComponent: {fileID: 156756943}
-  Animator: {fileID: 156756944}
-  AnimStateName: JumpStart
-  AnimLayerIndex: 2
-  AnimClip: {fileID: 7478122292733868173, guid: 98f277b0c8055e143b2fcf058d3c27dc, type: 3}
-  AnimClipFrame: 0.18
 --- !u!1 &126190857
 GameObject:
   m_ObjectHideFlags: 0
@@ -1911,22 +1905,6 @@ PrefabInstance:
 --- !u!4 &156756942 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3893294197879345259, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
-  m_PrefabInstance: {fileID: 156756941}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &156756943 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2026754422925355100, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
-  m_PrefabInstance: {fileID: 156756941}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a52ab5ed932deb4facc305dae43f734, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!95 &156756944 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 6982812146204527121, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
   m_PrefabInstance: {fileID: 156756941}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &284265436
@@ -20125,14 +20103,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bc6932de1350cd4fbf3957a4056f311, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerBlinkSourceTargetPos: {x: 1.13, y: 3.76, z: 7.53}
+  PlayerBlinkSourceTargetPos: {x: 0.2, y: 0, z: 0.2}
   PlayerBlinkDestTargetPos: {x: 0.2, y: 0, z: -1.2}
+  PlayerVertexSourceTargetPosOffset: {x: 0, y: 1.96, z: 0.65}
+  PlayerVertexDestTargetPosOffset: {x: 0, y: 0, z: 0}
   PlayerComponent: {fileID: 1762682261}
   Animator: {fileID: 1762682262}
-  AnimStateName: JumpStart
-  AnimLayerIndex: 2
+  AnimStateName: JumpStartFX
+  AnimLayerIndex: 0
   AnimClip: {fileID: 7478122292733868173, guid: 98f277b0c8055e143b2fcf058d3c27dc, type: 3}
-  AnimClipFrame: 0.18
+  AnimClipFrame: 0.101
+  PlayAnimFrame: 1
 --- !u!4 &2031498071
 Transform:
   m_ObjectHideFlags: 0

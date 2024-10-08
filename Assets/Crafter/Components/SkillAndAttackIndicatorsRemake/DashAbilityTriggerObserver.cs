@@ -34,7 +34,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
 
         private PoolBagDco<PlayerComponent> PlayerCloneInstancePool;
 
-        private PlayerComponent PlayerTransparentClone;
+        private PlayerComponent PlayerSourceTransparentClone;
+
+        private PlayerComponent PlayerDestTransparentClone;
         
         public DashAbilityTriggerObserver(
             PlayerClientData playerClientData,
@@ -61,10 +63,15 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 float startRotationYCosYAngle = (float)Math.Cos(startRotationY * Mathf.Deg2Rad);
                 float startRotationYSinYAngle = (float)Math.Sin(startRotationY * Mathf.Deg2Rad);
 
-                PlayerComponent playerTransparentClone = PlayerCloneInstancePool.InstantiatePooled(playerPosition);
-                playerTransparentClone.transform.localEulerAngles = playerRotation;
-                playerTransparentClone.OnCloneFXInit();
-                PlayerTransparentClone = playerTransparentClone;
+                PlayerComponent playerSourceTransparentClone = PlayerCloneInstancePool.InstantiatePooled(playerPosition);
+                playerSourceTransparentClone.transform.localEulerAngles = playerRotation;
+                playerSourceTransparentClone.OnCloneFXInit(invertTargetPos: false);
+                PlayerSourceTransparentClone = playerSourceTransparentClone;
+
+                PlayerComponent playerDestTransparentClone = PlayerCloneInstancePool.InstantiatePooled(TargetPosition);
+                playerDestTransparentClone.transform.localEulerAngles = playerRotation;
+                playerDestTransparentClone.OnCloneFXInit(invertTargetPos: true);
+                PlayerDestTransparentClone = playerDestTransparentClone;
 
                 BlinkRibbonTrailRenderer blinkRibbonTrailRenderer = (BlinkRibbonTrailRenderer)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer];
                 blinkRibbonTrailRenderer.transform.localEulerAngles = playerRotation;
@@ -75,7 +82,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 PlayerClientData = playerClientData;
 
                 (Vector3 localPos, bool useEndPosition)[] trailVertexPositionsLocal = new (Vector3 localPos, bool useEndPosition)[2] {
-                        (new Vector3(1.13f, 3.76f, 7.53f), false),
+                        (new Vector3(0.2f, 0f, 0.2f), false),
                         (new Vector3(0.2f, 0f, -1.2f), true) };
 
                 TrailMoverBuilder_TargetPos trailMoverBuilderTargetPos = (TrailMoverBuilder_TargetPos)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.TrailMoverBuilder_TargetPos];
@@ -94,19 +101,29 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     trailVertexPositionsLocal: trailVertexPositionsLocal,
                     trailVertexTrailIndex: 0);
 
+                // remove these and put in a constant!
+                AnimFrameProps animFrameProps = new AnimFrameProps(Animator.StringToHash("Base Layer.JumpStartFX"), 0, 0.101f);
+                bool playAnimFrame = true;
+
                 long blinkRequiredDuration = (long)((Timer.RequiredDuration - blinkRibbonTrailRequiredDuration) * 0.4f);
                 PlayerBlinkBuilder playerBlinkSource = (PlayerBlinkBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Source];
                 playerBlinkSource.transform.position = playerPosition;
                 playerBlinkSource.transform.localEulerAngles = playerRotation;
-                playerBlinkSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone,
+                playerBlinkSource.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerSourceTransparentClone,
                     playerVertexTargetPos: trailMoverBuilderTargetPos.ClosestTrailPositionsLocal[0],
+                    playerVertexTargetPosOffset: Vector3.zero,
+                    animFrameProps: animFrameProps,
+                    playAnimFrame: playAnimFrame,
                     blinkRequiredDuration);
 
                 PlayerBlinkBuilder playerBlinkDest = (PlayerBlinkBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Dest];
                 playerBlinkDest.transform.position = TargetPosition;
                 playerBlinkDest.transform.localEulerAngles = playerRotation;
-                playerBlinkDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerTransparentClone,
+                playerBlinkDest.Initialize(Props.ObserverUpdateProps.ObserverUpdateCache, playerClientData, playerDestTransparentClone,
                     playerVertexTargetPos: trailMoverBuilderTargetPos.ClosestTrailPositionsLocal[1],
+                    playerVertexTargetPosOffset: Vector3.zero,
+                    animFrameProps: animFrameProps,
+                    playAnimFrame: playAnimFrame,
                     blinkRequiredDuration);
 
                 DashBlinkAbilityChain dashBlinkAbilityChain = (DashBlinkAbilityChain)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.DashBlinkAbilityChain];
@@ -116,6 +133,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     playerBlinkBuilderSource: playerBlinkSource,
                     blinkTrailBuilder: trailMoverBuilderTargetPos,
                     playerBlinkBuilderDest: playerBlinkDest,
+                    animFrameProps: animFrameProps,
+                    playAnimFrame: playAnimFrame,
                     startTime: 0L,
                     endTime: Timer.RequiredDuration - 200L);
                 DashBlinkAbilityChain = dashBlinkAbilityChain;
@@ -132,7 +151,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         protected override void OnObserverCompleted()
         {
             // Warning: Potential stale player transparent clone. Workaround: Replace the instance pool reference entirely when meshes change.
-            PlayerCloneInstancePool.ReturnPooled(PlayerTransparentClone);
+            PlayerCloneInstancePool.ReturnPooled(PlayerSourceTransparentClone);
+            PlayerCloneInstancePool.ReturnPooled(PlayerDestTransparentClone);
 
             DashBlinkAbilityChain.CompleteStatefulFX();
         }

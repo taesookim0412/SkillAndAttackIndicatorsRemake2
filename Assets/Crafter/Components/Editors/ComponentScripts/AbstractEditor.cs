@@ -83,6 +83,7 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
                 {
                     WarnFixedUpdateTimeChanged();
                     ManualUpdate();
+                    //SceneView.RepaintAll();
                 }
             }
         }

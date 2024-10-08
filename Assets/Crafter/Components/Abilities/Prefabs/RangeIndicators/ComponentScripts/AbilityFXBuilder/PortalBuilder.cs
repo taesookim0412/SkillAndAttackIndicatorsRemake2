@@ -89,6 +89,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         {
             base.Initialize(observerUpdateCache, playerClientData, playerTransparentClone, 
                 playerVertexTargetPos: PortalOrbOffsetPosition,
+                playerVertexTargetPosOffset: Vector3.zero,
+                animFrameProps: default,
+                playAnimFrame: false,
                 durationAllowed);
             
             PortalScaleTimer.ObserverUpdateCache = observerUpdateCache;

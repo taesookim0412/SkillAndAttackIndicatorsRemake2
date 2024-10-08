@@ -49,7 +49,7 @@
 //            if (Instance.Animator != null)
 //            {
 //                Instance.Animator.Play(Instance.AnimStateName, Instance.AnimLayerIndex, Instance.AnimClipFrame);
-//                Instance.Animator.Update(0.166f);
+//                Instance.Animator.Update(0.0166f);
 //            }
 //        }
 //        public override void OnInspectorGUI()

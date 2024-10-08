@@ -143,10 +143,20 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             if (trailVertexPositionsLocal != null)
             {
-                Vector3 endPositionLocal = endPositionWorld - startWorldPosition;
+                Vector3 endPositionRotated = endPositionWorld - startWorldPosition;
+                float unrotatedRotationAngle = startRotationY * -1 * PartialMathUtil.Deg2Rad;
+                float unrotatedStartRotationYCosYAngle = Mathf.Cos(unrotatedRotationAngle);
+                float unrotatedStartRotationYSinYAngle = Mathf.Sin(unrotatedRotationAngle);
+
+                float unrotatedEndPositionX = endPositionRotated.z * unrotatedStartRotationYSinYAngle + endPositionRotated.x * unrotatedStartRotationYCosYAngle;
+                float unrotatedEndPositionZ = endPositionRotated.z * unrotatedStartRotationYCosYAngle - endPositionRotated.x * unrotatedStartRotationYSinYAngle;
+
+                Vector3 endPositionLocal = new Vector3(unrotatedEndPositionX, endPositionRotated.y, unrotatedEndPositionZ);
+
                 ClosestTrailPositionsLocal = FindClosestTrailPositionsLocal(TrailPositions[trailVertexTrailIndex], trailVertexPositionsLocal, startWorldPosition,
                     endPositionLocal,
-                    startRotationYCosYAngle, startRotationYSinYAngle, startRotationY);
+                    startRotationYCosYAngle, startRotationYSinYAngle, 
+                    unrotatedStartRotationYCosYAngle, unrotatedStartRotationYSinYAngle);
             }
             else
             {
@@ -457,12 +467,9 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private Vector3[] FindClosestTrailPositionsLocal(Vector3[] trailPositions, (Vector3 localPos, bool useEndPosition)[] otherPositionsLocal, 
             Vector3 startWorldPosition,
             Vector3 endPositionLocal,
-            float startRotationYCosYAngle, float startRotationYSinYAngle, float rotationY)
+            float startRotationYCosYAngle, float startRotationYSinYAngle,
+            float unrotatedStartRotationYCosYAngle, float unrotatedStartRotationYSinYAngle)
         {
-            float unrotatedRotationAngle = rotationY * -1 * PartialMathUtil.Deg2Rad;
-            float unrotatedStartRotationYCosYAngle = Mathf.Cos(unrotatedRotationAngle);
-            float unrotatedStartRotationYSinYAngle = Mathf.Sin(unrotatedRotationAngle);
-
             Vector3[] closestTrailPositionsLocal = new Vector3[otherPositionsLocal.Length];
 
             for (int i = 0; i < otherPositionsLocal.Length; i++)
@@ -519,7 +526,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     {
                         closestTrailPositionsLocal[i] = localPositionFromStart;
                     }
-                    //Debug.Log(closestTrailPositionsLocal[i]);
                 }
             }
 

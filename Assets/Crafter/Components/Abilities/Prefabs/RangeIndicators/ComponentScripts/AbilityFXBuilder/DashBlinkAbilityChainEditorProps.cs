@@ -15,6 +15,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [SerializeField]
         public Vector3 PlayerBlinkDestTargetPos = new Vector3(0.2f, 0f, -1.2f);
         [SerializeField]
+        public Vector3 PlayerVertexSourceTargetPosOffset = Vector3.zero;
+        [SerializeField]
+        public Vector3 PlayerVertexDestTargetPosOffset = Vector3.zero;
+        [SerializeField]
         public PlayerComponent PlayerComponent;
         [SerializeField]
         public Animator Animator;
@@ -26,5 +30,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public AnimationClip AnimClip;
         [SerializeField]
         public float AnimClipFrame;
+        [SerializeField]
+        public bool PlayAnimFrame = false;
     }
 }

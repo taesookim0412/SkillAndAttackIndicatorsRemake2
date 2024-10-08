@@ -94,7 +94,21 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
 
             return playerComponentInstance;
         }
-        public void OnCloneFXInit()
+        public void HideMeshes()
+        {
+            foreach (SkinnedMeshRendererContainer holder in Meshes)
+            {
+                holder.SkinnedMeshRenderer.gameObject.SetActive(false);
+            }
+        }
+        public void ShowMeshes()
+        {
+            foreach (SkinnedMeshRendererContainer holder in Meshes)
+            {
+                holder.SkinnedMeshRenderer.gameObject.SetActive(true);
+            }
+        }
+        public void OnCloneFXInit(bool invertTargetPos = false)
         {
             //PlayerComponentCloneItems = new PlayerComponentCloneItems(observerUpdateCache);
             // Since Materials is NonSerialized, it must be re-created after the first pool item is created.
@@ -102,8 +116,9 @@ namespace Assets.Crafter.Components.Player.ComponentScripts
             {
                 InitializeMaterials();
             }
+            SetMaterialVertexTargetPos(Vector3.zero, invertTargetPos: invertTargetPos);
         }
-        public void SetMaterialVertexTargetPos(Vector3 targetPos, float requiredTime, bool invertTargetPos)
+        public void SetMaterialVertexTargetPos(Vector3 targetPos, bool invertTargetPos)
         {
             Material[] materials = Materials;
             for (int i = 0; i < materials.Length; i++)

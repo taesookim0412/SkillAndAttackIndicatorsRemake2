@@ -42,6 +42,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized, HideInInspector]
         private float PlayerOpacityDurationReciprocal;
 
+        [NonSerialized, HideInInspector]
+        public AnimFrameProps AnimFrameProps;
+
+        [NonSerialized, HideInInspector]
+        public bool PlayAnimFrame;
+
+        [NonSerialized, HideInInspector]
+        private bool AnimFrameDone = false;
+
         public override void ManualAwake()
         {
         }
@@ -86,8 +95,22 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PlayerOpacityTimer.RequiredDuration = (long)(PlayerOpacityDuration * requiredDurationMultTimes1000);
             PlayerOpaqueTimer.RequiredDuration = (long)(PlayerOpaqueDuration * requiredDurationMultTimes1000);
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="observerUpdateCache"></param>
+        /// <param name="playerClientData"></param>
+        /// <param name="playerTransparentClone"></param>
+        /// <param name="playerVertexTargetPos"></param>
+        /// <param name="playerVertexTargetPosOffset">Offset specific to the animation.</param>
+        /// <param name="animFrameProps"></param>
+        /// <param name="playAnimFrame"></param>
+        /// <param name="durationAllowed"></param>
         public void Initialize(ObserverUpdateCache observerUpdateCache, PlayerClientData playerClientData,
-            PlayerComponent playerTransparentClone, Vector3 playerVertexTargetPos, long? durationAllowed)
+            PlayerComponent playerTransparentClone, Vector3 playerVertexTargetPos,
+            Vector3 playerVertexTargetPosOffset,
+            AnimFrameProps animFrameProps,
+            bool playAnimFrame, long? durationAllowed)
         {
             base.Initialize(observerUpdateCache);
 
@@ -113,13 +136,17 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
 
             PlayerTransparentClone = playerTransparentClone;
 
-            PlayerVertexTargetPos = playerVertexTargetPos;
+            PlayerVertexTargetPos = playerVertexTargetPos + playerVertexTargetPosOffset;
+            
+            AnimFrameProps = animFrameProps;
 
-            PlayerComponent playerComponent = playerClientData.PlayerComponent;
+            PlayAnimFrame = playAnimFrame;
+
+            AnimFrameDone = false;
 
             if (!IsTeleportSource)
             {
-                playerComponent.gameObject.SetActive(false);
+                playerClientData.PlayerComponent.HideMeshes();
             }
 
             PlayerBlinkState = PlayerBlinkState.PlayerCreate;
@@ -141,13 +168,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     PlayerTransparentClone.gameObject.SetActive(true);
                     VertexTargetPosStartTime = ObserverUpdateCache.UpdateTickTimeRenderThread;
                     PlayerOpacityDurationReciprocal = PlayerOpacityDuration > 0f ? 1f / PlayerOpacityDuration : 0f;
-                    PlayerTransparentClone.SetMaterialVertexTargetPos(PlayerVertexTargetPos, PlayerOpacityDuration, !IsTeleportSource);
-                    PlayerTransparentClone.transform.position = transform.position;
+                    PlayerTransparentClone.SetMaterialVertexTargetPos(PlayerVertexTargetPos, !IsTeleportSource);
                     PlayerClientData.PlayerComponent.transform.position = transform.position;
                     float playerTransparentCloneOpacity;
                     if (IsTeleportSource)
                     {
-                        PlayerClientData.PlayerComponent.gameObject.SetActive(false);
+                        PlayerClientData.PlayerComponent.HideMeshes();
                         playerTransparentCloneOpacity = 1f;
                     }
                     else
@@ -174,11 +200,41 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     else
                     {
                         PlayerTransparentClone.gameObject.SetActive(false);
-                        PlayerClientData.PlayerComponent.gameObject.SetActive(!IsTeleportSource);
+                        if (!IsTeleportSource)
+                        {
+                            PlayerClientData.PlayerComponent.ShowMeshes();
+                        }
 
                         PlayerOpaqueTimer.LastCheckedTime = ObserverUpdateCache.UpdateTickTimeRenderThread;
                         PlayerBlinkState = PlayerBlinkState.PlayerDespawn;
                     }
+                    // For some reason, playing the anim will only work the frame after the gameobject is set active.
+                    if (!AnimFrameDone)
+                    {
+                        if (PlayAnimFrame)
+                        {
+                            PlayerTransparentClone.Animator.Play(AnimFrameProps.AnimFullPathHash, AnimFrameProps.AnimLayerIndex,
+                                AnimFrameProps.AnimClipFrameNormalized);
+                            PlayerTransparentClone.Animator.Update(PartialMathUtil.ONE_FRAME);
+                            PlayerTransparentClone.Animator.speed = 0f;
+                            //var stateInfo = PlayerTransparentClone.Animator.GetCurrentAnimatorStateInfo(AnimFrameProps.AnimLayerIndex);
+                            //// Doesn't check the normalized time.
+                            //if (stateInfo.fullPathHash == AnimFrameProps.AnimFullPathHash)
+                            //{
+                            //    Debug.Log($"IsSource: {IsTeleportSource}. Hash correct.");
+                            //    AnimFrameDone = true;
+                            //}
+                            //else
+                            //{
+                            //    Debug.Log($"IsSource: {IsTeleportSource}. Hash incorrect.");
+                            //    //var stateInfo = PlayerTransparentClone.Animator.GetCurrentAnimatorStateInfo(AnimFrameProps.AnimLayerIndex);
+                            //    //Debug.Log(AnimFrameProps.AnimFullPathHash);
+                            //}
+                        }
+                        AnimFrameDone = true;
+                    }
+                    //var stateInfo2 = PlayerTransparentClone.Animator.GetCurrentAnimatorStateInfo(AnimFrameProps.AnimLayerIndex);
+                    //Debug.Log($"IsSource: {IsTeleportSource}, {stateInfo2.fullPathHash}, {stateInfo2.fullPathHash == AnimFrameProps.AnimFullPathHash}, {AnimFrameProps.AnimFullPathHash}, {stateInfo2.normalizedTime}");
                     break;
                 case PlayerBlinkState.PlayerDespawn:
                     if (PlayerOpaqueTimer.IsTimeElapsed_RenderThread())
@@ -216,6 +272,19 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         PlayerOpacity,
         PlayerDespawn
     }
+    public class AnimFrameProps
+    {
+        public int AnimFullPathHash;
+        public int AnimLayerIndex;
+        public float AnimClipFrameNormalized;
+
+        public AnimFrameProps(int animFullPathHash, int animLayerIndex, float animClipFrameNormalized)
+        {
+            AnimFullPathHash = animFullPathHash;
+            AnimLayerIndex = animLayerIndex;
+            AnimClipFrameNormalized = animClipFrameNormalized;
+        }
+    }
 
 #if UNITY_EDITOR
     [CustomEditor(typeof(PlayerBlinkBuilder))]
@@ -225,9 +294,14 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public bool PlayerComponentOverride;
         public Vector3 PlayerVertexTargetPos = new Vector3(0f, 1f, 1f);
         private bool PlayerVertexTargetPosOverride = false;
+        public Vector3 PlayerVertexTargetPosOffset = Vector3.zero;
         public long? RequiredDuration = null;
+        public AnimFrameProps AnimFrameProps;
+        private bool PlayAnimFrame = false;
 
-        public void SetOverrides(PlayerComponent playerComponent, Vector3 playerVertexTargetPos)
+        public void SetOverrides(PlayerComponent playerComponent, Vector3 playerVertexTargetPos,
+            Vector3 playerVertexTargetPosOffset,
+            AnimFrameProps animFrameProps, bool playAnimFrame) 
         {
             if (playerComponent != null)
             {
@@ -236,6 +310,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             }
             PlayerVertexTargetPos = playerVertexTargetPos;
             PlayerVertexTargetPosOverride = true;
+
+            PlayerVertexTargetPosOffset = playerVertexTargetPosOffset;
+
+            AnimFrameProps = animFrameProps;
+            PlayAnimFrame = playAnimFrame;
         }
         protected override bool OnInitialize(PlayerBlinkBuilder instance, ObserverUpdateCache observerUpdateCache)
         {
@@ -273,9 +352,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         SetObserverUpdateCache();
                         observerUpdateCache = ObserverUpdateCache;
                     }
-                    
+
                     instance.Initialize(observerUpdateCache, playerClientData, playerTransparentClone,
                         playerVertexTargetPos: PlayerVertexTargetPos,
+                        playerVertexTargetPosOffset: PlayerVertexTargetPosOffset,
+                        animFrameProps: AnimFrameProps,
+                        playAnimFrame: PlayAnimFrame,
                         RequiredDuration);
                     TryAddParticleSystem(instance.gameObject);
                     return true;
