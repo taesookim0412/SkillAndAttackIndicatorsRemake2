@@ -200,7 +200,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             base.OnInspectorGUI();
             if (Props == null)
             {
-                Props = GameObject.Find($"{Instance.name}Props").GetComponent<DashBlinkAbilityChainEditorProps>();
+                Props = FindProps<DashBlinkAbilityChainEditorProps>();
             }
 
             if (Props != null) 
@@ -250,7 +250,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         protected override bool OnInitialize(DashBlinkAbilityChain instance, ObserverUpdateCache observerUpdateCache)
         {
             SkillAndAttackIndicatorSystem system = GameObject.FindFirstObjectByType<SkillAndAttackIndicatorSystem>();
-            if (system != null)
+            if (system != null && Props != null)
             {
 
                 string playerBlinkBuilderSourceType = AbilityFXComponentType.PlayerBlinkBuilder_Source.ToString();

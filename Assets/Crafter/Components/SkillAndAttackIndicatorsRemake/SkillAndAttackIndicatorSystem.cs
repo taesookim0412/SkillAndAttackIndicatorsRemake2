@@ -8,6 +8,7 @@ using Assets.Crafter.Components.Models;
 using Assets.Crafter.Components.Models.dpo.TrailEffectsDpo;
 using Assets.Crafter.Components.Player.ComponentScripts;
 using Assets.Crafter.Components.Systems.Observers;
+using Cinemachine;
 using DTT.AreaOfEffectRegions;
 using StarterAssets;
 using System;
@@ -49,6 +50,10 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         public AbstractAbilityFX[] AbilityFXComponentPrefabs;
         [SerializeField]
         public PlayerComponent PlayerComponent;
+        [SerializeField]
+        public CinemachineVirtualCamera PlayerFollowCamera;
+        [SerializeField]
+        public CinemachineVirtualCamera PlayerMoverCamera;
 
         [NonSerialized, HideInInspector]
         public PlayerClientData PlayerClientData;
@@ -83,6 +88,8 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         {
             PlayerClientData = new PlayerClientData(PlayerGuid, PlayerComponent);
             Camera = Camera.main;
+            // Might have to reset virtual camera other times too.
+            ResetVirtualCamera();
         }
         public void OnEnable()
         {
@@ -198,6 +205,22 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             }
 
             DashAbilityTriggerObservers.UpdateObservers<DashAbilityTriggerObserver<DashAbilityTriggerObserverProps>, DashAbilityTriggerObserverProps>();
+
+        }
+
+        public void SetPlayerMoverCamera(Transform follow, Transform lookAt)
+        {
+            PlayerMoverCamera.m_Follow = follow;
+            PlayerMoverCamera.m_LookAt = lookAt;
+            PlayerMoverCamera.Priority = 10;
+            PlayerFollowCamera.Priority = 9;
+        }
+        public void ResetVirtualCamera()
+        {
+            PlayerMoverCamera.m_Follow = null;
+            PlayerMoverCamera.m_LookAt = null;
+            PlayerMoverCamera.Priority = 9;
+            PlayerFollowCamera.Priority = 10;
 
         }
         /// Copyright

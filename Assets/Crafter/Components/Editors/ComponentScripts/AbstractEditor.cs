@@ -39,6 +39,10 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
                 OnDisable();
             }
         }
+        protected S FindProps<S>()
+        {
+            return GameObject.Find($"{Instance.name}Props").GetComponent<S>();
+        }
         protected void Initialize(ObserverUpdateCache observerUpdateCache)
         {
             if (!InitializeFailed && !VariablesSet && PrefabStageUtility.GetCurrentPrefabStage() == null)
