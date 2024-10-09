@@ -14,6 +14,6 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public enum AbilityTriggerFXType
     {
         None,
-        DashTrigger
+        DashBlinkTrigger
     }
 }

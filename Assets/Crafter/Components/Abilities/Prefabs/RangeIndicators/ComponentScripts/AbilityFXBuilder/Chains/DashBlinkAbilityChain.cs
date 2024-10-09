@@ -29,6 +29,8 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public PlayerBlinkBuilder PlayerBlinkBuilderSource;
         [NonSerialized]
         public PlayerBlinkBuilder PlayerBlinkBuilderDest;
+        [NonSerialized]
+        public CameraMoverBuilder CameraMoverBuilder;
 
         [NonSerialized, HideInInspector]
         private AnimFrameProps AnimFrameProps;
@@ -51,6 +53,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             PlayerBlinkBuilder playerBlinkBuilderSource,
             TrailMoverBuilder_TargetPos blinkTrailBuilder,
             PlayerBlinkBuilder playerBlinkBuilderDest,
+            CameraMoverBuilder cameraMoverBuilder,
             AnimFrameProps animFrameProps,
             bool playAnimFrame,
             long startTime,
@@ -62,6 +65,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             BlinkTrailBuilder = blinkTrailBuilder;
             PlayerBlinkBuilderSource = playerBlinkBuilderSource;
             PlayerBlinkBuilderDest = playerBlinkBuilderDest;
+            CameraMoverBuilder = cameraMoverBuilder;
             AnimFrameProps = animFrameProps;
             PlayAnimFrame = playAnimFrame;
             PlayerAnimStateSet = false;
@@ -105,6 +109,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                         if ((int)PlayerBlinkBuilderSource.PlayerBlinkState >= (int)PlayerBlinkState.PlayerOpacity)
                         {
                             BlinkTrailBuilder.ManualUpdate();
+                            CameraMoverBuilder.ManualUpdate();
                         }
 
                         PlayerBlinkBuilderSource.ManualUpdate();
@@ -172,19 +177,23 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         private DashBlinkAbilityChainEditorProps Props;
 
         private long StartTime;
+        private CameraMoverBuilderEditor CameraMoverBuilderEditor;
         protected override void EditorDestroy()
         {
             GameObject.DestroyImmediate(Instance.PlayerBlinkBuilderSource.gameObject);
             GameObject.DestroyImmediate(Instance.BlinkTrailBuilder.gameObject);
             GameObject.DestroyImmediate(Instance.PlayerBlinkBuilderDest.gameObject);
+            GameObject.DestroyImmediate(Instance.CameraMoverBuilder.gameObject);
 
             Instance.CleanUpInstance();
         }
 
-        protected override void ManualUpdate()
+        public override void ManualUpdate()
         {
             long elapsedTime = ObserverUpdateCache.UpdateTickTimeRenderThread - StartTime;
             Instance.ManualUpdate(elapsedTime);
+            // Manual update for SceneView camera updates.
+            CameraMoverBuilderEditor.ManualUpdate();
         }
         //public void OnSceneGUI()
         //{
@@ -262,7 +271,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 string trailMoverBuilderTargetPosType = AbilityFXComponentType.TrailMoverBuilder_TargetPos.ToString();
                 TrailMoverBuilder_TargetPos trailMoverBuilderTargetPosPrefab = (TrailMoverBuilder_TargetPos)system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == trailMoverBuilderTargetPosType);
 
-                if (!(playerBlinkBuilderSourceType == null || trailMoverBuilderTargetPosPrefab == null || trailMoverBuilderTargetPosPrefab == null))
+                string cameraMoverBuilderType = AbilityFXComponentType.CameraMoverBuilder.ToString();
+                CameraMoverBuilder cameraMoverBuilderPrefab = (CameraMoverBuilder)system.AbilityFXComponentPrefabs.FirstOrDefault(prefab => prefab.name == cameraMoverBuilderType);
+
+                if (!(playerBlinkBuilderSourceType == null || trailMoverBuilderTargetPosPrefab == null || trailMoverBuilderTargetPosPrefab == null ||
+                    cameraMoverBuilderPrefab == null))
                 {
                     PlayerBlinkBuilder playerBlinkBuilderSourceInstance = GameObject.Instantiate(playerBlinkBuilderSourcePrefab, instance.transform);
                     PlayerBlinkBuilderEditor playerBlinkBuilderSourceEditor = (PlayerBlinkBuilderEditor)Editor.CreateEditor(playerBlinkBuilderSourceInstance, typeof(PlayerBlinkBuilderEditor));
@@ -285,6 +298,12 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     TrailMoverBuilder_TargetPosEditor trailMoverBuilderTargetPosEditor = (TrailMoverBuilder_TargetPosEditor)Editor.CreateEditor(trailMoverBuilderTargetPosInstance,
                         typeof(TrailMoverBuilder_TargetPosEditor));
                     trailMoverBuilderTargetPosInstance.transform.position = startPosition;
+
+                    CameraMoverBuilder cameraMoverBuilderInstance = GameObject.Instantiate(cameraMoverBuilderPrefab, instance.transform);
+                    CameraMoverBuilderEditor cameraMoverBuilderEditor = (CameraMoverBuilderEditor) Editor.CreateEditor(cameraMoverBuilderInstance, typeof(CameraMoverBuilderEditor));
+                    cameraMoverBuilderInstance.transform.position = startPosition;
+
+                    CameraMoverBuilderEditor = cameraMoverBuilderEditor;
 
                     if (observerUpdateCache == null)
                     {
@@ -325,8 +344,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     playerBlinkBuilderDestEditor.OnInspectorGUI();
                     playerBlinkBuilderDestEditor.ForceInitialize(observerUpdateCache);
 
+                    cameraMoverBuilderEditor.SetOverrides(trailMoverBuilderTargetPosInstance);
+                    cameraMoverBuilderEditor.OnInspectorGUI();
+                    cameraMoverBuilderEditor.ForceInitialize(observerUpdateCache);
+
                     instance.Initialize(observerUpdateCache, playerBlinkBuilderSourceInstance, trailMoverBuilderTargetPosInstance,
                         playerBlinkBuilderDestInstance,
+                        cameraMoverBuilderInstance,
                         animFrameProps: animFrameProps,
                         playAnimFrame: Props.PlayAnimFrame,
                         startTime: 0L,

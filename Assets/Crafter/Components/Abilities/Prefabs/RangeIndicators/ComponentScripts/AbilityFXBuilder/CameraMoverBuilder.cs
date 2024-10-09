@@ -17,9 +17,11 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         [NonSerialized]
         private SkillAndAttackIndicatorSystem SkillAndAttackIndicatorSystem;
         [NonSerialized]
-        private Transform FollowTransform;
+        public Transform FollowTransform;
         [NonSerialized]
-        private Transform LookAtTransform;
+        public Transform LookAtTransform;
+        [SerializeField]
+        public Transform CameraMoverTransform;
         [SerializeField]
         public Vector3 CameraOffset = new Vector3(1f, 3f, -2.5f);
         public override void ManualAwake()
@@ -37,19 +39,33 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             if (!(followTransform == null || lookAtTransform == null))
             {
                 skillAndAttackIndicatorSystem.SetPlayerMoverCamera(
-                    follow: followTransform,
+                    follow: CameraMoverTransform,
                     lookAt: lookAtTransform);
             }
-
+        }
+        public void Initialize(SkillAndAttackIndicatorSystem skillAndAttackIndicatorSystem,
+            AbstractAbilityFXBuilder_Followable followableBuilder)
+        {
+            Transform followTransform = followableBuilder.GetFollowTransform();
+            Initialize(skillAndAttackIndicatorSystem, followTransform, followTransform);
+        }
+        public void ManualUpdate()
+        {
+            CameraMoverTransform.position = FollowTransform.position + CameraOffset;
         }
         public override void Complete()
         {
             SkillAndAttackIndicatorSystem.ResetVirtualCamera();
+            CameraMoverTransform.localPosition = Vector3.zero;
+            CameraMoverTransform.localEulerAngles = Vector3.zero;
             base.Complete();
         }
 
         public override void CleanUpInstance()
         {
+            SkillAndAttackIndicatorSystem = null;
+            FollowTransform = null;
+            LookAtTransform = null;
         }
     }
 
@@ -58,7 +74,13 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
     public class CameraMoverBuilderEditor : AbstractEditor<CameraMoverBuilder>
     {
         private CameraMoverBuilderProps Props;
-
+        public AbstractAbilityFXBuilder_Followable FollowableBuilder = null;
+        private bool FollowableBuilderOverride = false;
+        public void SetOverrides(AbstractAbilityFXBuilder_Followable followableBuilder)
+        {
+            FollowableBuilder = followableBuilder;
+            FollowableBuilderOverride = true;
+        }
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
@@ -71,20 +93,21 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             {
                 Props.FollowTransform = (Transform)EditorGUILayout.ObjectField("Follow Transform", Props.FollowTransform, typeof(Transform), true);
                 Props.LookAtTransform = (Transform)EditorGUILayout.ObjectField("LookAt Transform", Props.LookAtTransform, typeof(Transform), true);
-                Props.SceneViewObject = (Transform)EditorGUILayout.ObjectField("SceneViewObject", Props.SceneViewObject, typeof(Transform), true);
             }
         }
 
         protected override void EditorDestroy()
         {
+            Instance.CameraMoverTransform.localPosition = Vector3.zero;
+            Instance.CameraMoverTransform.localEulerAngles = Vector3.zero;
             Instance.CleanUpInstance();
         }
 
-        protected override void ManualUpdate()
+        public override void ManualUpdate()
         {
             if (!Instance.Completed)
             {
-                // Try to reset the virtual camera's transform refs.
+                // Try to reset the virtual camera.
                 Instance.Complete();
             }
 
@@ -94,10 +117,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                 sceneView = SceneView.lastActiveSceneView;
             }
 
-            Props.FollowTransform.position = Props.LookAtTransform.position + Instance.CameraOffset;
-            Props.SceneViewObject.position = Props.FollowTransform.position;
-            Props.SceneViewObject.LookAt(Props.LookAtTransform);
-            sceneView.AlignViewToObject(Props.SceneViewObject);
+            Transform cameraMoverTransform = Instance.CameraMoverTransform;
+            cameraMoverTransform.position = Instance.FollowTransform.position + Instance.CameraOffset;
+            cameraMoverTransform.LookAt(Instance.LookAtTransform);
+            sceneView.AlignViewToObject(cameraMoverTransform);
         }
 
         protected override bool OnInitialize(CameraMoverBuilder instance, ObserverUpdateCache observerUpdateCache)
@@ -111,8 +134,15 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     SetObserverUpdateCache();
                     observerUpdateCache = ObserverUpdateCache;
                 }
+                if (FollowableBuilderOverride)
+                {
+                    instance.Initialize(system, FollowableBuilder);
+                }
+                else
+                {
+                    instance.Initialize(system, Props.FollowTransform, Props.LookAtTransform);
+                }
 
-                instance.Initialize(system, Props.FollowTransform, Props.LookAtTransform);
                 TryAddParticleSystem(instance.gameObject);
 
                 return true;

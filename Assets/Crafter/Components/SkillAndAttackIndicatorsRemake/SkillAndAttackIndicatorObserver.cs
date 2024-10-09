@@ -141,7 +141,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     bool heightsFoundEarly = false;
                     switch (AbilityIndicatorFXType)
                     {
-                        case AbilityIndicatorFXType.DashPortalAbility:
+                        case AbilityIndicatorFXType.DashBlinkAbility:
                             ChargeDuration = 800L;
                             ChargeDurationSecondsFloat = 800 * PartialMathUtil.SECOND_PER_MILLISECOND;
                             TriggerCreateDelay = 400L;
@@ -290,7 +290,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 //}
                 switch (AbilityIndicatorFXType)
                 {
-                    case AbilityIndicatorFXType.DashPortalAbility:
+                    case AbilityIndicatorFXType.DashBlinkAbility:
                         UpdateEarlyTriggerAbility();
                         break;
                 }
@@ -1187,9 +1187,9 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
     public enum AbilityIndicatorFXType
     {
         None,
-        DashPortalAbility
+        DashBlinkAbility
     }
-    public enum DashParticlesFXTypeInstancePools
+    public enum DashBlinkAbilityFXTypeInstancePools
     {
     }
     public enum AbilityFXComponentType
@@ -1213,5 +1213,6 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         TrailMoverBuilder_XPerZ,
         TrailMoverBuilder_TargetPos,
         BlinkParticles,
+        CameraMoverBuilder
     }
 }

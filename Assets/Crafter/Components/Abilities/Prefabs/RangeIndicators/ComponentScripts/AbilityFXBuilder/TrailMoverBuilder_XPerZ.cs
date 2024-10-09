@@ -350,7 +350,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             base.OnInspectorGUI();
         }
 
-        protected override void ManualUpdate()
+        public override void ManualUpdate()
         {
             float chargeDurationPercentage = (ObserverUpdateCache.UpdateTickTimeRenderThread - StartTime) / ChargeDurationFloat;
             float fillProgress = EffectsUtil.EaseInOutQuad(chargeDurationPercentage);

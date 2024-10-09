@@ -41,7 +41,9 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
         }
         protected S FindProps<S>()
         {
-            return GameObject.Find($"{Instance.name}Props").GetComponent<S>();
+            string sceneInstanceName = GameObjectUtil.RemoveCloneName(Instance.name);
+            //Debug.Log(sceneInstanceName);
+            return GameObject.Find($"{sceneInstanceName}Props").GetComponent<S>();
         }
         protected void Initialize(ObserverUpdateCache observerUpdateCache)
         {
@@ -67,7 +69,7 @@ namespace Assets.Crafter.Components.Editors.ComponentScripts
             }
         }
         protected abstract bool OnInitialize(T instance, ObserverUpdateCache observerUpdateCache);
-        protected abstract void ManualUpdate();
+        public abstract void ManualUpdate();
         protected abstract void EditorDestroy();
         public void OnDisable()
         {

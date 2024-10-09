@@ -43,7 +43,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             Vector3 targetPosition,
             P props) : base(
                 requiredDuration: 2000L,
-                AbilityTriggerFXType.DashTrigger, props)
+                AbilityTriggerFXType.DashBlinkTrigger, props)
         {
             PlayerClientData = playerClientData;
             TargetPosition = targetPosition;
@@ -126,6 +126,11 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     playAnimFrame: playAnimFrame,
                     blinkRequiredDuration);
 
+                CameraMoverBuilder cameraMoverBuilder = (CameraMoverBuilder)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.CameraMoverBuilder];
+                cameraMoverBuilder.transform.position = playerPosition;
+                // set rotation to zero so its nested transform requires less computation per LookAt.
+                cameraMoverBuilder.transform.localEulerAngles = Vector3.zero;
+
                 DashBlinkAbilityChain dashBlinkAbilityChain = (DashBlinkAbilityChain)abstractAbilityFXes[(int)DashAbilityTriggerTypeInstancePools.DashBlinkAbilityChain];
                 dashBlinkAbilityChain.transform.position = playerPosition;
                 dashBlinkAbilityChain.transform.localEulerAngles = playerRotation;
@@ -133,6 +138,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                     playerBlinkBuilderSource: playerBlinkSource,
                     blinkTrailBuilder: trailMoverBuilderTargetPos,
                     playerBlinkBuilderDest: playerBlinkDest,
+                    cameraMoverBuilder: cameraMoverBuilder,
                     animFrameProps: animFrameProps,
                     playAnimFrame: playAnimFrame,
                     startTime: 0L,
@@ -163,6 +169,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
         PlayerBlinkBuilder_Dest,
         DashBlinkAbilityChain,
         BlinkRibbonTrailRenderer,
-        TrailMoverBuilder_TargetPos
+        TrailMoverBuilder_TargetPos,
+        CameraMoverBuilder
     }
 }

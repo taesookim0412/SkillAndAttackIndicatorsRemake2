@@ -18,7 +18,7 @@ using UnityEngine.Timeline;
 
 namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentScripts.AbilityFXBuilder
 {
-    public class TrailMoverBuilder_TargetPos : AbstractAbilityFXBuilder
+    public class TrailMoverBuilder_TargetPos : AbstractAbilityFXBuilder_Followable
     {
         [NonSerialized]
         public BlinkRibbonTrailRenderer[] Trails;
@@ -271,6 +271,10 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
                     completed = trailCompleted;
                 }
             }
+        }
+        public override Transform GetFollowTransform()
+        {
+            return Trails[0].transform;
         }
 
         public Vector3[][] CreateTrailPositions(BlinkRibbonTrailRenderer[] blinkTrails,
@@ -827,7 +831,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Props.PropsEndPositionOffsets = newEndPositions;
         }
 
-        protected override void ManualUpdate()
+        public override void ManualUpdate()
         {
             Instance.ManualUpdate();
 

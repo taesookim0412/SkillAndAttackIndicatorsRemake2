@@ -141,7 +141,7 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
             Dictionary<AbilityIndicatorFXType, PoolBagDco<AbstractAbilityFX>[]> abilityIndicatorFXInstancePools = new Dictionary<AbilityIndicatorFXType, PoolBagDco<AbstractAbilityFX>[]>(
                     SkillAndAttackIndicatorObserver.AbilityFXTypeNamesLength);
 
-            abilityIndicatorFXInstancePools[AbilityIndicatorFXType.DashPortalAbility] = new PoolBagDco<AbstractAbilityFX>[0];
+            abilityIndicatorFXInstancePools[AbilityIndicatorFXType.DashBlinkAbility] = new PoolBagDco<AbstractAbilityFX>[0];
 
             AbilityIndicatorFXInstancePools = abilityIndicatorFXInstancePools;
 
@@ -165,18 +165,20 @@ namespace Assets.Crafter.Components.SkillAndAttackIndicatorsRemake
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.PlayerBlinkBuilder_Dest, out AbstractAbilityFX playerBlinkBuilderDestPrefab) &&
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.DashBlinkAbilityChain, out AbstractAbilityFX dashBlinkAbilityChainPrefab) &&
                 abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.BlinkRibbonTrailRenderer, out AbstractAbilityFX blinkRibbonTrailRendererPrefab) &&
-                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.TrailMoverBuilder_TargetPos, out AbstractAbilityFX trailMoverBuilderTargetPosPrefab))
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.TrailMoverBuilder_TargetPos, out AbstractAbilityFX trailMoverBuilderTargetPosPrefab) &&
+                abilityFXComponentTypeDict.TryGetValue(AbilityFXComponentType.CameraMoverBuilder, out AbstractAbilityFX cameraMoverBuilderPrefab))
             {
                 PoolBagDco<AbstractAbilityFX> blinkRibbonTrailRendererBag = new PoolBagDco<AbstractAbilityFX>(blinkRibbonTrailRendererPrefab, 30);
 
-                PoolBagDco<AbstractAbilityFX>[] dashTriggerPoolBag = new PoolBagDco<AbstractAbilityFX>[5];
+                PoolBagDco<AbstractAbilityFX>[] dashTriggerPoolBag = new PoolBagDco<AbstractAbilityFX>[6];
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Source] = new PoolBagDco<AbstractAbilityFX>(playerBlinkBuilderSourcePrefab, 30);
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.PlayerBlinkBuilder_Dest] = new PoolBagDco<AbstractAbilityFX>(playerBlinkBuilderDestPrefab, 30);
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.DashBlinkAbilityChain] = new PoolBagDco<AbstractAbilityFX>(dashBlinkAbilityChainPrefab, 30);
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.BlinkRibbonTrailRenderer] = new PoolBagDco<AbstractAbilityFX>(blinkRibbonTrailRendererPrefab, 30);
                 dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.TrailMoverBuilder_TargetPos] = new PoolBagDco<AbstractAbilityFX>(trailMoverBuilderTargetPosPrefab, 30);
+                dashTriggerPoolBag[(int)DashAbilityTriggerTypeInstancePools.CameraMoverBuilder] = new PoolBagDco<AbstractAbilityFX>(cameraMoverBuilderPrefab, 30);
 
-                abilityTriggerFXInstancePools[AbilityTriggerFXType.DashTrigger] = dashTriggerPoolBag;
+                abilityTriggerFXInstancePools[AbilityTriggerFXType.DashBlinkTrigger] = dashTriggerPoolBag;
             }
 
             return abilityTriggerFXInstancePools;

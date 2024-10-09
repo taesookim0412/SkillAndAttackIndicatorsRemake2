@@ -14,6 +14,13 @@ namespace Assets.Crafter.Components.Editors.Helpers
         public static AnimationClip GetAnimStateClip(AnimatorController animController, int layerIndex, string animStateName)
         {
             AnimatorControllerLayer layer = animController.layers[layerIndex];
+            foreach (var s in layer.stateMachine.states)
+            {
+                if (s.state.name == animStateName)
+                {
+                    return (AnimationClip)s.state.motion;
+                }
+            }
             foreach (var subsm in layer.stateMachine.stateMachines)
             {
                 foreach (var state in subsm.stateMachine.states)
@@ -22,13 +29,6 @@ namespace Assets.Crafter.Components.Editors.Helpers
                     {
                         return (AnimationClip)state.state.motion;
                     }
-                }
-            }
-            foreach (var s in layer.stateMachine.states)
-            {
-                if (s.state.name == animStateName)
-                {
-                    return (AnimationClip)s.state.motion;
                 }
             }
             return null;

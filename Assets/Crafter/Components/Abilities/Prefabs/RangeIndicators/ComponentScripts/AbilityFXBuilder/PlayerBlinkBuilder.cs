@@ -397,7 +397,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         //    CrimsonAuraBlack crimsonAura = (CrimsonAuraBlack) EditorGUILayout.ObjectField("CrimsonAura", Instance.CrimsonAura, typeof(CrimsonAuraBlack), true);
         //}
 
-        protected override void ManualUpdate()
+        public override void ManualUpdate()
         {
             Instance.ManualUpdate();
         }

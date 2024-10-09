@@ -136,7 +136,7 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
             Instance.CleanUpInstance();
         }
 
-        protected override void ManualUpdate()
+        public override void ManualUpdate()
         {
             long elapsedTime = ObserverUpdateCache.UpdateTickTimeRenderThread - StartTime;
             Instance.ManualUpdate(elapsedTime);

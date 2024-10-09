@@ -13,7 +13,5 @@ namespace Assets.Crafter.Components.Abilities.Prefabs.RangeIndicators.ComponentS
         public Transform FollowTransform;
         [SerializeField]
         public Transform LookAtTransform;
-        [SerializeField]
-        public Transform SceneViewObject;
     }
 }

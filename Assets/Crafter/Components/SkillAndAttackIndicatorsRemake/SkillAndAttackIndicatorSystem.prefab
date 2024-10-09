@@ -71,4 +71,7 @@ MonoBehaviour:
   - {fileID: 1059456225161222465, guid: cf05a80abecd0b644b53a5eee97514de, type: 3}
   - {fileID: 7115992230774635478, guid: 0e2b14071279b364b862c733bf882af1, type: 3}
   - {fileID: 5068400054988631668, guid: 43748bcc9f45aac49823bd4cc9bc5e63, type: 3}
+  - {fileID: 8131598830307786160, guid: e5dfc51797c7e1a4aba3e66cbed11d9e, type: 3}
   PlayerComponent: {fileID: 0}
+  PlayerFollowCamera: {fileID: 0}
+  PlayerMoverCamera: {fileID: 0}
